@@ -1,0 +1,23 @@
+{
+  "extensions": [
+    {
+      "dtype": "bool",
+      "implementations": {
+        "DJANGO_MODEL": {
+          "definition": "models.BooleanField",
+          "valuesMapping": {
+            "true": "True",
+            "false": "False"
+          }
+        },
+        "PY_DATACLASS": {
+          "definition": "bool",
+          "valuesMapping": {
+            "true": "True",
+            "false": "False"
+          }
+        }
+      }
+    }
+  ]
+}
