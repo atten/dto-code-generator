@@ -49,7 +49,7 @@ fun main(args: Array<String>) {
 
     // include input files / directories
     for (path in params.inputFiles) {
-        val filePaths = File(path).listFiles()?.map { it.path }
+        val filePaths = File(path).listFiles()?.map { it.path }?.sorted()
         if (filePaths != null) {
             // path is a directory
             allInputFiles += filePaths

@@ -25,6 +25,6 @@ dependencies {
 
 jib {
     to {
-        image = "docker push registry.gitlab.com/atten0/dto-code-generator"
+        image = "registry.gitlab.com/atten0/dto-code-generator"
     }
 }

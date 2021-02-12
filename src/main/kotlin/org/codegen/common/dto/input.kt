@@ -7,7 +7,8 @@ import kotlinx.serialization.*
 data class DtypeAttributesMapping(
     val definition: String,
     val valuesMapping: Map<String, String> = mapOf(),
-    val valueWrapper: String? = null
+    val valueWrapper: String? = null,
+    val requiredHeader: String? = null,
 ) {
     fun toGeneratedValue(value: String): String {
         var result = valuesMapping.getOrDefault(value, value)
