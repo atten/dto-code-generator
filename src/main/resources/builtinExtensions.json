@@ -18,6 +18,19 @@
           }
         }
       }
+    },
+    {
+      "dtype": "str",
+      "implementations": {
+        "DJANGO_MODEL": {
+          "definition": "models.CharField",
+          "valueWrapper": "\"%s\""
+        },
+        "PY_DATACLASS": {
+          "definition": "str",
+          "valueWrapper": "\"%s\""
+        }
+      }
     }
   ]
 }

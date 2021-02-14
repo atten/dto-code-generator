@@ -32,6 +32,7 @@ data class Field (
     val shortDescription: String? = null,
     val longDescription: String? = null,
     val metadata: Map<String, String>? = null,
+    val enum: Map<String, String>? = null,  // mappings <CONSTANT, REPRESENTATION> for dtype='enum'
     val default: String? = null,
     val nullable: Boolean = false,
 //    validators
