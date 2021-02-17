@@ -43,9 +43,17 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
         for (field in entity.fields) {
             val dtypeProps = dtypeAttrs[field.dtype]
             val fieldName = field.name.toSnakeCase()
-            val attrs = mutableMapOf<String, String>()
 
             requireNotNull(dtypeProps) {"Missing extension for dtype '${field.dtype}'"}
+
+            val attrs = dtypeProps.definitionArguments.toMutableMap()
+
+            // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
+            var metaString = ""
+            field.metadata?.let {
+                metaString = it.map { entry -> "${entry.key.toSnakeCase()}=${entry.value}" }.joinToString()
+            }
+            attrs.forEach { entry -> attrs[entry.key] = entry.value.replace("{metadata}", metaString) }
 
             dtypeProps.requiredHeader?.let {
                 addHeader(it)
