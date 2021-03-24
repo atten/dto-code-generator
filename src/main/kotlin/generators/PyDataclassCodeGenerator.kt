@@ -48,13 +48,6 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
 
             val attrs = dtypeProps.definitionArguments.toMutableMap()
 
-            // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
-            var metaString = ""
-            field.metadata?.let {
-                metaString = it.map { entry -> "${entry.key.toSnakeCase()}=${entry.value}" }.joinToString()
-            }
-            attrs.forEach { entry -> attrs[entry.key] = entry.value.replace("{metadata}", metaString) }
-
             dtypeProps.requiredHeader?.let {
                 addHeader(it)
             }
@@ -84,6 +77,20 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
                 definition = "t.Optional[$definition]"
                 if (field.default == null)
                     attrs["default"] = "None"
+
+            field.enum?.let {
+                val choicesPrefix = fieldName.toSnakeCase().toUpperCase().replace("DEFAULT_", "")
+                val choicesName = "${choicesPrefix}S"
+                val choices = it.keys.associate { key -> choicesPrefix + "_" + key.toSnakeCase().toUpperCase() to dtypeProps.toGeneratedValue(key) }
+                val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
+                preLines.add("$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]\n\n")
+
+                field.metadata["validate"] = "[marshmallow_fields.validate.OneOf($choicesName)]"
+            }
+
+            // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
+            val metaString = field.metadata.map { entry -> "${entry.key.toSnakeCase()}=${entry.value}" }.joinToString()
+            attrs.forEach { entry -> attrs[entry.key] = entry.value.replace("{metadata}", metaString) }
 
             val expression = if (attrs.size == 1 && attrs.containsKey("default")) {
                 // = defaultValue

@@ -32,7 +32,7 @@ data class Field (
     val dtype: String,
     val shortDescription: String? = null,
     val longDescription: String? = null,
-    val metadata: Map<String, String>? = null,
+    val metadata: MutableMap<String, String> = mutableMapOf(),
     val enum: Map<String, String>? = null,  // mappings <CONSTANT, REPRESENTATION> for dtype='enum'
     val default: String? = null,
     val nullable: Boolean = false,
@@ -68,7 +68,7 @@ data class Document(
 
 fun String.normalize(): String {
     require(this.isNotEmpty()) { "String can't be empty" }
-    require(this[0].isLetter()) { "String must start with letter: $this" }
+    require(this[0].isLetter() or this[0].isWhitespace()) { "String must start with letter: '$this'" }
 
     var cleaned = this.map { if (it.isLetterOrDigit()) it else ' '}.joinToString("")
     while (cleaned.contains("  "))

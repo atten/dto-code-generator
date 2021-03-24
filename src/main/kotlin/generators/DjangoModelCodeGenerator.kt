@@ -77,7 +77,7 @@ class DjangoModelCodeGenerator: CodeGeneratorInterface {
             field.enum?.let {
                 addHeader("from model_utils import Choices")
 
-                val choicesName = "${fieldName.toSnakeCase().toUpperCase()}_CHOICES"
+                val choicesName = "${fieldName.toSnakeCase().toUpperCase()}_CHOICES".replace("DEFAULT_", "")
                 val choicesDefinition = it.map { entry -> "    ('${entry.key}', _('${entry.value}'))," }.joinToString(separator = "\n", prefix = "$choicesName = Choices(\n", postfix = "\n)\n\n")
                 preLines.add(choicesDefinition)
 
@@ -93,13 +93,14 @@ class DjangoModelCodeGenerator: CodeGeneratorInterface {
                 attrs["help_text"] = "_('${it.replace("'", "\\'")}')"
             }
 
-            field.metadata?.forEach { (key, value) -> attrs[key.toSnakeCase()] = value  }
+            field.metadata.forEach { (key, value) -> attrs[key.toSnakeCase()] = value  }
 
             val attrsString = attrs.map { entry -> "${entry.key}=${entry.value}" }.joinToString()
             lines.add("    $fieldName = ${dtypeProps.definition}($attrsString)")
         }
 
-        entity.prefix?.let { lines.add("\n    PREFIX = '${entity.actualPrefix.toSnakeCase()}'") }
+        if (entity.prefix != null && entity.prefix.isNotEmpty())
+            lines.add("\n    PREFIX = '${entity.actualPrefix.toSnakeCase()}'")
 
         // add Meta section
         lines.add("")
