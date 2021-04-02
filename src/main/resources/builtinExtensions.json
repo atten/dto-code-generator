@@ -31,6 +31,32 @@
           "valueWrapper": "\"%s\""
         }
       }
+    },
+    {
+      "dtype": "int",
+      "implementations": {
+        "DJANGO_MODEL": {
+          "definition": "models.IntegerField",
+          "includeMetadataIntoDefinition": false
+        },
+        "PY_DATACLASS": {
+          "definition": "int",
+          "includeMetadataIntoDefinition": false
+        }
+      }
+    },
+    {
+      "dtype": "float",
+      "implementations": {
+        "DJANGO_MODEL": {
+          "definition": "models.FloatField",
+          "includeMetadataIntoDefinition": false
+        },
+        "PY_DATACLASS": {
+          "definition": "float",
+          "includeMetadataIntoDefinition": false
+        }
+      }
     }
   ]
 }

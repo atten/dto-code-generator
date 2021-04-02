@@ -92,6 +92,10 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
             val metaString = field.metadata.map { entry -> "${entry.key.toSnakeCase()}=${entry.value}" }.joinToString()
             attrs.forEach { entry -> attrs[entry.key] = entry.value.replace("{metadata}", metaString) }
 
+            // include metadata into definition if needed
+            if (dtypeProps.includeMetadataIntoDefinition)
+                field.metadata.forEach { (key, value) -> attrs[key.toSnakeCase()] = value  }
+
             val expression = if (attrs.size == 1 && attrs.containsKey("default")) {
                 // = defaultValue
                 attrs.getValue("default")

@@ -7,6 +7,7 @@ import kotlinx.serialization.*
 data class DtypeAttributesMapping(
     val definition: String,
     val definitionArguments: Map<String, String> = mapOf(),
+    val includeMetadataIntoDefinition: Boolean = true,
     val valuesMapping: Map<String, String> = mapOf(),
     val valueWrapper: String? = null,
     val requiredHeader: String? = null,

@@ -41,10 +41,11 @@ class DjangoModelCodeGenerator: CodeGeneratorInterface {
 
         for (field in entity.fields) {
             val dtypeProps = dtypeAttrs[field.dtype]
-            val attrs = mutableMapOf<String, String>()
             val fieldName = field.name.toSnakeCase()
 
             requireNotNull(dtypeProps) {"Missing extension for dtype '${field.dtype}'"}
+
+            val attrs = dtypeProps.definitionArguments.toMutableMap()
 
             dtypeProps.requiredHeader?.let {
                 addHeader(it)
@@ -93,7 +94,9 @@ class DjangoModelCodeGenerator: CodeGeneratorInterface {
                 attrs["help_text"] = "_('${it.replace("'", "\\'")}')"
             }
 
-            field.metadata.forEach { (key, value) -> attrs[key.toSnakeCase()] = value  }
+            // include metadata into definition if needed
+            if (dtypeProps.includeMetadataIntoDefinition)
+                field.metadata.forEach { (key, value) -> attrs[key.toSnakeCase()] = value  }
 
             val attrsString = attrs.map { entry -> "${entry.key}=${entry.value}" }.joinToString()
             lines.add("    $fieldName = ${dtypeProps.definition}($attrsString)")
