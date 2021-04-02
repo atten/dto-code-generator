@@ -47,6 +47,7 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
             requireNotNull(dtypeProps) {"Missing extension for dtype '${field.dtype}'"}
 
             val attrs = dtypeProps.definitionArguments.toMutableMap()
+            val isMarshmallowField = dtypeProps.definitionArguments.getOrDefault("metadata", "").contains("marshmallow")
 
             dtypeProps.requiredHeader?.let {
                 addHeader(it)
@@ -73,10 +74,15 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
                 lines.add("    # $it")
             }
 
-            if (field.nullable)
+            if (field.nullable) {
                 definition = "t.Optional[$definition]"
+
+                if (isMarshmallowField)
+                    field.metadata["allow_none"] = "True"
+
                 if (field.default == null)
                     attrs["default"] = "None"
+            }
 
             field.enum?.let {
                 val choicesPrefix = fieldName.toSnakeCase().toUpperCase().replace("DEFAULT_", "")
@@ -85,7 +91,8 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
                 val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
                 preLines.add("$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]\n\n")
 
-                field.metadata["validate"] = "[marshmallow_fields.validate.OneOf($choicesName)]"
+                if (isMarshmallowField)
+                    field.metadata["validate"] = "[marshmallow_fields.validate.OneOf($choicesName)]"
             }
 
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
