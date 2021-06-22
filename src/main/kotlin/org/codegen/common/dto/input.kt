@@ -35,6 +35,7 @@ data class Field (
     val longDescription: String? = null,
     val metadata: MutableMap<String, String> = mutableMapOf(),
     val enum: Map<String, String>? = null,  // mappings <CONSTANT, REPRESENTATION> for dtype='enum'
+    val enumPrefix: String? = null,
     val default: String? = null,
     val nullable: Boolean = false,
 //    validators
@@ -58,14 +59,7 @@ data class Entity(
 data class Document(
     val extensions: List<Extension> = listOf(),
     val entities: List<Entity> = listOf(),
-) {
-//    fun merge(another: Document): Document {
-//        return Document(
-//            extensions=extensions + another.extensions,
-//            entities=entities + another.entities,
-//        )
-//    }
-}
+)
 
 fun String.normalize(): String {
     require(this.isNotEmpty()) { "String can't be empty" }
@@ -82,10 +76,10 @@ fun String.normalize(): String {
     // minValue -> min value
     val lastChar = cleaned[cleaned.lastIndex]
     cleaned = cleaned.zipWithNext { a, b -> if (a.isLowerCase() && (b.isLetter() && !b.isLowerCase())) "$a " else a }.joinToString("") + lastChar
-    cleaned = cleaned.toLowerCase()
+    cleaned = cleaned.lowercase()
     return cleaned
 }
 
-fun String.toSnakeCase() = this.normalize().replace(" ", "_")
+fun String.snakeCase() = this.normalize().replace(" ", "_")
 
-fun String.toCamelCase() = this.normalize().split(' ').map { it.capitalize() }.joinToString("")
+fun String.camelCase() = this.normalize().split(' ').map { it.replaceFirstChar { c -> c.uppercase() } }.joinToString("")

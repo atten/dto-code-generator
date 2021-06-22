@@ -31,7 +31,7 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
         val preLines = mutableListOf<String>()
         val lines = mutableListOf(
             "@dataclass",
-            "class ${entity.name.toCamelCase()}:",
+            "class ${entity.name.camelCase()}:",
         )
 
         entity.description?.also {
@@ -42,7 +42,7 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
 
         for (field in entity.fields) {
             val dtypeProps = dtypeAttrs[field.dtype]
-            val fieldName = field.name.toSnakeCase()
+            val fieldName = field.name.snakeCase()
 
             requireNotNull(dtypeProps) {"Missing extension for dtype '${field.dtype}'"}
 
@@ -85,9 +85,9 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
             }
 
             field.enum?.let {
-                val choicesPrefix = fieldName.toSnakeCase().toUpperCase().replace("DEFAULT_", "")
+                val choicesPrefix = (field.enumPrefix ?: fieldName).snakeCase().uppercase()
                 val choicesName = "${choicesPrefix}S"
-                val choices = it.keys.associate { key -> choicesPrefix + "_" + key.toSnakeCase().toUpperCase() to dtypeProps.toGeneratedValue(key) }
+                val choices = it.keys.associate { key -> choicesPrefix + "_" + key.snakeCase().uppercase() to dtypeProps.toGeneratedValue(key) }
                 val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
                 preLines.add("$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]\n\n")
 
@@ -96,12 +96,12 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
             }
 
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
-            val metaString = field.metadata.map { entry -> "${entry.key.toSnakeCase()}=${entry.value}" }.joinToString()
+            val metaString = field.metadata.map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
             attrs.forEach { entry -> attrs[entry.key] = entry.value.replace("{metadata}", metaString) }
 
             // include metadata into definition if needed
             if (dtypeProps.includeMetadataIntoDefinition)
-                field.metadata.forEach { (key, value) -> attrs[key.toSnakeCase()] = value  }
+                field.metadata.forEach { (key, value) -> attrs[key.snakeCase()] = value  }
 
             val expression = if (attrs.size == 1 && attrs.containsKey("default")) {
                 // = defaultValue
@@ -112,7 +112,7 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
                 "field($attrsString)"
             }
 
-            lines.add("    ${field.name.toSnakeCase()}: $definition = $expression")
+            lines.add("    ${field.name.snakeCase()}: $definition = $expression")
         }
 
         return (preLines + lines).joinToString("\n")
