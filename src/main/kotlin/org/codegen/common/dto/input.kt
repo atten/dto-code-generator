@@ -72,10 +72,11 @@ fun String.normalize(): String {
     cleaned = cleaned.trim()
     require(cleaned.isNotEmpty()) { "Normalized string can't be empty: $this" }
 
-    // divide lowercase char and following uppercase with space:
-    // minValue -> min value
+    // prepend uppercase char with space:
+    // minValue -> min Value
+    // MyDTO -> My D T O
     val lastChar = cleaned[cleaned.lastIndex]
-    cleaned = cleaned.zipWithNext { a, b -> if (a.isLowerCase() && (b.isLetter() && !b.isLowerCase())) "$a " else a }.joinToString("") + lastChar
+    cleaned = cleaned.zipWithNext { a, b -> if (b.isLetter() && !b.isLowerCase()) "$a " else a }.joinToString("") + lastChar
     cleaned = cleaned.lowercase()
     return cleaned
 }
