@@ -70,6 +70,10 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
                 }
             }
 
+            field.shortDescription?.let {
+                lines.add("    # $it")
+            }
+
             field.longDescription?.let {
                 lines.add("    # $it")
             }
