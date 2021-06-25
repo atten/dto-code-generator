@@ -80,7 +80,7 @@
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.Decimal({metadata}))"
           },
-          "requiredHeader": "from decimal import Decimal",
+          "requiredHeaders": ["from decimal import Decimal"],
           "valueWrapper": "Decimal(\"%s\")",
           "includeMetadataIntoDefinition": false
         }
@@ -91,7 +91,7 @@
       "implementations": {
         "MARSHMALLOW_DATACLASS": {
           "definition": "datetime",
-          "requiredHeader": "from datetime import datetime",
+          "requiredHeaders": ["from datetime import datetime"],
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.DateTime({metadata}))"
           },

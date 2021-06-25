@@ -47,9 +47,7 @@ class DjangoModelCodeGenerator: CodeGeneratorInterface {
 
             val attrs = dtypeProps.definitionArguments.toMutableMap()
 
-            dtypeProps.requiredHeader?.let {
-                addHeader(it)
-            }
+            dtypeProps.requiredHeaders.forEach { addHeader(it) }
 
             field.default?.let { raw ->
                 dtypeProps.toGeneratedValue(raw).also {

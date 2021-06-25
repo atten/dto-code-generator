@@ -49,9 +49,7 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
 
             val attrs = dtypeProps.definitionArguments.toMutableMap()
 
-            dtypeProps.requiredHeader?.let {
-                addHeader(it)
-            }
+            dtypeProps.requiredHeaders.forEach { addHeader(it) }
 
             var definition = dtypeProps.definition
 

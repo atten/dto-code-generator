@@ -10,7 +10,7 @@ data class DtypeAttributesMapping(
     val includeMetadataIntoDefinition: Boolean = true,
     val valuesMapping: Map<String, String> = mapOf(),
     val valueWrapper: String? = null,
-    val requiredHeader: String? = null,
+    val requiredHeaders: List<String> = listOf(),
 ) {
     fun toGeneratedValue(value: String): String {
         var result = valuesMapping.getOrDefault(value, value)
