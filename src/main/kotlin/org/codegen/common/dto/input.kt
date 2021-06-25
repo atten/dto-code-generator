@@ -75,12 +75,17 @@ fun String.normalize(): String {
     // prepend uppercase char with space:
     // minValue -> min Value
     // MyDTO -> My D T O
-    val lastChar = cleaned[cleaned.lastIndex]
-    cleaned = cleaned.zipWithNext { a, b -> if (b.isLetter() && !b.isLowerCase()) "$a " else a }.joinToString("") + lastChar
+    cleaned = cleaned.zipWithNext { a, b -> if (b.isLetter() && !b.isLowerCase()) "$a " else a }.joinToString("") + cleaned.last()
     cleaned = cleaned.lowercase()
     return cleaned
 }
 
-fun String.snakeCase() = this.normalize().replace(" ", "_")
+fun String.snakeCase() = this.zipWithNext {
+        a, b -> when {
+            (a.isLetter() && a.isLowerCase() && b == ' ') -> "${a}_"
+            a == ' ' -> ""
+            else -> a
+        }
+}.joinToString("") + this.last()
 
 fun String.camelCase() = this.normalize().split(' ').map { it.replaceFirstChar { c -> c.uppercase() } }.joinToString("")

@@ -42,7 +42,7 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
 
         for (field in entity.fields) {
             val dtypeProps = dtypeAttrs[field.dtype]
-            val fieldName = field.name.snakeCase()
+            val fieldName = field.name.normalize().snakeCase()
 
             requireNotNull(dtypeProps) {"Missing extension for dtype '${field.dtype}'"}
 
@@ -100,7 +100,7 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
             }
 
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
-            val metaString = field.metadata.map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
+            val metaString = field.metadata.map { entry -> "${entry.key.normalize().snakeCase()}=${entry.value}" }.joinToString()
             attrs.forEach { entry -> attrs[entry.key] = entry.value.replace("{metadata}", metaString) }
 
             // include metadata into definition if needed
@@ -116,7 +116,7 @@ class PyDataclassCodeGenerator : CodeGeneratorInterface {
                 "field($attrsString)"
             }
 
-            lines.add("    ${field.name.snakeCase()}: $definition = $expression")
+            lines.add("    ${fieldName}: $definition = $expression")
         }
 
         return (preLines + lines).joinToString("\n")

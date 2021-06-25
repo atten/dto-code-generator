@@ -41,7 +41,7 @@ class DjangoModelCodeGenerator: CodeGeneratorInterface {
 
         for (field in entity.fields) {
             val dtypeProps = dtypeAttrs[field.dtype]
-            val fieldName = field.name.snakeCase()
+            val fieldName = field.name.normalize().snakeCase()
 
             requireNotNull(dtypeProps) {"Missing extension for dtype '${field.dtype}'"}
 
@@ -96,7 +96,7 @@ class DjangoModelCodeGenerator: CodeGeneratorInterface {
 
             // include metadata into definition if needed
             if (dtypeProps.includeMetadataIntoDefinition)
-                field.metadata.forEach { (key, value) -> attrs[key.snakeCase()] = value  }
+                field.metadata.forEach { (key, value) -> attrs[key.normalize().snakeCase()] = value  }
 
             val attrsString = attrs.map { entry -> "${entry.key}=${entry.value}" }.joinToString()
             lines.add("    $fieldName = ${dtypeProps.definition}($attrsString)")
