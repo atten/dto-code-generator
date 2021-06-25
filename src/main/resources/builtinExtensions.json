@@ -10,12 +10,16 @@
             "false": "False"
           }
         },
-        "PY_DATACLASS": {
+        "MARSHMALLOW_DATACLASS": {
           "definition": "bool",
           "valuesMapping": {
             "true": "True",
             "false": "False"
-          }
+          },
+          "definitionArguments": {
+            "metadata" : "dict(marshmallow_field=fields.Boolean({metadata}))"
+          },
+          "includeMetadataIntoDefinition": false
         }
       }
     },
@@ -26,9 +30,13 @@
           "definition": "models.CharField",
           "valueWrapper": "\"%s\""
         },
-        "PY_DATACLASS": {
+        "MARSHMALLOW_DATACLASS": {
           "definition": "str",
-          "valueWrapper": "\"%s\""
+          "definitionArguments": {
+            "metadata" : "dict(marshmallow_field=fields.String({metadata}))"
+          },
+          "valueWrapper": "\"%s\"",
+          "includeMetadataIntoDefinition": false
         }
       }
     },
@@ -39,8 +47,11 @@
           "definition": "models.IntegerField",
           "includeMetadataIntoDefinition": false
         },
-        "PY_DATACLASS": {
+        "MARSHMALLOW_DATACLASS": {
           "definition": "int",
+          "definitionArguments": {
+            "metadata" : "dict(marshmallow_field=fields.Integer({metadata}))"
+          },
           "includeMetadataIntoDefinition": false
         }
       }
@@ -52,8 +63,38 @@
           "definition": "models.FloatField",
           "includeMetadataIntoDefinition": false
         },
-        "PY_DATACLASS": {
+        "MARSHMALLOW_DATACLASS": {
           "definition": "float",
+          "definitionArguments": {
+            "metadata" : "dict(marshmallow_field=fields.Float({metadata}))"
+          },
+          "includeMetadataIntoDefinition": false
+        }
+      }
+    },
+    {
+      "dtype": "decimal",
+      "implementations": {
+        "MARSHMALLOW_DATACLASS": {
+          "definition": "Decimal",
+          "definitionArguments": {
+            "metadata" : "dict(marshmallow_field=fields.Decimal({metadata}))"
+          },
+          "requiredHeader": "from decimal import Decimal",
+          "valueWrapper": "Decimal(\"%s\")",
+          "includeMetadataIntoDefinition": false
+        }
+      }
+    },
+    {
+      "dtype": "datetime",
+      "implementations": {
+        "MARSHMALLOW_DATACLASS": {
+          "definition": "datetime",
+          "requiredHeader": "from datetime import datetime",
+          "definitionArguments": {
+            "metadata" : "dict(marshmallow_field=fields.DateTime({metadata}))"
+          },
           "includeMetadataIntoDefinition": false
         }
       }

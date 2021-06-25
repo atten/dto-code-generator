@@ -64,7 +64,7 @@ fun main(args: Array<String>) {
 
         // add dtype extensions to specified generator
         for (extension in document.extensions) {
-            extension.implementations[params.target]?.also { generator.addDtypeExtension(extension.dtype, it) }
+            extension.implementations[params.target]?.let { generator.addDtypeExtension(extension.dtype, it) }
         }
 
         // add entities to specified generator
