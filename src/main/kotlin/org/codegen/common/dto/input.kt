@@ -38,17 +38,32 @@ data class Field (
     val enumPrefix: String? = null,
     val default: String? = null,
     val nullable: Boolean = false,
-//    validators
+)
+
+@Serializable
+data class Validator (
+    val message: String,    // error message
+    val conditions: List<List<String>>,
+)
+
+@Serializable
+data class Property (
+    val name: String,
+    val dtype: String,
+    val expression: List<String>,
 )
 
 @Serializable
 data class Entity(
     val name: String,
     val fields: List<Field>,
+    val validators: List<Validator> = listOf(),
+    val properties: List<Property> = listOf(),
     val description: String? = null,
     val prefix: String? = null,
 ) {
     val actualPrefix = prefix ?: name
+    val fieldNames = fields.map { it.name }
 
     fun prefixedFields(): Entity {
         return this.copy(fields = fields.map { it.copy(name = "$actualPrefix ${it.name}") })

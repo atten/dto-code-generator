@@ -1,0 +1,41 @@
+stages:
+  - build
+  - docker-push
+
+variables:
+  IMAGE: '$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG'
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+cache:
+  key: $CI_COMMIT_REF_SLUG
+  paths:
+    - .gradle/
+    - build/
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+
+build:
+  stage: build
+  image: openjdk:11
+  only:
+    - master
+  script:
+    - ./gradlew jibBuildTar --image=$IMAGE
+    # build standalone jar and save as job artifact
+    - ./gradlew build
+  artifacts:
+    paths:
+      - build/libs/
+
+docker-push:
+  stage: docker-push
+  image: docker:stable
+  only:
+    - master
+  services:
+    - docker:stable-dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker load --input build/jib-image.tar
+    - docker push $IMAGE

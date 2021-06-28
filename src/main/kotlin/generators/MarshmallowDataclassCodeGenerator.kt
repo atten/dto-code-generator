@@ -1,6 +1,7 @@
 package generators
 
 import org.codegen.common.dto.*
+import java.lang.RuntimeException
 import java.util.*
 
 class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
@@ -115,7 +116,52 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
             lines.add("    ${fieldName}: $definition = $expression")
         }
 
+        if (entity.validators.isNotEmpty()) {
+            lines.add("")
+            lines.add("    def __post_init__(self):")
+        }
+
+        entity.validators
+            .map { buildValidator(it, entity)}
+            .map { it.replace("\n", "\n        ") }
+            .forEach { lines.add("        $it") }
+
+        if (entity.properties.isNotEmpty()) {
+            lines.add("")
+        }
+
+        entity.properties
+            .map { buildProperty(it, entity) }
+            .map { it.replace("\n", "\n    ") }
+            .forEach { lines.add("    $it") }
+
         return (preLines + lines).joinToString("\n")
+    }
+
+    private fun buildProperty(property: Property, entity: Entity): String {
+        val methodName = property.name.normalize().snakeCase()
+        val returnName = dtypeAttrs.getValue(property.dtype).definition
+        val expression = buildExpression(property.expression, entity)
+        return "@property\ndef ${methodName}(self) -> $returnName:\n    return $expression"
+    }
+
+    private fun buildValidator(validator: Validator, entity: Entity): String {
+        addHeader("import marshmallow")
+        return validator.conditions
+            .map { buildExpression(it, entity) }
+            .joinToString("\n  ") { "if not($it):\n    raise marshmallow.ValidationError(\"${validator.message}\")" }
+    }
+
+    private fun buildExpression(primitives: List<String>, entity: Entity) = primitives.joinToString(" ") { buildPrimitive(it, entity) }
+
+    private fun buildPrimitive(key: String, entity: Entity): String = when {
+        key == "OR" -> "or"
+        key == "NOT" -> "not"
+        key == "NOW" -> "now()"
+        key.first().category == CharCategory.MATH_SYMBOL -> key
+        key.first().isDigit() -> key
+        key in entity.fieldNames -> "self.${key.normalize().snakeCase()}"
+        else -> throw RuntimeException("Unrecognized primitive: $key")
     }
 
     override fun build(): String {
