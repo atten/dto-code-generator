@@ -93,7 +93,7 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
             field.enum?.let { enum ->
                 val choicesPrefix = (field.enumPrefix ?: fieldName).snakeCase().uppercase()
                 val choicesName = "${choicesPrefix}S"
-                val choices = enum.keys.associate { key -> choicesPrefix + "_" + key.snakeCase().uppercase() to dtypeProps.toGeneratedValue(key) }
+                val choices = enum.keys.associate { key -> choicesPrefix + "_" + key.normalize().snakeCase().uppercase() to dtypeProps.toGeneratedValue(key) }
 
                 definedNames.add(choicesName)
                 choices.keys.forEach { definedNames.add(it) }

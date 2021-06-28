@@ -90,8 +90,8 @@ fun String.normalize(): String {
     // prepend uppercase char with space:
     // minValue -> min Value
     // MyDTO -> My D T O
-    cleaned = cleaned.zipWithNext { a, b -> if (b.isLetter() && !b.isLowerCase()) "$a " else a }.joinToString("") + cleaned.last()
-    cleaned = cleaned.lowercase()
+    cleaned = cleaned.zipWithNext { a, b -> if (b.isLetter() && !b.isLowerCase()) "$a " else a.lowercase() }.joinToString("") + cleaned.last()
+//    cleaned = cleaned.lowercase()
     return cleaned
 }
 
