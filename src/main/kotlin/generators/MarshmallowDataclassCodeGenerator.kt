@@ -14,6 +14,7 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
         "from marshmallow import fields as marshmallow_fields",
         "import typing as t",
     )
+    private val definedNames = mutableListOf<String>()
 
     override fun addEntity(entity: Entity) {
         if (!entities.contains(entity))
@@ -31,10 +32,13 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
 
     private fun buildEntity(entity: Entity): String {
         val preLines = mutableListOf<String>()
+        val className =entity.name.camelCase()
         val lines = mutableListOf(
             "@dataclass",
-            "class ${entity.name.camelCase()}:",
+            "class ${className}:",
         )
+
+        definedNames.add(className)
 
         entity.description?.also {
             lines.add("    \"\"\"")
@@ -86,10 +90,14 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
                     attrs["default"] = "None"
             }
 
-            field.enum?.let {
+            field.enum?.let { enum ->
                 val choicesPrefix = (field.enumPrefix ?: fieldName).snakeCase().uppercase()
                 val choicesName = "${choicesPrefix}S"
-                val choices = it.keys.associate { key -> choicesPrefix + "_" + key.snakeCase().uppercase() to dtypeProps.toGeneratedValue(key) }
+                val choices = enum.keys.associate { key -> choicesPrefix + "_" + key.snakeCase().uppercase() to dtypeProps.toGeneratedValue(key) }
+
+                definedNames.add(choicesName)
+                choices.keys.forEach { definedNames.add(it) }
+
                 val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
                 preLines.add("$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]\n\n")
 
@@ -158,6 +166,7 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
         key == "OR" -> "or"
         key == "NOT" -> "not"
         key == "NOW" -> "now()"
+        key == "-" -> "-"
         key.first().category == CharCategory.MATH_SYMBOL -> key
         key.first().isDigit() -> key
         key in entity.fieldNames -> "self.${key.normalize().snakeCase()}"
@@ -166,8 +175,9 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
 
     override fun build(): String {
         val builtEntities = entities.map { buildEntity(it) }
+        val allDefinitions = definedNames.joinToString(",\n", "\n\n__all__ = [\n", "\n]") { "    \"${it}\"" }
 
         return headers.joinToString("\n", postfix = "\n\n\n") +
-                builtEntities.joinToString("\n\n\n", postfix = "\n")
+                builtEntities.joinToString("\n\n\n", postfix = "\n") + allDefinitions
     }
 }
