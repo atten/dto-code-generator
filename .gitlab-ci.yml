@@ -15,10 +15,13 @@ build:
   only:
     - master
   cache:
-    key: $CI_COMMIT_REF_SLUG
-    paths:
-      - .gradle/
-      - build/
+    - key: $CI_COMMIT_REF_SLUG
+      paths:
+        - .gradle/
+    - key: $CI_PIPELINE_ID
+      policy: push
+      paths:
+        - build/
   script:
     - ./gradlew jibBuildTar --image=$IMAGE
     # build standalone jar and save as job artifact
@@ -33,7 +36,7 @@ docker-push:
   only:
     - master
   cache:
-    key: $CI_COMMIT_REF_SLUG
+    key: $CI_PIPELINE_ID
     policy: pull
     paths:
       - build/
