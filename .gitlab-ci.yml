@@ -35,13 +35,15 @@ docker-push:
   image: docker:stable
   only:
     - master
-  cache:
-    key: $CI_PIPELINE_ID
-    policy: pull
-    paths:
-      - build/
+#  cache:
+#    key: $CI_PIPELINE_ID
+#    policy: pull
+#    paths:
+#      - build/
   services:
     - docker:stable-dind
+  variables:
+    GIT_STRATEGY: none
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker load --input build/jib-image.tar
