@@ -65,7 +65,7 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
 
             field.default?.let { raw ->
                 dtypeProps.toGeneratedValue(raw).also {
-                    if ("[".contains(it[0])) {
+                    if ("[{".contains(it[0])) {
                         // complex value (list/map/etc) should be inserted via function above class
                         val callableName = "default_$fieldName"
                         preLines.add("def $callableName():")
@@ -171,7 +171,7 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
         key == "AND" -> "and"
         key == "NOT" -> "not"
         key == "NOW" -> "now()"
-        key == "-" -> "-"
+        key.length == 1 && "-/*".contains(key) -> key
         key.first().category == CharCategory.MATH_SYMBOL -> key
         key.first().isDigit() -> key
         key in entity.fieldNames -> "self.${key.normalize().snakeCase()}"

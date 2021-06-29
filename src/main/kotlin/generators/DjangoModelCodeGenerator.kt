@@ -50,7 +50,7 @@ class DjangoModelCodeGenerator: CodeGeneratorInterface {
 
             field.default?.let { raw ->
                 dtypeProps.toGeneratedValue(raw).also {
-                    if ("[".contains(it[0])) {
+                    if ("[{".contains(it[0])) {
                         // complex value (list/map/etc) should be inserted via function above class
                         val callableName = "default_$fieldName"
                         preLines.add("def $callableName():")
