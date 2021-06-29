@@ -59,6 +59,7 @@ data class Entity(
     val fields: List<Field>,
     val validators: List<Validator> = listOf(),
     val properties: List<Property> = listOf(),
+    val parent: String? = null,
     val description: String? = null,
     val prefix: String? = null,
 ) {
@@ -104,3 +105,12 @@ fun String.snakeCase() = this.zipWithNext {
 }.joinToString("") + this.last()
 
 fun String.camelCase() = this.normalize().split(' ').map { it.replaceFirstChar { c -> c.uppercase() } }.joinToString("")
+
+/**
+ * "text_${SHELL}" -> "text_/bin/bash/"
+ */
+fun String.substituteEnvVars(): String {
+    var str = this
+    System.getenv().forEach { (key, value) -> str = str.replace("\${${key}}", value) }
+    return str
+}

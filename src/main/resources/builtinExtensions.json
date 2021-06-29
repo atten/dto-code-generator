@@ -19,6 +19,7 @@
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.Boolean({metadata}))"
           },
+          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"],
           "includeMetadataIntoDefinition": false
         }
       }
@@ -35,6 +36,7 @@
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.String({metadata}))"
           },
+          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"],
           "valueWrapper": "\"%s\"",
           "includeMetadataIntoDefinition": false
         }
@@ -52,6 +54,7 @@
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.Integer({metadata}))"
           },
+          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"],
           "includeMetadataIntoDefinition": false
         }
       }
@@ -68,6 +71,7 @@
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.Float({metadata}))"
           },
+          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"],
           "includeMetadataIntoDefinition": false
         }
       }
@@ -80,7 +84,10 @@
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.Decimal({metadata}))"
           },
-          "requiredHeaders": ["from decimal import Decimal"],
+          "requiredHeaders": [
+            "from decimal import Decimal",
+            "import ${FIELDS_MODULE} as fields"
+          ],
           "valueWrapper": "Decimal(\"%s\")",
           "includeMetadataIntoDefinition": false
         }
@@ -91,7 +98,10 @@
       "implementations": {
         "MARSHMALLOW_DATACLASS": {
           "definition": "datetime",
-          "requiredHeaders": ["from datetime import datetime"],
+          "requiredHeaders": [
+            "from datetime import datetime",
+            "import ${FIELDS_MODULE} as fields"
+          ],
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.DateTime({metadata}))"
           },
