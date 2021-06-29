@@ -35,11 +35,11 @@ docker-push:
   image: docker:stable
   only:
     - master
-#  cache:
-#    key: $CI_PIPELINE_ID
-#    policy: pull
-#    paths:
-#      - build/
+  cache:
+    key: $CI_PIPELINE_ID
+    policy: pull
+    paths:
+      - build/
   services:
     - docker:stable-dind
   variables:
