@@ -6,12 +6,6 @@ variables:
   IMAGE: '$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG'
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
-cache:
-  key: $CI_COMMIT_REF_SLUG
-  paths:
-    - .gradle/
-    - build/
-
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
 
@@ -20,6 +14,11 @@ build:
   image: openjdk:11
   only:
     - master
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - .gradle/
+      - build/
   script:
     - ./gradlew jibBuildTar --image=$IMAGE
     # build standalone jar and save as job artifact
@@ -33,6 +32,11 @@ docker-push:
   image: docker:stable
   only:
     - master
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    policy: pull
+    paths:
+      - build/
   services:
     - docker:stable-dind
   script:
