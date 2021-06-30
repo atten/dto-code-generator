@@ -65,7 +65,9 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
 
             field.default?.let { raw ->
                 dtypeProps.toGeneratedValue(raw).also {
-                    if ("[{".contains(it[0])) {
+                    if (it == EMPTY_PLACEHOLDER) {
+                        attrs["default_factory"] = definition
+                    } else if ("[{".contains(it[0])) {
                         // complex value (list/map/etc) should be inserted via function above class
                         val callableName = "default_$fieldName"
                         preLines.add("def $callableName():")
@@ -93,6 +95,10 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
 
                 if (field.default == null)
                     attrs["default"] = "None"
+            }
+
+            field.serializedName?.let {
+                field.metadata["data_key"] = "\"$it\""
             }
 
             field.enum?.let { enum ->

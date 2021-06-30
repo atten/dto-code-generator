@@ -38,6 +38,7 @@ data class Field (
     val enumPrefix: String? = null,
     val default: String? = null,
     val nullable: Boolean = false,
+    val serializedName: String? = null,     // serialization/deserialization key
 )
 
 @Serializable
