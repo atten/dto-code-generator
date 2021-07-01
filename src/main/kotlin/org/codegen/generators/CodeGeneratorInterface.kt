@@ -1,6 +1,6 @@
-package generators
+package org.codegen.generators
 
-import org.codegen.common.dto.*
+import org.codegen.dto.*
 
 const val EMPTY_PLACEHOLDER = "EMPTY"
 

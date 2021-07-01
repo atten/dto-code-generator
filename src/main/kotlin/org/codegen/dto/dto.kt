@@ -1,6 +1,6 @@
-package org.codegen.common.dto
+package org.codegen.dto
 
-import generators.*
+import org.codegen.generators.*
 import kotlinx.serialization.*
 
 @Serializable
@@ -105,7 +105,7 @@ fun String.snakeCase() = this.zipWithNext {
         }
 }.joinToString("") + this.last()
 
-fun String.camelCase() = this.normalize().split(' ').map { it.replaceFirstChar { c -> c.uppercase() } }.joinToString("")
+fun String.camelCase() = this.normalize().split(' ').joinToString("") { it.replaceFirstChar { c -> c.uppercase() } }
 
 /**
  * "text_${SHELL}" -> "text_/bin/bash/"

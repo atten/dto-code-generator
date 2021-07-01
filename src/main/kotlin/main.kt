@@ -1,9 +1,9 @@
 import com.beust.jcommander.*
-import generators.*
+import org.codegen.generators.*
 import java.io.File
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
-import org.codegen.common.dto.*
+import org.codegen.dto.*
 import kotlin.reflect.full.primaryConstructor
 
 @Parameters(commandDescription = "Console tool which generates language-specific data classes and validators from JSON-like schema")
@@ -49,7 +49,7 @@ fun main(args: Array<String>) {
 
     // include input files / directories
     for (path in params.inputFiles) {
-        val filePaths = File(path).listFiles()?.map { it.path }?.sorted()
+        val filePaths = File(path).listFiles()?.map { it.path }?.filter { File(it).listFiles() == null }?.sorted()
         if (filePaths != null) {
             // path is a directory
             allInputFiles += filePaths
