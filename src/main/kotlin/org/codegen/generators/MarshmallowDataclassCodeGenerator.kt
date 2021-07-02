@@ -100,6 +100,10 @@ class MarshmallowDataclassCodeGenerator : CodeGeneratorInterface {
                 field.metadata["data_key"] = "\"$it\""
             }
 
+            if (field.excludeFromSerialization) {
+                field.metadata["load_only"] = "True"
+            }
+
             field.enum?.let { enum ->
                 val choicesPrefix = (field.enumPrefix ?: fieldName).snakeCase().uppercase()
                 val choicesName = "${choicesPrefix}S"
