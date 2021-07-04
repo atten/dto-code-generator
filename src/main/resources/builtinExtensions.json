@@ -3,14 +3,14 @@
     {
       "dtype": "bool",
       "implementations": {
-        "DJANGO_MODEL": {
+        "PY_DJANGO_MODEL": {
           "definition": "models.BooleanField",
           "valuesMapping": {
             "true": "True",
             "false": "False"
           }
         },
-        "MARSHMALLOW_DATACLASS": {
+        "PY_MARSHMALLOW_DATACLASS": {
           "definition": "bool",
           "valuesMapping": {
             "true": "True",
@@ -27,11 +27,11 @@
     {
       "dtype": "str",
       "implementations": {
-        "DJANGO_MODEL": {
+        "PY_DJANGO_MODEL": {
           "definition": "models.CharField",
           "valueWrapper": "\"%s\""
         },
-        "MARSHMALLOW_DATACLASS": {
+        "PY_MARSHMALLOW_DATACLASS": {
           "definition": "str",
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.String({metadata}))"
@@ -45,11 +45,11 @@
     {
       "dtype": "int",
       "implementations": {
-        "DJANGO_MODEL": {
+        "PY_DJANGO_MODEL": {
           "definition": "models.IntegerField",
           "includeMetadataIntoDefinition": false
         },
-        "MARSHMALLOW_DATACLASS": {
+        "PY_MARSHMALLOW_DATACLASS": {
           "definition": "int",
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.Integer({metadata}))"
@@ -62,11 +62,11 @@
     {
       "dtype": "float",
       "implementations": {
-        "DJANGO_MODEL": {
+        "PY_DJANGO_MODEL": {
           "definition": "models.FloatField",
           "includeMetadataIntoDefinition": false
         },
-        "MARSHMALLOW_DATACLASS": {
+        "PY_MARSHMALLOW_DATACLASS": {
           "definition": "float",
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.Float({metadata}))"
@@ -79,7 +79,7 @@
     {
       "dtype": "decimal",
       "implementations": {
-        "MARSHMALLOW_DATACLASS": {
+        "PY_MARSHMALLOW_DATACLASS": {
           "definition": "Decimal",
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.Decimal({metadata}))"
@@ -96,7 +96,7 @@
     {
       "dtype": "datetime",
       "implementations": {
-        "MARSHMALLOW_DATACLASS": {
+        "PY_MARSHMALLOW_DATACLASS": {
           "definition": "datetime",
           "requiredHeaders": [
             "from datetime import datetime",

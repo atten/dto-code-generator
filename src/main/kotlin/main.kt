@@ -1,5 +1,4 @@
 import com.beust.jcommander.*
-import org.codegen.generators.*
 import java.io.File
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
@@ -42,7 +41,7 @@ fun main(args: Array<String>) {
     }
 
     val format = Json { ignoreUnknownKeys = true; isLenient = true }
-    val generatorClass = params.target.generator_class
+    val generatorClass = params.target.generatorClass
     val generator = generatorClass.primaryConstructor!!.call()
     val defaultInputFile = generatorClass.java.getResource("/builtinExtensions.json")!!.path
     val allInputFiles = mutableListOf(defaultInputFile)
@@ -63,17 +62,16 @@ fun main(args: Array<String>) {
         val document = format.decodeFromString<Document>(File(inputFile).readText())
 
         // add dtype extensions to specified generator
-        for (extension in document.extensions) {
-            extension.implementations[params.target]?.let { generator.addDtypeExtension(extension.dtype, it) }
-        }
+        document.extensions
+            .forEach { extension ->
+                extension.implementations[params.target]
+                    ?.let { generator.addDtypeExtension(extension.dtype, it) }
+            }
 
         // add entities to specified generator
-        for (entity in document.entities) {
-            var _entity = entity
-            if (params.usePrefixed)
-                _entity = entity.prefixedFields()
-            generator.addEntity(_entity)
-        }
+        document.entities
+            .map { if (params.usePrefixed) it.prefixedFields() else it }
+            .forEach { generator.addEntity(it) }
     }
 
     // output to stdout

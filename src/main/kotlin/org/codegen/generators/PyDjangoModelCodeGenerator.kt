@@ -2,7 +2,7 @@ package org.codegen.generators
 
 import org.codegen.dto.*
 
-class DjangoModelCodeGenerator: CodeGeneratorInterface {
+class PyDjangoModelCodeGenerator: CodeGeneratorInterface {
     private val dtypeAttrs = mutableMapOf<String, DtypeAttributesMapping>()
     private val entities = mutableListOf<Entity>()
     private val headers = mutableListOf(

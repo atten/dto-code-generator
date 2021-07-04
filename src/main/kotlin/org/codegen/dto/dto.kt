@@ -2,6 +2,14 @@ package org.codegen.dto
 
 import org.codegen.generators.*
 import kotlinx.serialization.*
+import kotlin.reflect.KClass
+
+@Suppress("unused")
+enum class AllGeneratorsEnum(val generatorClass: KClass<out CodeGeneratorInterface>) {
+    PY_DJANGO_MODEL(PyDjangoModelCodeGenerator::class),
+    PY_MARSHMALLOW_DATACLASS(PyMarshmallowDataclassCodeGenerator::class);
+}
+
 
 @Serializable
 data class DtypeAttributesMapping(
