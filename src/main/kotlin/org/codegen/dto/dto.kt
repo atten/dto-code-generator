@@ -5,7 +5,9 @@ import kotlinx.serialization.*
 import kotlin.reflect.KClass
 
 @Suppress("unused")
-enum class AllGeneratorsEnum(val generatorClass: KClass<out CodeGeneratorInterface>) {
+enum class AllGeneratorsEnum(val generatorClass: KClass<out AbstractCodeGenerator>) {
+    KT_DATACLASS(KtDataclassCodeGenerator::class),
+    KT_KTORM_TABLE(KtKtormTableCodeGenerator::class),
     PY_DJANGO_MODEL(PyDjangoModelCodeGenerator::class),
     PY_MARSHMALLOW_DATACLASS(PyMarshmallowDataclassCodeGenerator::class);
 }
@@ -114,7 +116,9 @@ fun String.snakeCase() = this.zipWithNext {
         }
 }.joinToString("") + this.last()
 
-fun String.camelCase() = this.normalize().split(' ').joinToString("") { it.replaceFirstChar { c -> c.uppercase() } }
+fun String.camelCase() = this.normalize().split(' ').joinToString("") { it.capitalize() }.replaceFirstChar { it.lowercase() }
+
+fun String.capitalize() = this.replaceFirstChar { it.uppercase() }
 
 /**
  * "text_${SHELL}" -> "text_/bin/bash/"

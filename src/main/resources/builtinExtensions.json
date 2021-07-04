@@ -3,6 +3,15 @@
     {
       "dtype": "bool",
       "implementations": {
+        "KT_DATACLASS": {
+          "definition": "Boolean"
+        },
+        "KT_KTORM_TABLE": {
+          "definition": "boolean",
+          "definitionArguments": {
+            "valueIfNull": "false"
+          }
+        },
         "PY_DJANGO_MODEL": {
           "definition": "models.BooleanField",
           "valuesMapping": {
@@ -27,6 +36,17 @@
     {
       "dtype": "str",
       "implementations": {
+        "KT_DATACLASS": {
+          "definition": "String",
+          "valueWrapper": "\"%s\""
+        },
+        "KT_KTORM_TABLE": {
+          "definition": "varchar",
+          "valueWrapper": "\"%s\"",
+          "definitionArguments": {
+            "valueIfNull": ""
+          }
+        },
         "PY_DJANGO_MODEL": {
           "definition": "models.CharField",
           "valueWrapper": "\"%s\""
@@ -45,6 +65,15 @@
     {
       "dtype": "int",
       "implementations": {
+        "KT_DATACLASS": {
+          "definition": "Int"
+        },
+        "KT_KTORM_TABLE": {
+          "definition": "int",
+          "definitionArguments": {
+            "valueIfNull": 0
+          }
+        },
         "PY_DJANGO_MODEL": {
           "definition": "models.IntegerField",
           "includeMetadataIntoDefinition": false
@@ -62,6 +91,16 @@
     {
       "dtype": "float",
       "implementations": {
+        "KT_DATACLASS": {
+          "definition": "Float"
+        },
+        "KT_KTORM_TABLE": {
+          "definition": "float",
+          "valueWrapper": "%sF",
+          "definitionArguments": {
+            "valueIfNull": 0
+          }
+        },
         "PY_DJANGO_MODEL": {
           "definition": "models.FloatField",
           "includeMetadataIntoDefinition": false
@@ -96,6 +135,21 @@
     {
       "dtype": "datetime",
       "implementations": {
+        "KT_DATACLASS": {
+          "definition": "LocalDateTime",
+          "requiredHeaders": [
+            "import java.time.LocalDateTime"
+          ]
+        },
+        "KT_KTORM_TABLE": {
+          "definition": "datetime",
+          "requiredHeaders": [
+            "import java.time.LocalDateTime"
+          ],
+          "definitionArguments": {
+            "valueIfNull": "LocalDateTime.now()"
+          }
+        },
         "PY_MARSHMALLOW_DATACLASS": {
           "definition": "datetime",
           "requiredHeaders": [
