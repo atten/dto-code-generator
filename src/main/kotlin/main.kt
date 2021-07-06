@@ -3,6 +3,7 @@ import java.io.File
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import org.codegen.dto.*
+import org.codegen.generators.AllGeneratorsEnum
 import kotlin.reflect.full.primaryConstructor
 
 @Parameters(commandDescription = "Console tool which generates language-specific data classes and validators from JSON-like schema")
@@ -67,14 +68,14 @@ fun main(args: Array<String>) {
     val includedFiles = params.includeFiles.extractFiles().toMutableList().also { it.add(defaultInputFile) }
     val inputFiles = params.inputFiles.extractFiles()
 
-    // add dtype extensions to specified generator
-    (includedFiles + inputFiles)
+    includedFiles
         .map { format.decodeFromString<Document>(File(it).readText()) }
         .forEach { document ->
+            // add dtype extensions to specified generator
             document.extensions
                 .forEach { extension ->
-                    extension.implementations[params.target]
-                        ?.let { generator.addDtypeExtension(extension.dtype, it) }
+                    extension.getForGenerator(params.target)
+                        ?.let { generator.addDataType(extension.dtype, it) }
                 }
 
             // include entities to specified generator (do not add them to output)
@@ -82,13 +83,24 @@ fun main(args: Array<String>) {
                 .forEach { generator.addEntity(it, output=false) }
         }
 
-    // add entities to specified generator
     inputFiles
         .map { format.decodeFromString<Document>(File(it).readText()) }
         .forEach { document ->
+            // add dtype extensions to specified generator
+            document.extensions
+                .forEach { extension ->
+                    extension.getForGenerator(params.target)
+                        ?.let { generator.addDataType(extension.dtype, it) }
+                }
+
+            // include entities to specified generator
             document.entities
                 .map { if (params.usePrefixed) it.prefixedFields() else it }
                 .forEach { generator.addEntity(it) }
+
+            // add root-level methods to default entity
+            document.methods
+                .forEach { generator.defaultEntity.methods.add(it) }
         }
 
     // output to stdout

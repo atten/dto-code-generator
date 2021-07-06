@@ -2,19 +2,11 @@ package org.codegen.dto
 
 import org.codegen.generators.*
 import kotlinx.serialization.*
-import kotlin.reflect.KClass
 
-@Suppress("unused")
-enum class AllGeneratorsEnum(val generatorClass: KClass<out AbstractCodeGenerator>) {
-    KT_DATACLASS(KtDataclassCodeGenerator::class),
-    KT_KTORM_TABLE(KtKtormTableCodeGenerator::class),
-    PY_DJANGO_MODEL(PyDjangoModelCodeGenerator::class),
-    PY_MARSHMALLOW_DATACLASS(PyMarshmallowDataclassCodeGenerator::class);
-}
-
+const val UNSET = "<UNSET>"
 
 @Serializable
-data class DtypeAttributesMapping(
+data class DataType(
     val definition: String,
     val definitionArguments: Map<String, String> = mapOf(),
     val includeMetadataIntoDefinition: Boolean = true,
@@ -34,8 +26,12 @@ data class DtypeAttributesMapping(
 @Serializable
 data class Extension(
     val dtype: String,
-    val implementations: Map<AllGeneratorsEnum, DtypeAttributesMapping>
-)
+    val implementations: Map<AllGeneratorsEnum, DataType>
+) {
+    fun getForGenerator(type: AllGeneratorsEnum): DataType? {
+        return implementations[type] ?: type.dtypeAlias()?.let { implementations[it] }
+    }
+}
 
 @Serializable
 data class Field (
@@ -46,11 +42,35 @@ data class Field (
     val metadata: MutableMap<String, String> = mutableMapOf(),
     val enum: Map<String, String>? = null,  // mappings <CONSTANT, REPRESENTATION> for dtype='enum'
     val enumPrefix: String? = null,
-    val default: String? = null,
+    val default: String? = UNSET,
     val nullable: Boolean = false,
+    val multiple: Boolean = false,
     val serializedName: String? = null,     // serialization/deserialization key
     val excludeFromSerialization: Boolean = false,
 )
+
+@Serializable
+data class MethodArgument (
+    val name: String,
+    val dtype: String,
+    val description: String? = null,
+    val enum: Map<String, String>? = null,  // mappings <CONSTANT, REPRESENTATION> for dtype='enum'
+    val enumPrefix: String? = null,
+    val default: String? = UNSET,
+    val nullable: Boolean = false,
+    val multiple: Boolean = false,
+) {
+    fun toField() = Field(
+        name = name,
+        dtype = dtype,
+        longDescription = description,
+        enum = enum,
+        enumPrefix = enumPrefix,
+        nullable = nullable,
+        multiple = multiple,
+        default = default
+    )
+}
 
 @Serializable
 data class Validator (
@@ -66,11 +86,22 @@ data class Property (
 )
 
 @Serializable
+data class Method(
+    val name: String,
+    val description: String? = null,
+    val arguments: List<MethodArgument>,
+    val dtype: String,  // return value dtype
+) {
+    fun toEntity() = Entity(name="$name request", fields = arguments.map { it.toField() })
+}
+
+@Serializable
 data class Entity(
     val name: String,
-    val fields: List<Field>,
+    val fields: List<Field> = listOf(),
     val validators: List<Validator> = listOf(),
     val properties: List<Property> = listOf(),
+    val methods: MutableList<Method> = mutableListOf(),
     val parent: String? = null,
     val description: String? = null,
     val prefix: String? = null,
@@ -87,44 +118,6 @@ data class Entity(
 data class Document(
     val extensions: List<Extension> = listOf(),
     val entities: List<Entity> = listOf(),
+    // root-level methods will be inserted to default entity
+    val methods: List<Method> = listOf(),
 )
-
-fun String.normalize(): String {
-    require(this.isNotEmpty()) { "String can't be empty" }
-    require(this[0].isLetter() or this[0].isWhitespace()) { "String must start with letter: '$this'" }
-
-    var cleaned = this.map { if (it.isLetterOrDigit()) it else ' '}.joinToString("")
-    while (cleaned.contains("  "))
-        cleaned = cleaned.replace("  ", " ")
-
-    cleaned = cleaned.trim()
-    require(cleaned.isNotEmpty()) { "Normalized string can't be empty: $this" }
-
-    // prepend uppercase char with space:
-    // minValue -> min Value
-    // MyDTO -> My D T O
-    cleaned = cleaned.zipWithNext { a, b -> if (b.isLetter() && !b.isLowerCase()) "$a " else a.lowercase() }.joinToString("") + cleaned.last()
-//    cleaned = cleaned.lowercase()
-    return cleaned
-}
-
-fun String.snakeCase() = this.zipWithNext {
-        a, b -> when {
-            (a.isLetter() && a.isLowerCase() && b == ' ') -> "${a}_"
-            a == ' ' -> ""
-            else -> a
-        }
-}.joinToString("") + this.last()
-
-fun String.camelCase() = this.normalize().split(' ').joinToString("") { it.capitalize() }.replaceFirstChar { it.lowercase() }
-
-fun String.capitalize() = this.replaceFirstChar { it.uppercase() }
-
-/**
- * "text_${SHELL}" -> "text_/bin/bash/"
- */
-fun String.substituteEnvVars(): String {
-    var str = this
-    System.getenv().forEach { (key, value) -> str = str.replace("\${${key}}", value) }
-    return str
-}

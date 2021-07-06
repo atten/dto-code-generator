@@ -1,6 +1,7 @@
 package org.codegen.generators
 
 import org.codegen.dto.*
+import org.codegen.extensions.*
 import java.lang.RuntimeException
 
 class PyMarshmallowDataclassCodeGenerator : AbstractCodeGenerator() {
@@ -48,19 +49,24 @@ class PyMarshmallowDataclassCodeGenerator : AbstractCodeGenerator() {
 
             var definition = dtypeProps.definition
 
-            field.default?.let { raw ->
-                dtypeProps.toGeneratedValue(raw).also {
-                    if (it == EMPTY_PLACEHOLDER) {
+            if (field.default != UNSET) {
+                when {
+                    field.default == EMPTY_PLACEHOLDER -> {
                         attrs["default_factory"] = definition
-                    } else if ("[{".contains(it[0])) {
+                    }
+                    field.default == null -> {
+                        attrs["default"] = "None"
+                    }
+                    field.default.isNotEmpty() && "[{".contains(field.default[0]) -> {
                         // complex value (list/map/etc) should be inserted via function above class
                         val callableName = "default_$fieldName"
                         preLines.add("def $callableName():")
-                        preLines.add("    return $it\n\n")
+                        preLines.add("    return ${field.default}\n\n")
                         attrs["default_factory"] = callableName
-                    } else {
+                    }
+                    else -> {
                         // simple value -> insert inline
-                        attrs["default"] = it
+                        attrs["default"] = dtypeProps.toGeneratedValue(field.default)
                     }
                 }
             }
@@ -75,11 +81,7 @@ class PyMarshmallowDataclassCodeGenerator : AbstractCodeGenerator() {
 
             if (field.nullable) {
                 definition = "t.Optional[$definition]"
-
                 field.metadata["allow_none"] = "True"
-
-                if (field.default == null)
-                    attrs["default"] = "None"
             }
 
             field.serializedName?.let {
@@ -174,7 +176,7 @@ class PyMarshmallowDataclassCodeGenerator : AbstractCodeGenerator() {
     }
 
     override fun build(): String {
-        val builtEntities = entities.map { buildEntity(it) }
+        val builtEntities = getEntities().map { buildEntity(it) }
         val allDefinitions = definedNames.joinToString(",\n", "\n\n__all__ = [\n", "\n]") { "    \"${it}\"" }
 
         return headers.sorted().joinToString("\n", postfix = "\n\n\n") +

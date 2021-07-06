@@ -1,6 +1,7 @@
 package org.codegen.generators
 
 import org.codegen.dto.*
+import org.codegen.extensions.*
 
 class PyDjangoModelCodeGenerator: AbstractCodeGenerator() {
     private val headers = mutableListOf(
@@ -33,8 +34,8 @@ class PyDjangoModelCodeGenerator: AbstractCodeGenerator() {
 
             dtypeProps.requiredHeaders.forEach { addHeader(it.substituteEnvVars()) }
 
-            field.default?.let { raw ->
-                dtypeProps.toGeneratedValue(raw).also {
+            if (field.default != UNSET) {
+                dtypeProps.toGeneratedValue(field.default ?: "None").also {
                     if ("[{".contains(it[0])) {
                         // complex value (list/map/etc) should be inserted via function above class
                         val callableName = "default_$fieldName"
@@ -55,6 +56,9 @@ class PyDjangoModelCodeGenerator: AbstractCodeGenerator() {
             if (field.nullable) {
                 attrs["blank"] = "True"
                 attrs["null"] = "True"
+                // redundant default argument
+                if (field.default == null)
+                    attrs.remove("default")
             }
 
             field.enum?.let {
@@ -96,8 +100,8 @@ class PyDjangoModelCodeGenerator: AbstractCodeGenerator() {
     }
 
     override fun build(): String {
-        val builtEntities = entities.map { buildEntity(it) }
-        val entitiesList = entities.joinToString(",\n", "\n\nGENERATED_MODELS = [\n", "\n]") { "    " + it.name.camelCase().capitalize() }
+        val builtEntities = getEntities().map { buildEntity(it) }
+        val entitiesList = getEntities().joinToString(",\n", "\n\nGENERATED_MODELS = [\n", "\n]") { "    " + it.name.camelCase().capitalize() }
 
         return headers.sorted().joinToString("\n", postfix = "\n\n\n") +
                 builtEntities.joinToString("\n\n\n", postfix = "\n") + entitiesList

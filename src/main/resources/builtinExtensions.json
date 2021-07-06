@@ -1,6 +1,14 @@
 {
   "extensions": [
     {
+      "dtype": "null",
+      "implementations": {
+        "KT_DATACLASS": {
+          "definition": "Unit"
+        }
+      }
+    },
+    {
       "dtype": "bool",
       "implementations": {
         "KT_DATACLASS": {
@@ -136,18 +144,18 @@
       "dtype": "datetime",
       "implementations": {
         "KT_DATACLASS": {
-          "definition": "LocalDateTime",
+          "definition": "Instant",
           "requiredHeaders": [
-            "import java.time.LocalDateTime"
+            "import java.time.Instant"
           ]
         },
         "KT_KTORM_TABLE": {
-          "definition": "datetime",
+          "definition": "timestamp",
           "requiredHeaders": [
-            "import java.time.LocalDateTime"
+            "import java.time.Instant"
           ],
           "definitionArguments": {
-            "valueIfNull": "LocalDateTime.now()"
+            "valueIfNull": "Instant.EPOCH"
           }
         },
         "PY_MARSHMALLOW_DATACLASS": {

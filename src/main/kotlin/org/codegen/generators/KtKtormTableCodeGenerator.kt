@@ -1,6 +1,7 @@
 package org.codegen.generators
 
 import org.codegen.dto.*
+import org.codegen.extensions.*
 
 class KtKtormTableCodeGenerator: AbstractCodeGenerator() {
     private val headers = mutableListOf(
@@ -53,7 +54,7 @@ class KtKtormTableCodeGenerator: AbstractCodeGenerator() {
 
             lines.add("    $fullDefinition")
 
-            if (field.default == null) {
+            if (field.default == UNSET) {
                 // add field mapper in case field is required
                 val mapper = if (field.nullable) {
                     "$fieldName = row[$fieldName]"
@@ -81,7 +82,7 @@ class KtKtormTableCodeGenerator: AbstractCodeGenerator() {
     }
 
     override fun build(): String {
-        val builtEntities = entities.map { buildEntity(it) }
+        val builtEntities = getEntities().map { buildEntity(it) }
 
         return headers.joinToString("\n", postfix = "\n\n") +
                 builtEntities.joinToString("\n\n\n", postfix = "\n")
