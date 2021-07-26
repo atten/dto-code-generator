@@ -1,7 +1,7 @@
 {
   "extensions": [
     {
-      "dtype": "null",
+      "dtype": "void",
       "implementations": {
         "KT_DATACLASS": {
           "definition": "Unit"

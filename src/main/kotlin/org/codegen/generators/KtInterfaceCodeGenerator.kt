@@ -16,7 +16,11 @@ class KtInterfaceCodeGenerator: AbstractCodeGenerator() {
     private fun buildMethod(method: Method): String {
         val name = method.name.camelCase()
         val returnDtypeProps = getDtype(method.dtype)
-        val returnStatement = if (returnDtypeProps.definition != "Unit") ": ${returnDtypeProps.definition}" else ""
+        val returnStatement = if (returnDtypeProps.definition != "Unit")
+            ": ${returnDtypeProps.definition}" + if (method.nullable) "?" else ""
+        else
+            ""
+
         val arguments = mutableListOf<String>()
 
         for (argument in method.arguments) {
@@ -43,7 +47,7 @@ class KtInterfaceCodeGenerator: AbstractCodeGenerator() {
         val lines = mutableListOf<String>()
 
         method.description?.let {
-            lines.add("/**\n * ${it.replace("\n", "\n * ")}\n*/")
+            lines.add("/**\n * ${it.replace("\n", "\n * ")}\n */")
         }
         lines.add(definition)
         return lines.joinToString(separator = "\n")

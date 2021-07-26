@@ -90,7 +90,8 @@ data class Method(
     val name: String,
     val description: String? = null,
     val arguments: List<MethodArgument>,
-    val dtype: String,  // return value dtype
+    val dtype: String = "void",     // return value dtype (does not return anything by default)
+    val nullable: Boolean = false,  // whether return value can be null
 ) {
     fun toEntity() = Entity(name="$name request", fields = arguments.map { it.toField() })
 }
