@@ -1,6 +1,6 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.5.20'
-    id 'org.jetbrains.kotlin.plugin.serialization' version "1.5.20"
+    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
+    id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlinVersion"
     id 'com.google.cloud.tools.jib' version "3.1.1"
     id 'application'
 }
@@ -17,14 +17,8 @@ application {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.5.20"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1"
-    implementation "com.beust:jcommander:1.72"
-}
-
-jib {
-    to {
-        image = "registry.gitlab.com/atten0/dto-code-generator"
-    }
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2"
+    implementation "com.beust:jcommander:1.81"
 }
