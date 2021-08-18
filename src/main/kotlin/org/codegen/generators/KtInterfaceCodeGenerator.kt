@@ -26,7 +26,9 @@ class KtInterfaceCodeGenerator: AbstractCodeGenerator() {
         for (argument in method.arguments) {
             val argName = argument.name.camelCase()
             val dtypeProps = getDtype(argument.dtype)
-            val argTypeName = dtypeProps.definition.let { if (argument.nullable) "$it?" else it }
+            val argTypeName = dtypeProps.definition
+                .let { if (argument.isEnum) argument.name.snakeCase().capitalize() else it }
+                .let { if (argument.nullable) "$it?" else it }
             val argDefaultValue = if (argument.default == UNSET) {
                 ""
             } else {
