@@ -14,12 +14,6 @@
         "KT_DATACLASS": {
           "definition": "Boolean"
         },
-        "KT_KTORM_TABLE": {
-          "definition": "boolean",
-          "definitionArguments": {
-            "valueIfNull": "false"
-          }
-        },
         "PY_DJANGO_MODEL": {
           "definition": "models.BooleanField",
           "valuesMapping": {
@@ -48,13 +42,6 @@
           "definition": "String",
           "valueWrapper": "\"%s\""
         },
-        "KT_KTORM_TABLE": {
-          "definition": "varchar",
-          "valueWrapper": "\"%s\"",
-          "definitionArguments": {
-            "valueIfNull": ""
-          }
-        },
         "PY_DJANGO_MODEL": {
           "definition": "models.CharField",
           "valueWrapper": "\"%s\""
@@ -76,12 +63,6 @@
         "KT_DATACLASS": {
           "definition": "Int"
         },
-        "KT_KTORM_TABLE": {
-          "definition": "int",
-          "definitionArguments": {
-            "valueIfNull": 0
-          }
-        },
         "PY_DJANGO_MODEL": {
           "definition": "models.IntegerField",
           "includeMetadataIntoDefinition": false
@@ -101,13 +82,6 @@
       "implementations": {
         "KT_DATACLASS": {
           "definition": "Float"
-        },
-        "KT_KTORM_TABLE": {
-          "definition": "float",
-          "valueWrapper": "%sF",
-          "definitionArguments": {
-            "valueIfNull": 0
-          }
         },
         "PY_DJANGO_MODEL": {
           "definition": "models.FloatField",
@@ -148,15 +122,6 @@
           "requiredHeaders": [
             "import java.time.Instant"
           ]
-        },
-        "KT_KTORM_TABLE": {
-          "definition": "timestamp",
-          "requiredHeaders": [
-            "import java.time.Instant"
-          ],
-          "definitionArguments": {
-            "valueIfNull": "Instant.EPOCH"
-          }
         },
         "PY_MARSHMALLOW_DATACLASS": {
           "definition": "datetime",

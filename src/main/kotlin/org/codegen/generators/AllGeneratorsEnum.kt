@@ -8,7 +8,6 @@ enum class AllGeneratorsEnum(val generatorClass: KClass<out AbstractCodeGenerato
     KT_SERIALIZABLE_DATACLASS(KtSerializableDataclassCodeGenerator::class),
     KT_INTERFACE(KtInterfaceCodeGenerator::class),
     KT_API_INTERFACE(KtApiInterfaceCodeGenerator::class),
-    KT_KTORM_TABLE(KtKtormTableCodeGenerator::class),
     PY_DJANGO_MODEL(PyDjangoModelCodeGenerator::class),
     PY_MARSHMALLOW_DATACLASS(PyMarshmallowDataclassCodeGenerator::class);
 
