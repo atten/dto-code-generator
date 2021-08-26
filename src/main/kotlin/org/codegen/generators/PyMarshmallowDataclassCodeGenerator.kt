@@ -22,13 +22,16 @@ class PyMarshmallowDataclassCodeGenerator : AbstractCodeGenerator() {
         val preLines = mutableListOf<String>()
         val className = entity.name.camelCase().capitalize()
         val lines = mutableListOf<String>()
+        val decorator = "\${DECORATOR_ARGS}".substituteEnvVars().let {
+            if (it.isEmpty()) "@dataclass" else "@dataclass($it)"
+        }
 
         if (entity.parent == null) {
-            lines.add("@dataclass")
+            lines.add(decorator)
             lines.add("class ${className}:")
         } else {
             val parentClassName = entity.parent.camelCase().capitalize()
-            lines.add("@dataclass")
+            lines.add(decorator)
             lines.add("class ${className}(${parentClassName}):")
         }
 
