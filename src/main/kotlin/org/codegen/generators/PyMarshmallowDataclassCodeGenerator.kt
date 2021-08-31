@@ -183,6 +183,6 @@ class PyMarshmallowDataclassCodeGenerator : AbstractCodeGenerator() {
         val allDefinitions = definedNames.joinToString(",\n", "\n\n__all__ = [\n", "\n]") { "    \"${it}\"" }
 
         return headers.sorted().joinToString("\n", postfix = "\n\n\n") +
-                builtEntities.joinToString("\n\n\n", postfix = "\n") + allDefinitions
+                builtEntities.joinToString("\n\n\n", postfix = "\n") + allDefinitions + "\n"
     }
 }

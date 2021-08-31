@@ -104,6 +104,6 @@ class PyDjangoModelCodeGenerator: AbstractCodeGenerator() {
         val entitiesList = getEntities().joinToString(",\n", "\n\nGENERATED_MODELS = [\n", "\n]") { "    " + it.name.camelCase().capitalize() }
 
         return headers.sorted().joinToString("\n", postfix = "\n\n\n") +
-                builtEntities.joinToString("\n\n\n", postfix = "\n") + entitiesList
+                builtEntities.joinToString("\n\n\n", postfix = "\n") + entitiesList + "\n"
     }
 }

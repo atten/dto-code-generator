@@ -1,6 +1,6 @@
 stages:
   - build
-  - docker-push
+  - registry-image
 
 variables:
   IMAGE: '$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG'
@@ -9,7 +9,7 @@ variables:
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
 
-build:
+gradle:
   stage: build
   image: openjdk:11
   only:
@@ -24,14 +24,9 @@ build:
         - build/
   script:
     - ./gradlew jibBuildTar --image=$IMAGE
-    # build standalone jar and save as job artifact
-    - ./gradlew build
-  artifacts:
-    paths:
-      - build/libs/
 
 docker-push:
-  stage: docker-push
+  stage: registry-image
   image: docker:stable
   only:
     - master

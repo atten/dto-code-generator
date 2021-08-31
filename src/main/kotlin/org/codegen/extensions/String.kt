@@ -11,11 +11,15 @@ fun String.normalize(): String {
     cleaned = cleaned.trim()
     require(cleaned.isNotEmpty()) { "Normalized string can't be empty: $this" }
 
-    // prepend uppercase char with space:
-    // minValue -> min Value
-    // MyDTO -> My D T O
-    cleaned = cleaned.zipWithNext { a, b -> if (b.isLetter() && !b.isLowerCase()) "$a " else a.lowercase() }.joinToString("") + cleaned.last()
-//    cleaned = cleaned.lowercase()
+    cleaned = if (cleaned.all { it.isUpperCase() })
+        // transform uppercase string to lowercase
+         cleaned.lowercase()
+    else
+        // Apply more complex rule for string with mixed case. Prepend uppercase char with space:
+        // minValue -> min Value
+        // MyDTO -> My D T O
+        cleaned.zipWithNext { a, b -> if (b.isLetter() && !b.isLowerCase()) "$a " else a.lowercase() }.joinToString("") + cleaned.last()
+//
     return cleaned
 }
 

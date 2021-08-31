@@ -104,5 +104,5 @@ fun main(args: Array<String>) {
         }
 
     // output to stdout
-    println(generator.build())
+    print(generator.build())
 }
