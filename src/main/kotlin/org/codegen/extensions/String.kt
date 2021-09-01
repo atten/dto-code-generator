@@ -38,8 +38,9 @@ fun String.capitalize() = this.replaceFirstChar { it.uppercase() }
 /**
  * "text_${SHELL}" -> "text_/bin/bash/"
  */
-fun String.substituteEnvVars(): String {
+fun String.substituteEnvVars(required: Boolean = true): String {
     var str = this
     System.getenv().forEach { (key, value) -> str = str.replace("\${${key}}", value) }
+    require(!required || !str.contains("\${")) { "One or many env variables are missing: $str"}
     return str
 }

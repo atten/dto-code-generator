@@ -5,6 +5,9 @@
       "implementations": {
         "KT_DATACLASS": {
           "definition": "Unit"
+        },
+        "PY_DATACLASS": {
+          "definition": "None"
         }
       }
     },
@@ -20,6 +23,9 @@
             "true": "True",
             "false": "False"
           }
+        },
+        "PY_DATACLASS": {
+          "definition": "bool"
         },
         "PY_MARSHMALLOW_DATACLASS": {
           "definition": "bool",
@@ -40,6 +46,10 @@
       "implementations": {
         "KT_DATACLASS": {
           "definition": "String",
+          "valueWrapper": "\"%s\""
+        },
+        "PY_DATACLASS": {
+          "definition": "str",
           "valueWrapper": "\"%s\""
         },
         "PY_DJANGO_MODEL": {
@@ -67,6 +77,9 @@
           "definition": "models.IntegerField",
           "includeMetadataIntoDefinition": false
         },
+        "PY_DATACLASS": {
+          "definition": "int"
+        },
         "PY_MARSHMALLOW_DATACLASS": {
           "definition": "int",
           "definitionArguments": {
@@ -81,11 +94,14 @@
       "dtype": "float",
       "implementations": {
         "KT_DATACLASS": {
-          "definition": "Float"
+          "definition": "Double"
         },
         "PY_DJANGO_MODEL": {
           "definition": "models.FloatField",
           "includeMetadataIntoDefinition": false
+        },
+        "PY_DATACLASS": {
+          "definition": "float"
         },
         "PY_MARSHMALLOW_DATACLASS": {
           "definition": "float",
@@ -100,6 +116,13 @@
     {
       "dtype": "decimal",
       "implementations": {
+        "PY_DATACLASS": {
+          "definition": "Decimal",
+          "requiredHeaders": [
+            "from decimal import Decimal"
+          ],
+          "valueWrapper": "Decimal(\"%s\")"
+        },
         "PY_MARSHMALLOW_DATACLASS": {
           "definition": "Decimal",
           "definitionArguments": {
@@ -121,6 +144,12 @@
           "definition": "Instant",
           "requiredHeaders": [
             "import java.time.Instant"
+          ]
+        },
+        "PY_DATACLASS": {
+          "definition": "datetime",
+          "requiredHeaders": [
+            "from datetime import datetime"
           ]
         },
         "PY_MARSHMALLOW_DATACLASS": {

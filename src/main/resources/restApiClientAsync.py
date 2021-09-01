@@ -1,0 +1,147 @@
+async def failsafe_call_async(
+    func: t.Callable,
+    exceptions: t.Iterable[t.Type[Exception]],
+    args=None,
+    kwargs=None,
+    logger=None,
+    attempt=1,
+    max_attempts=10,
+    on_transitional_fail: t.Callable = None
+):
+    args = args or tuple()
+    kwargs = kwargs or dict()
+
+    if hasattr(func, '__self__'):
+        func_name_verbose = '{}.{}'.format(func.__self__.__class__.__name__, func.__name__)
+    else:
+        func_name_verbose = func.__name__
+
+    try:
+        return await func(*args, **kwargs)
+    except exceptions as e:
+        if logger:
+            logger.warning('got %s on %s, attempt %d / %d' % (
+                e.__class__.__name__,
+                func_name_verbose,
+                attempt,
+                max_attempts
+            ))
+
+        if attempt >= max_attempts:
+            raise e
+
+        if on_transitional_fail:
+            on_transitional_fail(e, dict(max_attempts=max_attempts, attempt=attempt))
+
+        return await failsafe_call_async(
+            func,
+            exceptions,
+            args,
+            kwargs,
+            logger,
+            attempt + 1,
+            max_attempts,
+            on_transitional_fail
+        )
+
+
+class BaseJsonApiClientAsync:
+    base_url = ''
+
+    def __init__(self, base_url: str = '', logger = None):
+        if base_url:
+            self.base_url = base_url
+        self.logger = logger
+
+    def get_base_url(self) -> str:
+        return self.base_url
+
+    async def _fetch(self, url: str, method: str = 'get', query_params: t.Optional[dict] = None, payload: t.Optional[dict] = None) -> t.Union[dict, str, int, float, list]:
+        """
+        Retrieve JSON response from remote API request.
+
+        Repeats request in case of network errors.
+
+        :param url: target url (relative to base url)
+        :param method: HTTP verb, e.g. get/post
+        :param payload: dict-like HTTP body
+        :return: decoded JSON from server
+        """
+        full_url = self._get_full_url(url, query_params)
+        try:
+            return await failsafe_call_async(
+                self._mk_request,
+                kwargs=dict(
+                    full_url=full_url,
+                    method=method,
+                    payload=payload,
+                ),
+                exceptions=(aiohttp.ClientConnectorError, ConnectionRefusedError),
+                logger=self.logger,
+                max_attempts=5,
+                on_transitional_fail=lambda exc, info: asyncio.sleep(2)
+            )
+        except Exception as e:
+            raise RuntimeError(f'Failed to connect {full_url}: {e}')
+
+    @classmethod
+    async def _mk_request(cls, full_url: str, method: str, payload: t.Optional[dict]) -> t.Union[dict, str, int, float, list]:
+        async with aiohttp.request(
+            url=full_url,
+            method=method,
+            headers={'content-type': 'application/json'},
+            json=payload,
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
+
+    def _get_full_url(self, url: str, query_params: t.Optional[dict] = None) -> str:
+        if self.base_url:
+            url = urljoin(self.base_url, url)
+
+        if query_params:
+            query_tuples = []
+            for key, value in query_params.items():
+                if isinstance(value, (list, tuple)):
+                    for item in value:
+                        query_tuples.append((key, item))
+                else:
+                    query_tuples.append((key, value))
+
+            if '?' in url:
+                url += '&' + urlencode(query_tuples)
+            else:
+                url += '?' + urlencode(query_tuples)
+
+        return url
+
+    def _serialize(self, value: t.Any) -> str:
+        method_name = '_serialize_{type}'.format(type=type(value).__name__.lower())
+        if hasattr(self, method_name):
+            return getattr(self, method_name)(value)
+        return str(value)
+
+    @classmethod
+    def _serialize_nonetype(cls, value) -> str:
+        return ''
+
+    @classmethod
+    def _serialize_datetime(cls, value: datetime) -> str:
+        value = value.isoformat()
+        if value.endswith('+00:00'):
+            value = value[:-6] + 'Z'
+        return value
+
+    @classmethod
+    def _serialize_timedelta(cls, value: timedelta) -> str:
+        return '{seconds}s'.format(seconds=int(value.total_seconds()))
+
+    @classmethod
+    def _deserialize(cls, raw_data: dict, data_class: t.Type):
+        schema = marshmallow_dataclass.class_schema(data_class)()
+        return schema.load(raw_data, many=False)
+
+    @classmethod
+    def _deserialize_many(cls, raw_data: t.List[dict], data_class: t.Type):
+        schema = marshmallow_dataclass.class_schema(data_class)()
+        return schema.load(raw_data, many=True)

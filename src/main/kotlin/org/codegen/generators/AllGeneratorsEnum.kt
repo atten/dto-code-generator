@@ -4,20 +4,35 @@ import kotlin.reflect.KClass
 
 @Suppress("unused")
 enum class AllGeneratorsEnum(val generatorClass: KClass<out AbstractCodeGenerator>) {
-    KT_DATACLASS(KtDataclassCodeGenerator::class),
-    KT_SERIALIZABLE_DATACLASS(KtSerializableDataclassCodeGenerator::class),
-    KT_INTERFACE(KtInterfaceCodeGenerator::class),
-    KT_API_INTERFACE(KtApiInterfaceCodeGenerator::class),
-    PY_DJANGO_MODEL(PyDjangoModelCodeGenerator::class),
-    PY_MARSHMALLOW_DATACLASS(PyMarshmallowDataclassCodeGenerator::class);
+    KT_DATACLASS(KtDataclassGenerator::class),
+    KT_SERIALIZABLE_DATACLASS(KtDataclassSerializableGenerator::class),
+    KT_INTERFACE(KtInterfaceGenerator::class),
+    PY_DJANGO_MODEL(PyModelDjangoGenerator::class),
+    PY_API_CLIENT(PyApiClientGenerator::class),
+    PY_ASYNC_API_CLIENT(PyApiClientGeneratorAsync::class),
+    PY_MARSHMALLOW_DATACLASS(PyDataclassMarshmallowGenerator::class),
+    PY_DATACLASS(PyDataclassGenerator::class);
 
     /**
      * define generator aliases for dtype implementation
      */
-    fun dtypeAlias(): AllGeneratorsEnum? = when(this) {
+    private fun dtypeAlias(): AllGeneratorsEnum? = when(this) {
         KT_INTERFACE -> KT_DATACLASS
-        KT_API_INTERFACE -> KT_DATACLASS
         KT_SERIALIZABLE_DATACLASS -> KT_DATACLASS
+        PY_API_CLIENT -> PY_MARSHMALLOW_DATACLASS
+        PY_ASYNC_API_CLIENT -> PY_API_CLIENT
+        PY_MARSHMALLOW_DATACLASS -> PY_DATACLASS
         else -> null
+    }
+
+    /**
+     * List of all chained aliases.
+     */
+    fun dtypeAliases(): List<AllGeneratorsEnum> {
+        val candidates = mutableListOf(this)
+        dtypeAlias() ?.let {
+            candidates += it.dtypeAliases()
+        }
+        return candidates
     }
 }

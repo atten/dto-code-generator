@@ -13,6 +13,8 @@ data class DataType(
     val valuesMapping: Map<String, String> = mapOf(),
     val valueWrapper: String? = null,
     val requiredHeaders: List<String> = listOf(),
+    // list of related entity names. If entities aren't present in target file, they will be included (if found in included schemas)
+    val requiredEntities: List<String> = listOf(),
 ) {
     fun toGeneratedValue(value: String): String {
         var result = valuesMapping.getOrDefault(value, value)
@@ -29,7 +31,11 @@ data class Extension(
     val implementations: Map<AllGeneratorsEnum, DataType>
 ) {
     fun getForGenerator(type: AllGeneratorsEnum): DataType? {
-        return implementations[type] ?: type.dtypeAlias()?.let { implementations[it] }
+        for (alias in type.dtypeAliases()) {
+            if (implementations.containsKey(alias))
+                return implementations[alias]
+        }
+        return null
     }
 }
 
@@ -60,7 +66,7 @@ data class MethodArgument (
     val enumPrefix: String? = null,
     val default: String? = UNSET,
     val nullable: Boolean = false,
-    val multiple: Boolean = false,
+    val multiple: Boolean = false,   // whether more than one value can be provided
 ) {
     val isEnum: Boolean = !enum.isNullOrEmpty()
 
@@ -96,8 +102,22 @@ data class Method(
     val arguments: List<MethodArgument>,
     val dtype: String = "void",     // return value dtype (does not return anything by default)
     val nullable: Boolean = false,  // whether return value can be null
+    val multiple: Boolean = false,  // whether array of values is returned
 ) {
     fun toEntity() = Entity(name="$name request", fields = arguments.map { it.toField() })
+}
+
+@Serializable
+data class Endpoint(
+    val name: String,
+    val description: String? = null,
+    val arguments: List<MethodArgument>,
+    val dtype: String,     // return value dtype
+    val path: String,     // HTTP path (may include arguments in format: "/api/v1/path/{arg1}/{arg2}"
+    val nullable: Boolean = false,  // whether return value can be null
+    val multiple: Boolean = false,  // whether array of values is returned
+) {
+    fun toMethod() = Method(name=name, description=description, arguments=arguments, dtype=dtype, nullable=nullable, multiple=multiple)
 }
 
 @Serializable
@@ -107,6 +127,7 @@ data class Entity(
     val validators: List<Validator> = listOf(),
     val properties: List<Property> = listOf(),
     val methods: MutableList<Method> = mutableListOf(),
+    val endpoints: MutableList<Endpoint> = mutableListOf(),
     val parent: String? = null,
     val description: String? = null,
     val prefix: String? = null,
@@ -114,9 +135,11 @@ data class Entity(
     val actualPrefix = prefix ?: name
     val fieldNames = fields.map { it.name }
 
-    fun prefixedFields(): Entity {
-        return this.copy(fields = fields.map { it.copy(name = "$actualPrefix ${it.name}") })
-    }
+    fun toDataType() = DataType(definition = name, requiredEntities = listOf(name))
+
+    fun prefixedFields() = this.copy(fields = fields.map { it.copy(name = "$actualPrefix ${it.name}") })
+
+    fun methodsPlusEndpoints() = methods + endpoints.map { it.toMethod() }
 }
 
 @Serializable
@@ -125,4 +148,6 @@ data class Document(
     val entities: List<Entity> = listOf(),
     // root-level methods will be inserted to default entity
     val methods: List<Method> = listOf(),
+    // root-level endpoints will be inserted to default entity
+    val endpoints: List<Endpoint> = listOf(),
 )

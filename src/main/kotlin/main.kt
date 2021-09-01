@@ -20,6 +20,9 @@ class Args {
     @Parameter(names=["-p", "--prefixed"], description = "If enabled, add prefix to all fields")
     var usePrefixed = false
 
+    @Parameter(names=["--do-not-include-entities"], description = "If enabled, add missing entity definitions automatically")
+    var doNotIncludeEntities = false
+
     @Parameter(names = ["--help"], help = true)
     var help: Boolean = false
 }
@@ -63,10 +66,12 @@ fun main(args: Array<String>) {
 
     val format = Json { ignoreUnknownKeys = true; isLenient = true }
     val generatorClass = params.target.generatorClass
-    val generator = generatorClass.primaryConstructor!!.call()
+    val generator = generatorClass.primaryConstructor!!.call(null)
     val defaultInputFile = generatorClass.java.getResource("/builtinExtensions.json")!!.path
     val includedFiles = params.includeFiles.extractFiles().toMutableList().also { it.add(defaultInputFile) }
     val inputFiles = params.inputFiles.extractFiles()
+
+    generator.includeMissingDefinitions = !params.doNotIncludeEntities
 
     includedFiles
         .map { format.decodeFromString<Document>(File(it).readText()) }
@@ -101,6 +106,10 @@ fun main(args: Array<String>) {
             // add root-level methods to default entity
             document.methods
                 .forEach { generator.defaultEntity.methods.add(it) }
+
+            // add root-level endpoints to default entity
+            document.endpoints
+                .forEach { generator.defaultEntity.endpoints.add(it) }
         }
 
     // output to stdout
