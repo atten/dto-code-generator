@@ -43,6 +43,10 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
                     addHeader("import typing as t")
                     "t.List[$it]"
                 }
+                else if (endpoint.nullable) {
+                    addHeader("import typing as t")
+                    "t.Optional[$it]"
+                }
                 else it
             }
             .let { if (it == "None") ":" else " -> $it:" }
@@ -104,7 +108,9 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
                 queryParams[argument.name.camelCase()] = argName
         }
 
-        if (atomicJsonTypes.contains(returnType))
+        if (returnType == "None")
+            lines.add("self._fetch(")
+        else if (atomicJsonTypes.contains(returnType))
             lines.add("return self._fetch(")
         else
             lines.add("raw_data = self._fetch(")
@@ -123,7 +129,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
 
         if (!atomicJsonTypes.contains(returnType)) {
             if (endpoint.multiple)
-                lines.add("return self._deserialize_many(raw_data, $returnType)")
+                lines.add("return self._deserialize(raw_data, $returnType, many=True)")
             else
                 lines.add("return self._deserialize(raw_data, $returnType)")
         }
@@ -138,15 +144,15 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         definedNames.add(buildEntityName(entity.name))
         // either build an interface or regular DTO
         if (entity.fields.isEmpty())
-            return buildInterfaceEntity(entity)
+            return buildClass(entity)
         return PyDataclassMarshmallowGenerator(this).buildEntity(entity)
     }
 
-    private fun buildInterfaceEntity(entity: Entity): String {
-        val entityName = buildEntityName(entity.name)
-        val interfaceDefinition = "class $entityName($baseClassName):"
+    private fun buildClass(entity: Entity): String {
+        val className = buildEntityName(entity.name)
+        val classDefinition = "class $className($baseClassName):"
         val builtMethods = entity.endpoints.map { buildEndpoint(it) }
-        return builtMethods.joinToString(separator = "\n\n", prefix = "${interfaceDefinition}\n") {"    ${it.replace("\n", "\n    ")}"}
+        return builtMethods.joinToString(separator = "\n\n", prefix = "${classDefinition}\n") {"    ${it.replace("\n", "\n    ")}"}
     }
 
     override fun buildBodyPrefix(): String {

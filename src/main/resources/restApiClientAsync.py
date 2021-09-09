@@ -1,3 +1,6 @@
+JSON_PAYLOAD = t.Union[dict, str, int, float, list]
+
+
 async def failsafe_call_async(
     func: t.Callable,
     exceptions: t.Iterable[t.Type[Exception]],
@@ -12,7 +15,7 @@ async def failsafe_call_async(
     kwargs = kwargs or dict()
 
     if hasattr(func, '__self__'):
-        func_name_verbose = '{}.{}'.format(func.__self__.__class__.__name__, func.__name__)
+        func_name_verbose = '{}.{}'.format(func.__self__.__name__, func.__name__)
     else:
         func_name_verbose = func.__name__
 
@@ -31,7 +34,7 @@ async def failsafe_call_async(
             raise e
 
         if on_transitional_fail:
-            on_transitional_fail(e, dict(max_attempts=max_attempts, attempt=attempt))
+            await on_transitional_fail(e, dict(max_attempts=max_attempts, attempt=attempt))
 
         return await failsafe_call_async(
             func,
@@ -48,7 +51,7 @@ async def failsafe_call_async(
 class BaseJsonApiClientAsync:
     base_url = ''
 
-    def __init__(self, base_url: str = '', logger = None):
+    def __init__(self, base_url: str = '', logger=None):
         if base_url:
             self.base_url = base_url
         self.logger = logger
@@ -56,7 +59,14 @@ class BaseJsonApiClientAsync:
     def get_base_url(self) -> str:
         return self.base_url
 
-    async def _fetch(self, url: str, method: str = 'get', query_params: t.Optional[dict] = None, payload: t.Optional[dict] = None) -> t.Union[dict, str, int, float, list]:
+    async def _fetch(
+        self,
+        url: str,
+        method: str = 'get',
+        query_params: t.Optional[dict] = None,
+        headers: t.Optional[dict] = None,
+        payload: t.Optional[dict] = None,
+    ) -> JSON_PAYLOAD:
         """
         Retrieve JSON response from remote API request.
 
@@ -64,16 +74,21 @@ class BaseJsonApiClientAsync:
 
         :param url: target url (relative to base url)
         :param method: HTTP verb, e.g. get/post
+        :param query_params: key-value arguments like ?param1=11&param2=22
+        :param headers: dict of HTTP headers
         :param payload: dict-like HTTP body
         :return: decoded JSON from server
         """
         full_url = self._get_full_url(url, query_params)
+        headers = headers or {}
+        headers['content-type'] = 'application/json'
         try:
             return await failsafe_call_async(
                 self._mk_request,
                 kwargs=dict(
                     full_url=full_url,
                     method=method,
+                    headers=headers,
                     payload=payload,
                 ),
                 exceptions=(aiohttp.ClientConnectorError, ConnectionRefusedError),
@@ -85,11 +100,11 @@ class BaseJsonApiClientAsync:
             raise RuntimeError(f'Failed to connect {full_url}: {e}')
 
     @classmethod
-    async def _mk_request(cls, full_url: str, method: str, payload: t.Optional[dict]) -> t.Union[dict, str, int, float, list]:
+    async def _mk_request(cls, full_url: str, method: str, payload: t.Optional[dict], headers: t.Optional[dict]) -> JSON_PAYLOAD:
         async with aiohttp.request(
             url=full_url,
             method=method,
-            headers={'content-type': 'application/json'},
+            headers=headers,
             json=payload,
         ) as response:
             response.raise_for_status()
@@ -136,12 +151,28 @@ class BaseJsonApiClientAsync:
     def _serialize_timedelta(cls, value: timedelta) -> str:
         return '{seconds}s'.format(seconds=int(value.total_seconds()))
 
-    @classmethod
-    def _deserialize(cls, raw_data: dict, data_class: t.Type):
-        schema = marshmallow_dataclass.class_schema(data_class)()
-        return schema.load(raw_data, many=False)
+    def _deserialize(self, raw_data: JSON_PAYLOAD, data_class: t.Type, many: bool = False):
+        if raw_data == b'':
+            return None
+
+        # pick built-in deserializer if specified for class
+        method_name = '_deserialize_{type}'.format(type=data_class.__name__.lower())
+        if hasattr(self, method_name):
+            if many:
+                return list(map(getattr(self, method_name), raw_data))
+            return getattr(self, method_name)(raw_data)
+
+        try:
+            # use marshmallow in other cases
+            schema = marshmallow_dataclass.class_schema(data_class)()
+        except TypeError:
+            # fallback to default constructor
+            return data_class(raw_data)
+
+        return schema.load(raw_data, many=many)
 
     @classmethod
-    def _deserialize_many(cls, raw_data: t.List[dict], data_class: t.Type):
-        schema = marshmallow_dataclass.class_schema(data_class)()
-        return schema.load(raw_data, many=True)
+    def _deserialize_datetime(cls, raw: str) -> datetime:
+        if raw.endswith('Z'):
+            raw = raw[:-1] + '+00:00'
+        return datetime.fromisoformat(raw)
