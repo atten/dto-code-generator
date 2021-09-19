@@ -58,7 +58,7 @@ open class KtDataclassGenerator(parent: AbstractCodeGenerator? = null) : Abstrac
                     prefix = "enum class $enumName(val value: String) {\n",
                     postfix = "\n}\n"
                 )
-                addDefinition(enumBody)
+                addDefinition(enumBody, enumName)
             }
 
             field.shortDescription?.let { lines.add("    // $it") }

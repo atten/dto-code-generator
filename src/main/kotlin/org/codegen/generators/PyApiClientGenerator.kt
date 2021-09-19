@@ -14,6 +14,12 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     // list if __all__ items
     private val definedNames = mutableListOf<String>()
 
+    override fun addDefinition(body: String, name: String) {
+        super.addDefinition(body, name)
+        if (name.isNotEmpty() && name !in definedNames)
+            definedNames.add(name)
+    }
+
     protected open fun buildMethodDefinition(name: String, arguments: List<String>, returnStatement: String, singleLine: Boolean?): String {
         when (singleLine) {
             true -> {
@@ -141,7 +147,6 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     override fun buildEntityName(name: String) = name.camelCase().capitalize()
 
     override fun buildEntity(entity: Entity): String {
-        definedNames.add(buildEntityName(entity.name))
         // either build an interface or regular DTO
         if (entity.fields.isEmpty())
             return buildClass(entity)
@@ -165,7 +170,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
 
         this.javaClass.getResource("/restApiClient.py")!!.path
             .let { File(it).readText() }
-            .let { addDefinition(it) }
+            .let { addDefinition(it, "") }
 
         return ""
     }
@@ -173,7 +178,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     override fun buildBodyPostfix(): String {
         definedNames
             .joinToString("\n", "__all__ = [\n", "\n]") { "    \"${it}\"," }
-            .also { addDefinition(it) }
+            .also { addDefinition(it, "__all__") }
         return "\n"
     }
 }

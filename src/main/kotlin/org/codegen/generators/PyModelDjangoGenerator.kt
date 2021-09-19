@@ -99,7 +99,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
         getEntities()
             .map { buildEntityName(it.name) }
             .joinToString(",\n", "GENERATED_MODELS = [\n", "\n]") { "    $it" }
-            .also { addDefinition(it) }
+            .also { addDefinition(it, "GENERATED_MODELS") }
         return "\n"
     }
 }

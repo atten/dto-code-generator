@@ -8,6 +8,12 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     // list if __all__ items
     protected val definedNames = mutableListOf<String>()
 
+    override fun addDefinition(body: String, name: String) {
+        super.addDefinition(body, name)
+        if (name.isNotEmpty() && name !in definedNames)
+            definedNames.add(name)
+    }
+
     override fun buildEntityName(name: String) = name.camelCase().capitalize()
 
     override fun buildEntity(entity: Entity): String {
@@ -28,7 +34,6 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         }
 
         addHeader("from dataclasses import dataclass, field")
-        definedNames.add(className)
 
         entity.description?.also {
             lines.add("    \"\"\"")
@@ -137,7 +142,7 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     override fun buildBodyPostfix(): String {
         definedNames
             .joinToString("\n", "__all__ = [\n", "\n]") { "    \"${it}\"," }
-            .also { addDefinition(it) }
+            .also { addDefinition(it, "__all__") }
         return "\n"
     }
 

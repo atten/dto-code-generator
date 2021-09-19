@@ -26,7 +26,7 @@ class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiCli
 
         this.javaClass.getResource("/restApiClientAsync.py")!!.path
             .let { File(it).readText() }
-            .let { addDefinition(it) }
+            .let { addDefinition(it, "") }
 
         return ""
     }

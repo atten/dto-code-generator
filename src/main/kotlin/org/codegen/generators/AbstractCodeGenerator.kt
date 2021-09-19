@@ -73,9 +73,9 @@ abstract class AbstractCodeGenerator(
         }
     }
 
-    protected fun addDefinition(body: String) {
+    protected open fun addDefinition(body: String, name: String) {
         if (parent != null) {
-            parent.addDefinition(body)
+            parent.addDefinition(body, name)
         }
         else {
             if (!includedDefinitions.contains(body))
@@ -126,7 +126,7 @@ abstract class AbstractCodeGenerator(
 
                 includedEntityGenerator
                     .buildEntity( entity )
-                    .also { addDefinition(it) }
+                    .also { addDefinition(it, name = buildEntityName(name)) }
             }
         }
     }
@@ -164,7 +164,10 @@ abstract class AbstractCodeGenerator(
 
     fun build(): String {
         val prefix = buildBodyPrefix()
-        getEntities().map { buildEntity(it) }.map { addDefinition(it) }
+        for (entity in getEntities()) {
+            val body = buildEntity(entity)
+            addDefinition(body, buildEntityName(entity.name))
+        }
         val postfix = buildBodyPostfix()
         return buildHeaders() +
                 prefix +
