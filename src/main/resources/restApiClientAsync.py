@@ -65,7 +65,7 @@ class BaseJsonApiClientAsync:
         method: str = 'get',
         query_params: t.Optional[dict] = None,
         headers: t.Optional[dict] = None,
-        payload: t.Optional[dict] = None,
+        payload: t.Optional[JSON_PAYLOAD] = None,
     ) -> JSON_PAYLOAD:
         """
         Retrieve JSON response from remote API request.
@@ -76,7 +76,7 @@ class BaseJsonApiClientAsync:
         :param method: HTTP verb, e.g. get/post
         :param query_params: key-value arguments like ?param1=11&param2=22
         :param headers: dict of HTTP headers
-        :param payload: dict-like HTTP body
+        :param payload: JSON-like HTTP body
         :return: decoded JSON from server
         """
         full_url = self._get_full_url(url, query_params)
@@ -130,15 +130,39 @@ class BaseJsonApiClientAsync:
 
         return url
 
-    def _serialize(self, value: t.Any) -> str:
-        method_name = '_serialize_{type}'.format(type=type(value).__name__.lower())
-        if hasattr(self, method_name):
-            return getattr(self, method_name)(value)
-        return str(value)
+    def _serialize(self, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
+        # auto-detect collections
+        many = False
+        _type = type(value)
+        if isinstance(value, (list, tuple, set)):
+            # non-empty sequence
+            _type = type(next(iter(value)))
+            many = True
 
-    @classmethod
-    def _serialize_nonetype(cls, value) -> str:
-        return ''
+        # pick built-in serializer if specified for class
+        method_name = '_serialize_{type}'.format(type=_type.__name__.lower())
+        if hasattr(self, method_name):
+            method = getattr(self, method_name)
+            if many:
+                return list(map(method, value))
+            return method(value)
+
+        # use marshmallow in case of dataclass
+        if is_dataclass(_type):
+            schema = marshmallow_dataclass.class_schema(_type)()
+            func = schema.dump if is_payload else schema.dumps
+            return func(value, many=many)
+
+        if isinstance(value, t.get_args(JSON_PAYLOAD)):
+            return value
+
+        if value is None:
+            if not is_payload:
+                # special case for null values in URL
+                return ''
+            return None
+
+        raise ValueError('Unable to serialize object of type {0}: {1}'.format(type(value), value))
 
     @classmethod
     def _serialize_datetime(cls, value: datetime) -> str:
@@ -151,16 +175,17 @@ class BaseJsonApiClientAsync:
     def _serialize_timedelta(cls, value: timedelta) -> str:
         return '{seconds}s'.format(seconds=int(value.total_seconds()))
 
-    def _deserialize(self, raw_data: JSON_PAYLOAD, data_class: t.Type, many: bool = False):
+    def _deserialize(self, raw_data: JSON_PAYLOAD, data_class: t.Type, many: bool = False) -> t.Any:
         if raw_data == b'':
             return None
 
         # pick built-in deserializer if specified for class
         method_name = '_deserialize_{type}'.format(type=data_class.__name__.lower())
         if hasattr(self, method_name):
+            method = getattr(self, method_name)
             if many:
-                return list(map(getattr(self, method_name), raw_data))
-            return getattr(self, method_name)(raw_data)
+                return list(map(method, raw_data))
+            return method(raw_data)
 
         try:
             # use marshmallow in other cases

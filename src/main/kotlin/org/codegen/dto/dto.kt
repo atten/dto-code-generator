@@ -107,6 +107,11 @@ data class Method(
     fun toEntity() = Entity(name="$name request", fields = arguments.map { it.toField() })
 }
 
+enum class EndpointVerb {
+    GET,
+    POST,
+}
+
 @Serializable
 data class Endpoint(
     val name: String,
@@ -116,6 +121,7 @@ data class Endpoint(
     val path: String,     // HTTP path (may include arguments in format: "/api/v1/path/{arg1}/{arg2}"
     val nullable: Boolean = false,  // whether return value can be null
     val multiple: Boolean = false,  // whether array of values is returned
+    val verb: EndpointVerb = EndpointVerb.GET,
 ) {
     fun toMethod() = Method(name=name, description=description, arguments=arguments, dtype=dtype, nullable=nullable, multiple=multiple)
 }

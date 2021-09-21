@@ -23,6 +23,7 @@ class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiCli
         addHeader("import aiohttp")
         addHeader("from urllib.parse import urljoin, urlencode")
         addHeader("import marshmallow_dataclass")
+        addHeader("from dataclasses import is_dataclass")
 
         this.javaClass.getResource("/restApiClientAsync.py")!!.path
             .let { File(it).readText() }

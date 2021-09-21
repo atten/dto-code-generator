@@ -1,6 +1,7 @@
 package org.codegen.generators
 
 import org.codegen.dto.Endpoint
+import org.codegen.dto.EndpointVerb
 import org.codegen.dto.Entity
 import org.codegen.dto.UNSET
 import org.codegen.extensions.camelCase
@@ -96,6 +97,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         val returnDtypeProps = getDtype(endpoint.dtype)
         val returnType = returnDtypeProps.definition
         val queryParams = mutableMapOf<String, String>()
+        var payloadVariableName = ""
         val lines = mutableListOf<String>()
 
         for (argument in endpoint.arguments) {
@@ -103,15 +105,25 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             val dtypeProps = getDtype(argument.dtype)
             val argBaseType = dtypeProps.definition
 
-            if (!atomicJsonTypes.contains(argBaseType)) {
-                if (argument.multiple)
-                    lines.add("$argName = [self._serialize(item) for item in $argName]")
+            val isAtomicType = argBaseType in atomicJsonTypes
+            val pathName = "{" + argument.name + "}"
+            val isPathVariable = pathName in endpoint.path
+            val isQueryVariable = !isPathVariable && (endpoint.verb == EndpointVerb.GET || isAtomicType)
+            val isPayload = !isPathVariable && !isQueryVariable
+
+            if (!isAtomicType) {
+                if (isPayload)
+                    lines.add("$argName = self._serialize($argName, is_payload=True)")
                 else
                     lines.add("$argName = self._serialize($argName)")
             }
 
-            if (!endpoint.path.contains("{$argName}"))
+            if (isQueryVariable) {
                 queryParams[argument.name.camelCase()] = argName
+            } else if (isPayload) {
+                require(payloadVariableName.isEmpty()) { "Having multiple payload variables is unsupported yet" }
+                payloadVariableName = argName
+            }
         }
 
         if (returnType == "None")
@@ -123,12 +135,20 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
 
         lines.add("    url=f'${endpoint.path}',")
 
+        if (endpoint.verb != EndpointVerb.GET) {
+            lines.add("    method='${endpoint.verb}',")
+        }
+
         if (queryParams.isNotEmpty()) {
             lines.add("    query_params=dict(")
             queryParams
                 .map { "        ${it.key}=${it.value}," }
                 .forEach { lines.add(it) }
             lines.add("    ),")
+        }
+
+        if (payloadVariableName.isNotEmpty()) {
+            lines.add("    payload=$payloadVariableName,")
         }
 
         lines.add(")")  // end of 'self._fetch('
@@ -167,6 +187,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         addHeader("from time import sleep")
         addHeader("from urllib.request import Request, urlopen")
         addHeader("import marshmallow_dataclass")
+        addHeader("from dataclasses import is_dataclass")
 
         this.javaClass.getResource("/restApiClient.py")!!.path
             .let { File(it).readText() }
