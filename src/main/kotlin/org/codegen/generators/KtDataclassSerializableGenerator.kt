@@ -3,7 +3,7 @@ package org.codegen.generators
 import org.codegen.dto.*
 import org.codegen.extensions.*
 
-class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : KtDataclassGenerator(proxy) {
+class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : KtDataclassGenerator(AllGeneratorsEnum.KT_SERIALIZABLE_DATACLASS, proxy) {
     private val builtinSerializableTypes = listOf("String", "Int", "Float", "Double", "Boolean")
 
     private fun getSerialName(field: Field): String {

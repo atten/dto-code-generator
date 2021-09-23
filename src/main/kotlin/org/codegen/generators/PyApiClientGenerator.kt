@@ -182,10 +182,9 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
 
     override fun buildBodyPrefix(): String {
         addHeader("import json")
-        addHeader("from urllib.error import URLError, HTTPError")
+        addHeader("import urllib3")
         addHeader("from urllib.parse import urljoin, urlencode")
         addHeader("from time import sleep")
-        addHeader("from urllib.request import Request, urlopen")
         addHeader("import marshmallow_dataclass")
         addHeader("from dataclasses import is_dataclass")
 

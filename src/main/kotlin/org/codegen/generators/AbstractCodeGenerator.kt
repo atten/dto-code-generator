@@ -64,6 +64,10 @@ abstract class AbstractCodeGenerator(
         throw RuntimeException("enum value is not assigned")
     }
 
+    protected val includedEntityGenerator: AbstractCodeGenerator by lazy {
+        includedEntityType.generatorClass.primaryConstructor!!.call(this)
+    }
+
     protected fun addHeader(str: String) {
         if (parent != null) {
             parent.addHeader(str)
@@ -119,7 +123,6 @@ abstract class AbstractCodeGenerator(
 
         if (parent?.includeMissingDefinitions ?: includeMissingDefinitions) {
             // add missing entities (if required)
-            val includedEntityGenerator = includedEntityType.generatorClass.primaryConstructor!!.call(this)
             type.requiredEntities.forEach { name ->
                 val entity = findEntity(name)
                 requireNotNull(entity) { "Missing required entity '$name'. Probably you forgot to include corresponding file: --include=<file>" }
@@ -141,10 +144,10 @@ abstract class AbstractCodeGenerator(
     abstract fun buildEntity(entity: Entity): String
 
     private fun buildHeaders(): String {
-        // sort alphabetically, exclude unused headers
+        // sort alphabetically, exclude unused headers (keep ones with wildcard import)
         return getHeaders()
             .filter { header ->
-                getEntityNamesFromHeader(header).map { containsEntity(it) }.any { it }
+                '*' in header || getEntityNamesFromHeader(header).map { containsEntity(it) }.any { it }
             }
             .sorted()
             .joinToString(

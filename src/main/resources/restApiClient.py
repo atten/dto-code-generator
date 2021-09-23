@@ -15,7 +15,10 @@ def failsafe_call(
     kwargs = kwargs or dict()
 
     if hasattr(func, '__self__'):
-        func_name_verbose = '{}.{}'.format(func.__self__.__name__, func.__name__)
+        if hasattr(func.__self__, '__name__'):
+            func_name_verbose = '{}.{}'.format(func.__self__.__name__, func.__name__)
+        else:
+            func_name_verbose = '{}.{}'.format(func.__self__.__class__.__name__, func.__name__)
     else:
         func_name_verbose = func.__name__
 
@@ -55,6 +58,7 @@ class BaseJsonApiClient:
         if base_url:
             self.base_url = base_url
         self.logger = logger
+        self.pool = urllib3.PoolManager(retries=False)
 
     def get_base_url(self) -> str:
         return self.base_url
@@ -77,34 +81,38 @@ class BaseJsonApiClient:
         :param payload: JSON-like HTTP body
         :return: decoded JSON from server
         """
+        full_url = self._get_full_url(url, query_params)
+        headers = dict()
         if payload:
             payload = json.dumps(payload).encode('utf8')
-
-        request = Request(
-            url=self._get_full_url(url, query_params),
-            method=method.upper(),
-            headers={'content-type': 'application/json'},
-            data=payload,
-        )
+            headers['content-type'] = 'application/json'
 
         try:
             return failsafe_call(
                 self._mk_request,
-                args=(request,),
-                exceptions=(URLError,),  # filters out connection errors, HTTP 400, 500 etc
+                kwargs=dict(
+                    url=full_url,
+                    method=method,
+                    headers=headers,
+                    body=payload,
+                ),
+                exceptions=(urllib3.exceptions.HTTPError,),  # filters out connection errors, HTTP 400, 500 etc
                 logger=self.logger,
                 max_attempts=5,
                 on_transitional_fail=lambda exc, info: sleep(2)
             )
         except Exception as e:
-            raise RuntimeError(f'Failed to connect {request.full_url}: {e}')
+            raise RuntimeError(f'Failed to connect {full_url}: {e}')
 
-    @classmethod
-    def _mk_request(cls, request: Request) -> JSON_PAYLOAD:
-        response = urlopen(request)
+    def _mk_request(self, *args, **kwargs) -> JSON_PAYLOAD:
+        response = self.pool.request(*args, **kwargs)
         if response.status >= 400:
-            raise HTTPError(request.full_url, response.status, response.read(), request.headers, None)
-        bytes_data = response.read()
+            raise urllib3.exceptions.HTTPError('Server {url} respond with status code {status}: {data}'.format(
+                url=response.geturl(),
+                status=response.status,
+                data=response.data,
+            ))
+        bytes_data = response.data
 
         if 'json' in response.headers.get('content-type', ''):
             bytes_data = bytes_data.strip()
@@ -173,6 +181,11 @@ class BaseJsonApiClient:
         if value.endswith('+00:00'):
             value = value[:-6] + 'Z'
         return value
+
+    @classmethod
+    def _serialize_timestamp(cls, value) -> str:
+        # for pandas.Timestamp
+        return cls._serialize_datetime(value.to_pydatetime())
 
     @classmethod
     def _serialize_timedelta(cls, value: timedelta) -> str:

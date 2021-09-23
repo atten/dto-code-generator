@@ -110,6 +110,8 @@ data class Method(
 enum class EndpointVerb {
     GET,
     POST,
+    PATCH,
+    DELETE,
 }
 
 @Serializable

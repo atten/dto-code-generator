@@ -15,7 +15,10 @@ async def failsafe_call_async(
     kwargs = kwargs or dict()
 
     if hasattr(func, '__self__'):
-        func_name_verbose = '{}.{}'.format(func.__self__.__name__, func.__name__)
+        if hasattr(func.__self__, '__name__'):
+            func_name_verbose = '{}.{}'.format(func.__self__.__name__, func.__name__)
+        else:
+            func_name_verbose = '{}.{}'.format(func.__self__.__class__.__name__, func.__name__)
     else:
         func_name_verbose = func.__name__
 
@@ -81,7 +84,9 @@ class BaseJsonApiClientAsync:
         """
         full_url = self._get_full_url(url, query_params)
         headers = headers or {}
-        headers['content-type'] = 'application/json'
+        if payload:
+            headers['content-type'] = 'application/json'
+
         try:
             return await failsafe_call_async(
                 self._mk_request,
@@ -170,6 +175,11 @@ class BaseJsonApiClientAsync:
         if value.endswith('+00:00'):
             value = value[:-6] + 'Z'
         return value
+
+    @classmethod
+    def _serialize_timestamp(cls, value) -> str:
+        # for pandas.Timestamp
+        return cls._serialize_datetime(value.to_pydatetime())
 
     @classmethod
     def _serialize_timedelta(cls, value: timedelta) -> str:

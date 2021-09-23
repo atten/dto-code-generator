@@ -3,9 +3,9 @@ package org.codegen.generators
 import org.codegen.dto.*
 import org.codegen.extensions.*
 
-open class KtDataclassGenerator(parent: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
+open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
     KT_FORMAT_RULE,
-    AllGeneratorsEnum.KT_DATACLASS,
+    includedEntityType,
     parent
 ) {
     private val kotlinKeywords = setOf("open", "fun")  // incomplete and contains only known

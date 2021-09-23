@@ -33,7 +33,7 @@ class KtInterfaceGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeG
         }
 
         // include enums (if present among method arguments)
-        KtDataclassGenerator(this).buildEntity(method.toEntity())
+        includedEntityGenerator.buildEntity(method.toEntity())
 
         val argumentsString = arguments.joinToString(separator = ", ")
         val definition = "fun ${name}($argumentsString)$returnStatement"
