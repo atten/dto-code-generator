@@ -22,7 +22,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             lines.add("class ${className}(${parentClassName}):")
         }
 
-        addHeader("from dataclasses import dataclass, field")
+        headers.add("from dataclasses import dataclass, field")
         definedNames.add(className)
 
         entity.description?.also {
@@ -92,7 +92,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
                 preLines.add("$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]\n\n")
 
-                addHeader("from marshmallow import fields as marshmallow_fields")
+                headers.add("from marshmallow import fields as marshmallow_fields")
                 field.metadata["validate"] = "[marshmallow_fields.validate.OneOf($choicesName)]"
             }
 
@@ -138,7 +138,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
     }
 
     private fun buildValidator(validator: Validator, entity: Entity): String {
-        addHeader("import marshmallow")
+        headers.add("import marshmallow")
         return validator.conditions
             .map { buildExpression(it, entity) }
             .joinToString("\n  ") { "if not($it):\n    raise marshmallow.ValidationError(\"${validator.message}\")" }

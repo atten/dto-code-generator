@@ -52,7 +52,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
             }
 
             field.enum?.let {
-                addHeader("from model_utils import Choices")
+                headers.add("from model_utils import Choices")
 
                 val choicesName = (field.enumPrefix ?: fieldName).snakeCase().uppercase() + "_CHOICES"
                 val choicesDefinition = it.map { entry -> "    ('${entry.key}', _('${entry.value}'))," }.joinToString(separator = "\n", prefix = "$choicesName = Choices(\n", postfix = "\n)\n\n")
@@ -90,13 +90,13 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
     }
 
     override fun buildBodyPrefix(): String {
-        addHeader("from django.db import models")
-        addHeader("from django.utils.translation import gettext_lazy as _")
+        headers.add("from django.db import models")
+        headers.add("from django.utils.translation import gettext_lazy as _")
         return ""
     }
 
     override fun buildBodyPostfix(): String {
-        getEntities()
+        entities
             .map { buildEntityName(it.name) }
             .joinToString(",\n", "GENERATED_MODELS = [\n", "\n]") { "    $it" }
             .also { addDefinition(it, "GENERATED_MODELS") }

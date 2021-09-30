@@ -47,11 +47,11 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         val returnStatement = returnDtypeProps.definition
             .let {
                 if (endpoint.multiple) {
-                    addHeader("import typing as t")
+                    headers.add("import typing as t")
                     "t.List[$it]"
                 }
                 else if (endpoint.nullable) {
-                    addHeader("import typing as t")
+                    headers.add("import typing as t")
                     "t.Optional[$it]"
                 }
                 else it
@@ -65,7 +65,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             val argTypeName = dtypeProps.definition
                 .let {
                     if (argument.multiple) {
-                        addHeader("import typing as t")
+                        headers.add("import typing as t")
                         "t.Sequence[$it]"
                     }
                     else it
@@ -181,12 +181,12 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     }
 
     override fun buildBodyPrefix(): String {
-        addHeader("import json")
-        addHeader("import urllib3")
-        addHeader("from urllib.parse import urljoin, urlencode")
-        addHeader("from time import sleep")
-        addHeader("import marshmallow_dataclass")
-        addHeader("from dataclasses import is_dataclass")
+        headers.add("import json")
+        headers.add("import urllib3")
+        headers.add("from urllib.parse import urljoin, urlencode")
+        headers.add("from time import sleep")
+        headers.add("import marshmallow_dataclass")
+        headers.add("from dataclasses import is_dataclass")
 
         this.javaClass.getResource("/restApiClient.py")!!.path
             .let { File(it).readText() }

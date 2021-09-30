@@ -33,7 +33,7 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             lines.add("class ${className}(${parentClassName}):")
         }
 
-        addHeader("from dataclasses import dataclass, field")
+        headers.add("from dataclasses import dataclass, field")
 
         entity.description?.also {
             lines.add("    \"\"\"")
@@ -135,7 +135,7 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     }
 
     override fun buildBodyPrefix(): String {
-        addHeader("import typing as t")
+        headers.add("import typing as t")
         return ""
     }
 

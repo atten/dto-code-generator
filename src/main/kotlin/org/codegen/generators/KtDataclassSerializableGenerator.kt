@@ -12,20 +12,27 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
     }
 
     override fun buildFieldDefinition(field: Field): String {
-        val str = super.buildFieldDefinition(field).let {
-            val serialName = getSerialName(field)
-            if (serialName != field.name.normalize().camelCase())
-                "@SerialName(\"$serialName\")\n$it"
-            else
-                it
+        var definition = super.buildFieldDefinition(field)
+        val serialName = getSerialName(field)
+
+        // add both kotlin serializer and jackson annotations
+        if (serialName != field.name.normalize().camelCase()) {
+            headers.add("import kotlinx.serialization.SerialName")
+            headers.add("import com.fasterxml.jackson.annotation.JsonProperty")
+            definition = "@SerialName(\"$serialName\")\n$definition"
+            definition = "@JsonProperty(\"$serialName\")\n$definition"
         }
-        if (!builtinSerializableTypes.contains(getDtype(field.dtype).definition))
-            return "@Contextual\n$str"
-        return str
+
+        if (!builtinSerializableTypes.contains(getDtype(field.dtype).definition)) {
+            headers.add("import kotlinx.serialization.Contextual")
+            definition = "@Contextual\n$definition"
+        }
+
+        return definition
     }
 
     override fun buildEntity(entity: Entity, annotations: List<String>): String {
-        addHeader("import kotlinx.serialization.*")
+        headers.add("import kotlinx.serialization.Serializable")
         return super.buildEntity(entity, annotations = annotations + listOf("@Serializable"))
     }
 

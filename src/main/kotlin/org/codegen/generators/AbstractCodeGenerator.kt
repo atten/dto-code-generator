@@ -31,14 +31,20 @@ abstract class AbstractCodeGenerator(
 ) {
     // mapping of data types by name
     private val dataTypes = mutableMapOf<String, DataType>()
-    // entities included into output
-    private val entities = mutableListOf<Entity>()
+
+    // entities included into output (own entities without parent)
+    protected val entities = mutableListOf<Entity>()
+
     // available entities to refer to, but not include into output
     private val includedEntities = mutableListOf<Entity>()
+
     // collected headers at the top of the output file
-    private val headers = mutableListOf<String>()
+    protected val headers = mutableSetOf<String>()
+        get() = parent?.headers ?: field
+
     // built classes/enums (included entities)
     private val includedDefinitions = mutableListOf<String>()
+        get() = parent?.includedDefinitions ?: field
 
     var includeMissingDefinitions = true
 
@@ -68,15 +74,6 @@ abstract class AbstractCodeGenerator(
         includedEntityType.generatorClass.primaryConstructor!!.call(this)
     }
 
-    protected fun addHeader(str: String) {
-        if (parent != null) {
-            parent.addHeader(str)
-        } else {
-            if (!headers.contains(str))
-                headers.add(str)
-        }
-    }
-
     protected open fun addDefinition(body: String, name: String) {
         if (parent != null) {
             parent.addDefinition(body, name)
@@ -101,10 +98,6 @@ abstract class AbstractCodeGenerator(
             destination.add(entity)
     }
 
-    private fun getHeaders(): List<String> = parent?.getHeaders() ?: headers
-    private fun getDefinitions(): List<String> = parent?.getDefinitions() ?: includedDefinitions
-    protected fun getEntities() = entities   // own entities only (without parent)
-
     protected fun findEntity(name: String): Entity? {
         val allEntities = entities + includedEntities + (parent?.includedEntities ?: listOf())
         return allEntities.find { it.name == name }
@@ -119,7 +112,7 @@ abstract class AbstractCodeGenerator(
 
     private fun useDataType(type: DataType) {
         // include headers
-        type.requiredHeaders.forEach { addHeader(it.substituteEnvVars()) }
+        type.requiredHeaders.forEach { headers.add(it.substituteEnvVars()) }
 
         if (parent?.includeMissingDefinitions ?: includeMissingDefinitions) {
             // add missing entities (if required)
@@ -137,7 +130,7 @@ abstract class AbstractCodeGenerator(
     /**
      * whether function/method/variable/class name is presented in code
      */
-    private fun containsEntity(name: String): Boolean = getDefinitions().find { it.contains(name) } != null
+    private fun containsEntity(name: String): Boolean = includedDefinitions.find { it.contains(name) } != null
 
     abstract fun buildEntityName(name: String): String
 
@@ -145,7 +138,7 @@ abstract class AbstractCodeGenerator(
 
     private fun buildHeaders(): String {
         // sort alphabetically, exclude unused headers (keep ones with wildcard import)
-        return getHeaders()
+        return headers
             .filter { header ->
                 '*' in header || getEntityNamesFromHeader(header).map { containsEntity(it) }.any { it }
             }
@@ -167,14 +160,14 @@ abstract class AbstractCodeGenerator(
 
     fun build(): String {
         val prefix = buildBodyPrefix()
-        for (entity in getEntities()) {
+        for (entity in entities) {
             val body = buildEntity(entity)
             addDefinition(body, buildEntityName(entity.name))
         }
         val postfix = buildBodyPostfix()
         return buildHeaders() +
                 prefix +
-                getDefinitions().joinToString(separator = codeFormatRules.entitiesSeparator) +
+                includedDefinitions.joinToString(separator = codeFormatRules.entitiesSeparator) +
                 postfix
     }
 }
