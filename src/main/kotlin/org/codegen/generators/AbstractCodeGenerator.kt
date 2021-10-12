@@ -46,7 +46,8 @@ abstract class AbstractCodeGenerator(
     private val includedDefinitions = mutableListOf<String>()
         get() = parent?.includedDefinitions ?: field
 
-    var includeMissingDefinitions = true
+    // do not build entities with following names
+    val excludeDefinitionNames = mutableListOf<String>()
 
     /**
      * construct implied entity with name from env
@@ -114,9 +115,10 @@ abstract class AbstractCodeGenerator(
         // include headers
         type.requiredHeaders.forEach { headers.add(it.substituteEnvVars()) }
 
-        if (parent?.includeMissingDefinitions ?: includeMissingDefinitions) {
-            // add missing entities (if required)
-            type.requiredEntities.forEach { name ->
+        // add missing entities (if required)
+        type.requiredEntities
+            .filter { it !in excludeDefinitionNames }
+            .forEach { name ->
                 val entity = findEntity(name)
                 requireNotNull(entity) { "Missing required entity '$name'. Probably you forgot to include corresponding file: --include=<file>" }
 
@@ -124,7 +126,6 @@ abstract class AbstractCodeGenerator(
                     .buildEntity( entity )
                     .also { addDefinition(it, name = buildEntityName(name)) }
             }
-        }
     }
 
     /**

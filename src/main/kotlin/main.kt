@@ -20,8 +20,8 @@ class Args {
     @Parameter(names=["-p", "--prefixed"], description = "If enabled, add prefix to all fields")
     var usePrefixed = false
 
-    @Parameter(names=["--do-not-include-entities"], description = "If enabled, add missing entity definitions automatically")
-    var doNotIncludeEntities = false
+    @Parameter(names=["--exclude"], description = "Do not include specified entity names", variableArity = true)
+    var excludedEntities: List<String> = listOf()
 
     @Parameter(names = ["--help"], help = true)
     var help: Boolean = false
@@ -71,7 +71,7 @@ fun main(args: Array<String>) {
     val includedFiles = params.includeFiles.extractFiles().toMutableList().also { it.add(defaultInputFile) }
     val inputFiles = params.inputFiles.extractFiles()
 
-    generator.includeMissingDefinitions = !params.doNotIncludeEntities
+    generator.excludeDefinitionNames.addAll(params.excludedEntities)
 
     includedFiles
         .map { format.decodeFromString<Document>(File(it).readText()) }
