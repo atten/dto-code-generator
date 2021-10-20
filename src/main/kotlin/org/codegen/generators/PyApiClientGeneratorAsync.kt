@@ -19,11 +19,14 @@ class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiCli
     }
 
     override fun buildBodyPrefix(): String {
+        headers.add("import typing as t")
         headers.add("import asyncio")
         headers.add("import aiohttp")
         headers.add("from urllib.parse import urljoin, urlencode")
         headers.add("import marshmallow_dataclass")
         headers.add("from dataclasses import is_dataclass")
+        headers.add("from datetime import datetime")
+        headers.add("from datetime import timedelta")
 
         this.javaClass.getResource("/restApiClientAsync.py")!!.path
             .let { File(it).readText() }

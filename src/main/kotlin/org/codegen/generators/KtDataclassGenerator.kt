@@ -14,12 +14,18 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
         val dataType = getDtype(field.dtype)
         val definitionKeyword = "val"
         val fieldName = field.name.normalize().camelCase()
-        val assignmentExpression = if (field.default == UNSET) {
-            ""
-        } else {
-            dataType.toGeneratedValue(field.default ?: "null")
+        val assignmentExpression = when (field.default) {
+            UNSET -> ""
+            null -> "null"
+            else -> if (field.multiple) {
+                if (field.default == EMPTY_PLACEHOLDER)
+                    "listOf()"
+                else
+                    "listOf(${dataType.toGeneratedValue(field.default)})"
+            } else {
+                dataType.toGeneratedValue(field.default)
+            }
         }
-            .let { if (field.multiple) "listOf($it)" else it}
             .let { if (it.isEmpty()) "" else "= $it" }
 
         val typeName = dataType.definition
@@ -48,7 +54,7 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
         // include parent class fields (because data class inheritance is not allowed)
         val includedFields = entity.parent?.let { findEntity(it)?.fields } ?: listOf()
 
-        for (field in entity.fields + includedFields) {
+        for (field in entity.fieldsSortedByDefaults + includedFields) {
             val fullDefinition = buildFieldDefinition(field)
 
             field.enum?.let { enum ->

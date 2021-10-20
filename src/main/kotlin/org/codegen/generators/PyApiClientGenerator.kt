@@ -84,6 +84,11 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
 
         val lines = mutableListOf<String>()
 
+        if (endpoint.cacheable) {
+            headers.add("from funcy import memoize")
+            lines.add("@memoize")
+        }
+
         lines.add(buildMethodDefinition(name, arguments, returnStatement, singleLine = null))
         endpoint.description?.let {
             lines.add("    \"\"\"")
@@ -181,12 +186,15 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     }
 
     override fun buildBodyPrefix(): String {
+        headers.add("import typing as t")
         headers.add("import json")
         headers.add("import urllib3")
         headers.add("from urllib.parse import urljoin, urlencode")
         headers.add("from time import sleep")
         headers.add("import marshmallow_dataclass")
         headers.add("from dataclasses import is_dataclass")
+        headers.add("from datetime import datetime")
+        headers.add("from datetime import timedelta")
 
         this.javaClass.getResource("/restApiClient.py")!!.path
             .let { File(it).readText() }

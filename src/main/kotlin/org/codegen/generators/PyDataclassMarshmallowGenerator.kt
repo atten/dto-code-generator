@@ -31,17 +31,27 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             lines.add("    \"\"\"")
         }
 
-        for (field in entity.fields) {
+        for (field in entity.fieldsSortedByDefaults) {
             val dtypeProps = getDtype(field.dtype)
             val fieldName = field.name.normalize().snakeCase()
             val attrs = dtypeProps.definitionArguments.toMutableMap()
 
             var definition = dtypeProps.definition
 
+            if (field.multiple) {
+                definition = "t.List[$definition]"
+
+                // redefine marshmallow field in metadata (preserve attributes of original nested element)
+                attrs["metadata"]?.let {
+                    if ("marshmallow_field" in it)
+                        attrs["metadata"] = it.replace("marshmallow_field=", "marshmallow_field=fields.List(") + ")"
+                }
+            }
+
             if (field.default != UNSET) {
                 when {
                     field.default == EMPTY_PLACEHOLDER -> {
-                        attrs["default_factory"] = definition
+                        attrs["default_factory"] = if (field.multiple) "list" else definition
                     }
                     field.default == null -> {
                         attrs["default"] = "None"

@@ -123,6 +123,7 @@ data class Endpoint(
     val path: String,     // HTTP path (may include arguments in format: "/api/v1/path/{arg1}/{arg2}"
     val nullable: Boolean = false,  // whether return value can be null
     val multiple: Boolean = false,  // whether array of values is returned
+    val cacheable: Boolean = false, // whether return data can be memoized
     val verb: EndpointVerb = EndpointVerb.GET,
 ) {
     fun toMethod() = Method(name=name, description=description, arguments=arguments, dtype=dtype, nullable=nullable, multiple=multiple)
@@ -142,6 +143,10 @@ data class Entity(
 ) {
     val actualPrefix = prefix ?: name
     val fieldNames = fields.map { it.name }
+
+    private val fieldsWithoutDefaults = fields.filter { it.default == UNSET }
+    private val fieldsWithDefaults = fields.filter { it.default != UNSET }
+    val fieldsSortedByDefaults = fieldsWithoutDefaults + fieldsWithDefaults
 
     fun toDataType() = DataType(definition = name, requiredEntities = listOf(name))
 
