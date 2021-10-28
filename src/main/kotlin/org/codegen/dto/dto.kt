@@ -107,6 +107,7 @@ data class Method(
     fun toEntity() = Entity(name="$name request", fields = arguments.map { it.toField() })
 }
 
+@Suppress("unused")
 enum class EndpointVerb {
     GET,
     POST,
@@ -118,9 +119,9 @@ enum class EndpointVerb {
 data class Endpoint(
     val name: String,
     val description: String? = null,
-    val arguments: List<MethodArgument>,
     val dtype: String,     // return value dtype
     val path: String,     // HTTP path (may include arguments in format: "/api/v1/path/{arg1}/{arg2}"
+    val arguments: List<MethodArgument> = listOf(),
     val nullable: Boolean = false,  // whether return value can be null
     val multiple: Boolean = false,  // whether array of values is returned
     val cacheable: Boolean = false, // whether return data can be memoized

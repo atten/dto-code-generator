@@ -1,9 +1,6 @@
 package org.codegen.generators
 
-import org.codegen.dto.Endpoint
-import org.codegen.dto.EndpointVerb
-import org.codegen.dto.Entity
-import org.codegen.dto.UNSET
+import org.codegen.dto.*
 import org.codegen.extensions.camelCase
 import org.codegen.extensions.capitalize
 import org.codegen.extensions.snakeCase
@@ -14,6 +11,22 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     private val atomicJsonTypes = listOf("str", "float", "int", "None", "bool")
     // list if __all__ items
     private val definedNames = mutableListOf<String>()
+
+    private fun buildArgumentDefaultValue(argument: MethodArgument): String {
+        val dtypeProps = getDtype(argument.dtype)
+        return if (argument.default == UNSET) {
+            ""
+        } else if (argument.multiple) {
+            // use immutable tuple for default value
+            if (argument.default == EMPTY_PLACEHOLDER) {
+                "()"
+            } else {
+                "(${dtypeProps.toGeneratedValue(argument.default ?: "None")})"
+            }
+        } else {
+            dtypeProps.toGeneratedValue(argument.default ?: "None")
+        }
+    }
 
     override fun addDefinition(body: String, name: String) {
         super.addDefinition(body, name)
@@ -71,18 +84,8 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
                     else it
                 }
                 .let { if (argument.nullable) "t.Optional[$it]" else it }
-            val argDefaultValue = if (argument.default == UNSET) {
-                ""
-            } else if (argument.multiple) {
-                // use immutable tuple for default value
-                if (argument.default == EMPTY_PLACEHOLDER) {
-                    "()"
-                } else {
-                    "(${dtypeProps.toGeneratedValue(argument.default ?: "None")})"
-                }
-            } else {
-                dtypeProps.toGeneratedValue(argument.default ?: "None")
-            }
+
+            val argDefaultValue = buildArgumentDefaultValue(argument)
                 .let { if (it.isEmpty()) "" else "= $it" }
 
             val argumentString = "${argName}: $argTypeName $argDefaultValue".trim()
@@ -108,7 +111,8 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     protected open fun buildEndpointBody(endpoint: Endpoint): String {
         val returnDtypeProps = getDtype(endpoint.dtype)
         val returnType = returnDtypeProps.definition
-        val queryParams = mutableMapOf<String, String>()
+        // uri name, variable name, default value (if present and is atomic)
+        val queryParams = mutableListOf<Triple<String, String, String?>>()
         var payloadVariableName = ""
         val lines = mutableListOf<String>()
 
@@ -131,13 +135,40 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             }
 
             if (isQueryVariable) {
-                queryParams[argument.name.camelCase()] = argName
+                val queryParamName = argument.name.camelCase()
+                val defaultValue = if (argument.default != UNSET && isAtomicType) buildArgumentDefaultValue(argument) else null
+                queryParams.add(Triple(queryParamName, argName, defaultValue))
             } else if (isPayload) {
                 require(payloadVariableName.isEmpty()) { "Having multiple payload variables is unsupported yet" }
                 payloadVariableName = argName
             }
         }
 
+        // prepare dict of query params
+        if (queryParams.isNotEmpty()) {
+            lines.add("query_params = dict()")
+        }
+
+        // include query params only if provided value != default
+        queryParams.forEach { (queryParam, variable, defaultValue) ->
+            val useCondition = defaultValue != null
+            if (useCondition) {
+                val expression = when (defaultValue) {
+                    "None" -> "$variable is not None"
+                    "()" -> "len($variable)"
+                    "False" -> variable
+                    "True" -> "not $variable"
+                    else -> "$variable != $defaultValue"
+                }
+
+                lines.add("if $expression:")
+                lines.add("    query_params['$queryParam'] = $variable")
+            } else {
+                lines.add("query_params['$queryParam'] = $variable")
+            }
+        }
+
+        // prepare 'fetch' method call
         if (returnType == "None")
             lines.add("self._fetch(")
         else if (atomicJsonTypes.contains(returnType))
@@ -152,11 +183,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         }
 
         if (queryParams.isNotEmpty()) {
-            lines.add("    query_params=dict(")
-            queryParams
-                .map { "        ${it.key}=${it.value}," }
-                .forEach { lines.add(it) }
-            lines.add("    ),")
+            lines.add("    query_params=query_params,")
         }
 
         if (payloadVariableName.isNotEmpty()) {
@@ -165,6 +192,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
 
         lines.add(")")  // end of 'self._fetch('
 
+        // prepare return statement
         if (!atomicJsonTypes.contains(returnType)) {
             if (endpoint.multiple)
                 lines.add("return self._deserialize(raw_data, $returnType, many=True)")

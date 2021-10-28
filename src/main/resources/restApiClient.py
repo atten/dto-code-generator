@@ -96,19 +96,22 @@ class BaseJsonApiClient:
                     headers=headers,
                     body=payload,
                 ),
-                exceptions=(urllib3.exceptions.HTTPError,),  # filters out connection errors, HTTP 400, 500 etc
+                exceptions=(urllib3.exceptions.HTTPError,),  # include connection errors, HTTP >= 400
                 logger=self.logger,
                 max_attempts=5,
                 on_transitional_fail=lambda exc, info: sleep(2)
             )
         except Exception as e:
-            raise RuntimeError(f'Failed to connect {full_url}: {e}')
+            error_verbose = str(e)
+            if ' at 0x' in error_verbose:
+                # reduce noise in error description, e.g. in case of NewConnectionError
+                error_verbose = error_verbose.split(':', maxsplit=1)[-1].strip()
+            raise RuntimeError(f'Failed to {method} {full_url}: {error_verbose}')
 
     def _mk_request(self, *args, **kwargs) -> JSON_PAYLOAD:
         response = self.pool.request(*args, **kwargs)
         if response.status >= 400:
-            raise urllib3.exceptions.HTTPError('Server {url} respond with status code {status}: {data}'.format(
-                url=response.geturl(),
+            raise urllib3.exceptions.HTTPError('Server respond with status code {status}: {data}'.format(
                 status=response.status,
                 data=response.data,
             ))
