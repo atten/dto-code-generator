@@ -73,6 +73,13 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
                 .let { if (argument.nullable) "t.Optional[$it]" else it }
             val argDefaultValue = if (argument.default == UNSET) {
                 ""
+            } else if (argument.multiple) {
+                // use immutable tuple for default value
+                if (argument.default == EMPTY_PLACEHOLDER) {
+                    "()"
+                } else {
+                    "(${dtypeProps.toGeneratedValue(argument.default ?: "None")})"
+                }
             } else {
                 dtypeProps.toGeneratedValue(argument.default ?: "None")
             }
