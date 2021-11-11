@@ -151,7 +151,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
         headers.add("import marshmallow")
         return validator.conditions
             .map { buildExpression(it, entity) }
-            .joinToString("\n  ") { "if not($it):\n    raise marshmallow.ValidationError(\"${validator.message}\")" }
+            .joinToString("\n  ") { "if not($it):\n    raise marshmallow.ValidationError('${validator.message.replace("'", "\\'")}')" }
     }
 
 }

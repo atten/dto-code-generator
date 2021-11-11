@@ -34,7 +34,12 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
 
         if (useKotlinX && !builtinSerializableTypes.contains(getDtype(field.dtype).definition)) {
             headers.add("import kotlinx.serialization.Contextual")
-            definition = "@Contextual\n$definition"
+
+            definition = if (field.multiple) {
+                definition.replace("List<", "List<@Contextual ")
+            } else {
+                "@Contextual\n$definition"
+            }
         }
 
         return definition

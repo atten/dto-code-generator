@@ -204,7 +204,7 @@ class BaseJsonApiClientAsync:
             # fallback to default constructor
             return data_class(raw_data)
 
-        return schema.load(raw_data, many=many)
+        return schema.load(raw_data, many=many, unknown='INCLUDE')
 
     @classmethod
     def _deserialize_datetime(cls, raw: str) -> datetime:
