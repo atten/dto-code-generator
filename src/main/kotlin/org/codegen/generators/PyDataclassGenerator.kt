@@ -118,23 +118,41 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
 
     protected fun buildProperty(property: Property, entity: Entity): String {
         val methodName = property.name.normalize().snakeCase()
+        val annotation = if (property.description.isEmpty()) "" else "\"\"\"${property.description}\"\"\"\n    "
         val returnName = getDtype(property.dtype).definition
-        val expression = buildExpression(property.expression, entity)
-        return "@property\ndef ${methodName}(self) -> $returnName:\n    return $expression"
+        val expression = buildExpression(property.expression, entity).let {
+            if ("\n" in it)  // contains if-else
+                it.replace(":\n   ", ":\n    return")
+            else  // one-liner
+                "return $it"
+        }
+            .replace("\n", "\n    ")
+        return "@property\ndef ${methodName}(self) -> $returnName:\n    ${annotation}$expression"
     }
 
-    protected fun buildExpression(primitives: List<String>, entity: Entity) = primitives.joinToString(" ") { buildPrimitive(it, entity) }
+    protected fun buildExpression(primitives: List<String>, entity: Entity) = primitives
+        .joinToString("") { buildPrimitive(it, entity) }
+        // remove redundant spaces
+        .replace(" )", ")")
+        .replace(" :", ":")
+        .replace(" \n", "\n")
+        .trim()
 
     private fun buildPrimitive(key: String, entity: Entity): String = when {
-        key == "OR" -> "or"
-        key == "AND" -> "and"
-        key == "NOT" -> "not"
+        key == "IF" -> "if "
+        key == "THEN" -> ":\n    "
+        key == "ELSE" -> "\nelse:\n    "
+        key == "OR" -> "or "
+        key == "AND" -> "and "
+        key == "NOT" -> "not "
         key == "NOW" -> "now()"
-        key.length == 1 && "-/*".contains(key) -> key
-        key.first().category == CharCategory.MATH_SYMBOL -> key
-        key.first().isDigit() -> key
-        key in entity.fieldNames -> "self.${key.normalize().snakeCase()}"
-        else -> throw RuntimeException("Unrecognized primitive: $key")
+        key == "ABS" -> "abs"
+        key.length == 1 && "-/*)".contains(key) -> "$key "
+        key.length == 1 && "(".contains(key) -> key
+        key.first().category in listOf(CharCategory.MATH_SYMBOL) -> "$key "
+        key.trimStart('-').first().isDigit() -> "$key "  // positive and negative numbers
+        key in entity.attributeNames -> "self.${key.normalize().snakeCase()} "
+        else -> throw RuntimeException("Unrecognized primitive: $key (${key.first().category})")
     }
 
     override fun buildBodyPrefix(): String {

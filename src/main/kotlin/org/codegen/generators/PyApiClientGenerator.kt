@@ -221,6 +221,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     }
 
     override fun buildBodyPrefix(): String {
+        headers.add("import os")
         headers.add("import typing as t")
         headers.add("import json")
         headers.add("import urllib3")

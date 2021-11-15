@@ -93,6 +93,7 @@ data class Property (
     val name: String,
     val dtype: String,
     val expression: List<String>,
+    val description: String = ""
 )
 
 @Serializable
@@ -143,7 +144,10 @@ data class Entity(
     val prefix: String? = null,
 ) {
     val actualPrefix = prefix ?: name
-    val fieldNames = fields.map { it.name }
+
+    private val fieldNames = fields.map { it.name }
+    private val propertyNames = properties.map { it.name }
+    val attributeNames = fieldNames + propertyNames
 
     private val fieldsWithoutDefaults = fields.filter { it.default == UNSET }
     private val fieldsWithDefaults = fields.filter { it.default != UNSET }

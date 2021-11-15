@@ -52,13 +52,16 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
             }
 
             field.enum?.let {
-                headers.add("from model_utils import Choices")
-
-                val choicesName = (field.enumPrefix ?: fieldName).snakeCase().uppercase() + "_CHOICES"
-                val choicesDefinition = it.map { entry -> "    ('${entry.key}', _('${entry.value}'))," }.joinToString(separator = "\n", prefix = "$choicesName = Choices(\n", postfix = "\n)\n\n")
+                val subclass = "models.TextChoices"
+                val enumName = (field.enumPrefix ?: field.name).camelCase().capitalize()
+                val choicesDefinition = it.map { entry -> "    ${entry.key.snakeCase().uppercase()} = '${entry.key}', _('${entry.value}')" }.joinToString(
+                    separator = "\n",
+                    prefix = "class $enumName($subclass):\n",
+                    postfix = "\n\n"
+                )
                 preLines.add(choicesDefinition)
 
-                attrs["choices"] = choicesName
+                attrs["choices"] = "$enumName.choices"
                 attrs["max_length"] = it.keys.map { s -> s.length }.maxOrNull().toString()
             }
 

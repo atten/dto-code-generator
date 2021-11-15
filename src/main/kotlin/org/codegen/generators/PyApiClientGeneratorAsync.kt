@@ -19,6 +19,7 @@ class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiCli
     }
 
     override fun buildBodyPrefix(): String {
+        headers.add("import os")
         headers.add("import typing as t")
         headers.add("import asyncio")
         headers.add("import aiohttp")

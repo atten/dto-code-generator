@@ -54,10 +54,29 @@ async def failsafe_call_async(
 class BaseJsonApiClientAsync:
     base_url = ''
 
-    def __init__(self, base_url: str = '', logger=None):
+    default_max_retries = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5))
+    default_retry_timeout = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3))
+
+    def __init__(
+        self,
+        base_url: str = '',
+        logger=None,
+        max_retries: int = default_max_retries,
+        retry_timeout: float = default_retry_timeout,
+    ):
+        """
+        Remote API client constructor.
+
+        :param base_url: protocol://url[:port]
+        :param logger: logger instance
+        :param max_retries: number of connection attempts before RuntimeException raise
+        :param retry_timeout: seconds bzzetween attempts
+        """
         if base_url:
             self.base_url = base_url
         self.logger = logger
+        self.max_retries = max_retries
+        self.retry_timeout = retry_timeout
 
     def get_base_url(self) -> str:
         return self.base_url
@@ -98,8 +117,8 @@ class BaseJsonApiClientAsync:
                 ),
                 exceptions=(aiohttp.ClientConnectorError, ConnectionRefusedError),
                 logger=self.logger,
-                max_attempts=5,
-                on_transitional_fail=lambda exc, info: asyncio.sleep(2)
+                max_attempts=self.max_retries,
+                on_transitional_fail=lambda exc, info: asyncio.sleep(self.retry_timeout)
             )
         except Exception as e:
             raise RuntimeError(f'Failed to {method} {full_url}: {e}')
