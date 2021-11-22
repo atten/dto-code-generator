@@ -138,7 +138,7 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         .replace(" \n", "\n")
         .trim()
 
-    private fun buildPrimitive(key: String, entity: Entity): String = when {
+    protected open fun buildPrimitive(key: String, entity: Entity): String = when {
         key == "IF" -> "if "
         key == "THEN" -> ":\n    "
         key == "ELSE" -> "\nelse:\n    "

@@ -14,7 +14,7 @@ class KtInterfaceGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeG
             .let { if (it == "Unit") "" else ": $it" }
         val arguments = mutableListOf<String>()
 
-        for (argument in method.arguments) {
+        for (argument in method.argumentsSortedByDefaults) {
             val argName = argument.name.camelCase()
             val dtypeProps = getDtype(argument.dtype)
             val argTypeName = dtypeProps.definition

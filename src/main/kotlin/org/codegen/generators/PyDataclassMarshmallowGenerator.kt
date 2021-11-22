@@ -94,7 +94,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             field.enum?.let { enum ->
                 val choicesPrefix = (field.enumPrefix ?: fieldName).snakeCase().uppercase()
                 val choicesName = "${choicesPrefix}S"
-                val choices = enum.keys.associate { key -> choicesPrefix + "_" + key.normalize().snakeCase().uppercase() to dtypeProps.toGeneratedValue(key) }
+                val choices = enum.keys.associate { key -> buildChoiceVariableName(field, key) to dtypeProps.toGeneratedValue(key) }
 
                 definedNames.add(choicesName)
                 choices.keys.forEach { definedNames.add(it) }
@@ -152,6 +152,24 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
         return validator.conditions
             .map { buildExpression(it, entity) }
             .joinToString("\n  ") { "if not($it):\n    raise marshmallow.ValidationError('${validator.message.replace("'", "\\'")}')" }
+    }
+
+    private fun buildChoiceVariableName(field: Field, key: String): String {
+        val choicesPrefix = (field.enumPrefix ?: field.name.normalize()).snakeCase().uppercase()
+        return choicesPrefix + "_" + key.normalize().snakeCase().uppercase()
+    }
+
+    override fun buildPrimitive(key: String, entity: Entity): String {
+        // detect field|enum_val and convert appropriately
+        if ("|" in key) {
+            val (fieldName, attribute) = key.split('|', limit = 2)
+            val field = entity.fields.find { it.name == fieldName }
+            if (field?.enum?.contains(attribute) == true) {
+                // add right indent
+                return buildChoiceVariableName(field, attribute) + ' '
+            }
+        }
+        return super.buildPrimitive(key, entity)
     }
 
 }

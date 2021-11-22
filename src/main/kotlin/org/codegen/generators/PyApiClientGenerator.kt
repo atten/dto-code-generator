@@ -24,7 +24,11 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
                 "(${dtypeProps.toGeneratedValue(argument.default ?: "None")})"
             }
         } else {
-            dtypeProps.toGeneratedValue(argument.default ?: "None")
+            when (argument.default) {
+                EMPTY_PLACEHOLDER -> "${dtypeProps.definition}()".replace("str()", "''")
+                null -> "None"
+                else -> dtypeProps.toGeneratedValue(argument.default)
+            }
         }
     }
 
@@ -72,7 +76,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             .let { if (it == "None") ":" else " -> $it:" }
         val arguments = mutableListOf("self")
 
-        for (argument in endpoint.arguments) {
+        for (argument in endpoint.argumentsSortedByDefaults) {
             val argName = argument.name.snakeCase()
             val dtypeProps = getDtype(argument.dtype)
             val argTypeName = dtypeProps.definition
@@ -116,7 +120,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         var payloadVariableName = ""
         val lines = mutableListOf<String>()
 
-        for (argument in endpoint.arguments) {
+        for (argument in endpoint.argumentsSortedByDefaults) {
             val argName = argument.name.snakeCase()
             val dtypeProps = getDtype(argument.dtype)
             val argBaseType = dtypeProps.definition

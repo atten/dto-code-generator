@@ -59,11 +59,11 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
 
             field.enum?.let { enum ->
                 val enumName = (field.enumPrefix ?: field.name).camelCase().capitalize()
-                val enumBody = enum.map { row -> "    ${row.key.camelCase().let { if (it in kotlinKeywords) "`$it`" else it }}(\"${row.key}\")," }.joinToString(
+                val enumBody = enum.map { row -> buildEnumItem(row.key) }.joinToString(
                     separator = "\n",
                     prefix = "enum class $enumName(val value: String) {\n",
                     postfix = "\n}\n"
-                )
+                ) { "    ${it.replace("\n", "\n    ")}," }
                 addDefinition(enumBody, enumName)
             }
 
@@ -74,5 +74,13 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
 
         lines.add(")")
         return (preLines + lines).joinToString("\n", postfix = "\n")
+    }
+
+    protected fun buildEnumLiteral(key: String) = key.snakeCase().uppercase()
+
+    protected open fun buildEnumItem(key: String): String {
+        val itemName = buildEnumLiteral(key)
+        val literal = itemName.let { if (it in kotlinKeywords) "`$it`" else it }
+        return "$literal(\"${key}\")"
     }
 }

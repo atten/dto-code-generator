@@ -45,6 +45,12 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
         return definition
     }
 
+    override fun buildEnumItem(key: String): String {
+        return super.buildEnumItem(key).let {
+            if (buildEnumLiteral(key) == key) it else "@SerialName(\"$key\")\n$it"
+        }
+    }
+
     override fun buildEntity(entity: Entity, annotations: List<String>): String {
         val updatedAnnotations = annotations.toMutableList()
         if (useKotlinX) {
@@ -52,6 +58,16 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
             updatedAnnotations.add("@Serializable")
         }
         return super.buildEntity(entity, annotations = updatedAnnotations)
+    }
+
+    override fun addDefinition(body: String, name: String) {
+        if ("enum class" in body && "@SerialName" in body && useKotlinX) {
+            // detect enum with serializable items and wrap it with annotation
+            headers.add("import kotlinx.serialization.Serializable")
+            super.addDefinition("@Serializable\n$body", name)
+        } else {
+            super.addDefinition(body, name)
+        }
     }
 
 }

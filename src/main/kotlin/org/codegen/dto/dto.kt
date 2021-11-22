@@ -105,6 +105,10 @@ data class Method(
     val nullable: Boolean = false,  // whether return value can be null
     val multiple: Boolean = false,  // whether array of values is returned
 ) {
+    private val argumentsWithoutDefaults = arguments.filter { it.default == UNSET }
+    private val argumentsWithDefaults = arguments.filter { it.default != UNSET }
+    val argumentsSortedByDefaults = argumentsWithoutDefaults + argumentsWithDefaults
+
     fun toEntity() = Entity(name="$name request", fields = arguments.map { it.toField() })
 }
 
@@ -128,6 +132,10 @@ data class Endpoint(
     val cacheable: Boolean = false, // whether return data can be memoized
     val verb: EndpointVerb = EndpointVerb.GET,
 ) {
+    private val argumentsWithoutDefaults = arguments.filter { it.default == UNSET }
+    private val argumentsWithDefaults = arguments.filter { it.default != UNSET }
+    val argumentsSortedByDefaults = argumentsWithoutDefaults + argumentsWithDefaults
+
     fun toMethod() = Method(name=name, description=description, arguments=arguments, dtype=dtype, nullable=nullable, multiple=multiple)
 }
 
