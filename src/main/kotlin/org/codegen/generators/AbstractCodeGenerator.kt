@@ -100,7 +100,7 @@ abstract class AbstractCodeGenerator(
     }
 
     protected fun findEntity(name: String): Entity? {
-        val allEntities = entities + includedEntities + (parent?.includedEntities ?: listOf())
+        val allEntities = entities + includedEntities + ((parent?.includedEntities ?: listOf()) + (parent?.entities ?: listOf()))
         return allEntities.find { it.name == name }
     }
 

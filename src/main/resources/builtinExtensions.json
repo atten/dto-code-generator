@@ -134,6 +134,13 @@
           ],
           "valueWrapper": "Decimal(\"%s\")",
           "includeMetadataIntoDefinition": false
+        },
+        "KT_DATACLASS": {
+          "definition": "BigDecimal",
+          "requiredHeaders": [
+            "import java.math.BigDecimal"
+          ],
+          "valueWrapper": "BigDecimal(%s)"
         }
       }
     },
