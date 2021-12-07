@@ -51,9 +51,14 @@ async def failsafe_call_async(
         )
 
 
+class BaseSchema(marshmallow.Schema):
+    class Meta:
+        # allow backward-compatible changes when new fields have added (simply ignore them)
+        unknown = marshmallow.EXCLUDE
+
+
 class BaseJsonApiClientAsync:
     base_url = ''
-
     default_max_retries = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5))
     default_retry_timeout = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3))
 
@@ -70,7 +75,7 @@ class BaseJsonApiClientAsync:
         :param base_url: protocol://url[:port]
         :param logger: logger instance
         :param max_retries: number of connection attempts before RuntimeException raise
-        :param retry_timeout: seconds bzzetween attempts
+        :param retry_timeout: seconds between attempts
         """
         if base_url:
             self.base_url = base_url
@@ -218,12 +223,12 @@ class BaseJsonApiClientAsync:
 
         try:
             # use marshmallow in other cases
-            schema = marshmallow_dataclass.class_schema(data_class)()
+            schema = marshmallow_dataclass.class_schema(data_class, base_schema=BaseSchema)()
         except TypeError:
             # fallback to default constructor
             return data_class(raw_data)
 
-        return schema.load(raw_data, many=many, unknown='INCLUDE')
+        return schema.load(raw_data, many=many)
 
     @classmethod
     def _deserialize_datetime(cls, raw: str) -> datetime:

@@ -24,6 +24,7 @@ class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiCli
         headers.add("import asyncio")
         headers.add("import aiohttp")
         headers.add("from urllib.parse import urljoin, urlencode")
+        headers.add("import marshmallow")
         headers.add("import marshmallow_dataclass")
         headers.add("from dataclasses import is_dataclass")
         headers.add("from datetime import datetime")

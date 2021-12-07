@@ -231,6 +231,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         headers.add("import urllib3")
         headers.add("from urllib.parse import urljoin, urlencode")
         headers.add("from time import sleep")
+        headers.add("import marshmallow")
         headers.add("import marshmallow_dataclass")
         headers.add("from dataclasses import is_dataclass")
         headers.add("from datetime import datetime")

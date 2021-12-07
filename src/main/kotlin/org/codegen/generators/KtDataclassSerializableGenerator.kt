@@ -47,7 +47,16 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
 
     override fun buildEnumItem(key: String): String {
         return super.buildEnumItem(key).let {
-            if (buildEnumLiteral(key) == key) it else "@SerialName(\"$key\")\n$it"
+            if (buildEnumLiteral(key) == key)
+                it
+            else {
+                var annotated = it
+                if (useKotlinX) {
+                    headers.add("import kotlinx.serialization.SerialName")
+                    annotated = "@SerialName(\"$key\")\n$it"
+                }
+                annotated
+            }
         }
     }
 
