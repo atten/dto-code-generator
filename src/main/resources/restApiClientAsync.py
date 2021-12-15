@@ -195,7 +195,8 @@ class BaseJsonApiClientAsync:
 
     @classmethod
     def _serialize_datetime(cls, value: datetime) -> str:
-        value = value.isoformat()
+        # use ISO format: YYYY-MM-DDTHH:mm:ss[.ms]Z
+        value = value.astimezone(timezone.utc).isoformat()
         if value.endswith('+00:00'):
             value = value[:-6] + 'Z'
         return value

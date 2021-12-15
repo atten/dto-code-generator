@@ -29,6 +29,7 @@ class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiCli
         headers.add("from dataclasses import is_dataclass")
         headers.add("from datetime import datetime")
         headers.add("from datetime import timedelta")
+        headers.add("from datetime import timezone")
 
         this.javaClass.getResource("/restApiClientAsync.py")!!.path
             .let { File(it).readText() }

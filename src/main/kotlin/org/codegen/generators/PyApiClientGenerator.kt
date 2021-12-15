@@ -236,6 +236,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         headers.add("from dataclasses import is_dataclass")
         headers.add("from datetime import datetime")
         headers.add("from datetime import timedelta")
+        headers.add("from datetime import timezone")
 
         this.javaClass.getResource("/restApiClient.py")!!.path
             .let { File(it).readText() }
