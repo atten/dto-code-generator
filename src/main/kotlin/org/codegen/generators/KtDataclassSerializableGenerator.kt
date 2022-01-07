@@ -69,13 +69,13 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
         return super.buildEntity(entity, annotations = updatedAnnotations)
     }
 
-    override fun addDefinition(body: String, name: String) {
+    override fun addDefinition(body: String, vararg names: String) {
         if ("enum class" in body && "@SerialName" in body && useKotlinX) {
             // detect enum with serializable items and wrap it with annotation
             headers.add("import kotlinx.serialization.Serializable")
-            super.addDefinition("@Serializable\n$body", name)
+            super.addDefinition("@Serializable\n$body", *names)
         } else {
-            super.addDefinition(body, name)
+            super.addDefinition(body, *names)
         }
     }
 

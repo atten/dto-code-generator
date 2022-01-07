@@ -36,8 +36,7 @@
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.Boolean({metadata}))"
           },
-          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"],
-          "includeMetadataIntoDefinition": false
+          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"]
         }
       }
     },
@@ -62,8 +61,7 @@
             "metadata" : "dict(marshmallow_field=fields.String({metadata}))"
           },
           "requiredHeaders": ["import ${FIELDS_MODULE} as fields"],
-          "valueWrapper": "\"%s\"",
-          "includeMetadataIntoDefinition": false
+          "valueWrapper": "\"%s\""
         }
       }
     },
@@ -74,8 +72,7 @@
           "definition": "Int"
         },
         "PY_DJANGO_MODEL": {
-          "definition": "models.IntegerField",
-          "includeMetadataIntoDefinition": false
+          "definition": "models.IntegerField"
         },
         "PY_DATACLASS": {
           "definition": "int"
@@ -85,8 +82,7 @@
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.Integer({metadata}))"
           },
-          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"],
-          "includeMetadataIntoDefinition": false
+          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"]
         }
       }
     },
@@ -97,8 +93,7 @@
           "definition": "Double"
         },
         "PY_DJANGO_MODEL": {
-          "definition": "models.FloatField",
-          "includeMetadataIntoDefinition": false
+          "definition": "models.FloatField"
         },
         "PY_DATACLASS": {
           "definition": "float"
@@ -108,8 +103,7 @@
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.Float({metadata}))"
           },
-          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"],
-          "includeMetadataIntoDefinition": false
+          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"]
         }
       }
     },
@@ -132,8 +126,7 @@
             "from decimal import Decimal",
             "import ${FIELDS_MODULE} as fields"
           ],
-          "valueWrapper": "Decimal(\"%s\")",
-          "includeMetadataIntoDefinition": false
+          "valueWrapper": "Decimal(\"%s\")"
         },
         "KT_DATACLASS": {
           "definition": "BigDecimal",
@@ -167,8 +160,7 @@
           ],
           "definitionArguments": {
             "metadata" : "dict(marshmallow_field=fields.DateTime({metadata}))"
-          },
-          "includeMetadataIntoDefinition": false
+          }
         }
       }
     }

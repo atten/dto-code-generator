@@ -9,7 +9,6 @@ const val UNSET = "<UNSET>"
 data class DataType(
     val definition: String,
     val definitionArguments: Map<String, String> = mapOf(),
-    val includeMetadataIntoDefinition: Boolean = true,
     val valuesMapping: Map<String, String> = mapOf(),
     val valueWrapper: String? = null,
     val requiredHeaders: List<String> = listOf(),

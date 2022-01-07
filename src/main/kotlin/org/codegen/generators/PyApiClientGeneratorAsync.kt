@@ -30,10 +30,14 @@ class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiCli
         headers.add("from datetime import datetime")
         headers.add("from datetime import timedelta")
         headers.add("from datetime import timezone")
+        headers.add("from decimal import Decimal")
 
-        this.javaClass.getResource("/restApiClientAsync.py")!!.path
-            .let { File(it).readText() }
-            .let { addDefinition(it, "") }
+        listOf("/restApiClientAsync.py", "/serializationMethods.py").map { path ->
+            this.javaClass.getResource(path)!!.path
+                .let { File(it).readText() }
+        }
+            .joinToString(separator = "\n\n")
+            .let { addDefinition(it) }
 
         return ""
     }

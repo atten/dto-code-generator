@@ -4,14 +4,16 @@ import org.codegen.dto.*
 import org.codegen.extensions.*
 import java.lang.RuntimeException
 
-open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(PY_FORMAT_RULE, AllGeneratorsEnum.PY_DATACLASS, proxy) {
-    // list if __all__ items
-    protected val definedNames = mutableListOf<String>()
+open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGeneratorsEnum.PY_DATACLASS, proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(PY_FORMAT_RULE, includedEntityType, proxy) {
+    // list of __all__ items
+    private val definedNames = mutableListOf<String>()
 
-    override fun addDefinition(body: String, name: String) {
-        super.addDefinition(body, name)
-        if (name.isNotEmpty() && name !in definedNames)
-            definedNames.add(name)
+    override fun addDefinition(body: String, vararg names: String) {
+        super.addDefinition(body, *names)
+        // add missing names into __all__
+        names
+            .filter { it.isNotEmpty() && it !in definedNames }
+            .forEach { definedNames.add(it) }
     }
 
     override fun buildEntityName(name: String) = name.camelCase().capitalize()
@@ -89,9 +91,8 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             val metaString = field.metadata.map { entry -> "${entry.key.normalize().snakeCase()}=${entry.value}" }.joinToString()
             attrs.forEach { entry -> attrs[entry.key] = entry.value.replace("{metadata}", metaString) }
 
-            // include metadata into definition if needed
-            if (dtypeProps.includeMetadataIntoDefinition)
-                field.metadata.forEach { (key, value) -> attrs[key.snakeCase()] = value  }
+            // include metadata into definition
+            field.metadata.forEach { (key, value) -> attrs[key.snakeCase()] = value  }
 
             val expression = if (attrs.size == 1 && attrs.containsKey("default")) {
                 // = defaultValue
@@ -119,8 +120,9 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     protected fun buildProperty(property: Property, entity: Entity): String {
         val methodName = property.name.normalize().snakeCase()
         val annotation = if (property.description.isEmpty()) "" else "\"\"\"${property.description}\"\"\"\n    "
-        val returnName = getDtype(property.dtype).definition
-        val expression = buildExpression(property.expression, entity).let {
+        val dataType = getDtype(property.dtype)
+        val returnName = dataType.definition
+        val expression = buildExpression(property.expression, entity, dataType).let {
             if ("\n" in it)  // contains if-else
                 it.replace(":\n   ", ":\n    return")
             else  // one-liner
@@ -130,15 +132,15 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         return "@property\ndef ${methodName}(self) -> $returnName:\n    ${annotation}$expression"
     }
 
-    protected fun buildExpression(primitives: List<String>, entity: Entity) = primitives
-        .joinToString("") { buildPrimitive(it, entity) }
+    protected fun buildExpression(primitives: List<String>, entity: Entity, dataType: DataType? = null) = primitives
+        .joinToString("") { buildPrimitive(it, entity, dataType) }
         // remove redundant spaces
         .replace(" )", ")")
         .replace(" :", ":")
         .replace(" \n", "\n")
         .trim()
 
-    protected open fun buildPrimitive(key: String, entity: Entity): String = when {
+    protected open fun buildPrimitive(key: String, entity: Entity, dataType: DataType? = null): String = when {
         key == "IF" -> "if "
         key == "THEN" -> ":\n    "
         key == "ELSE" -> "\nelse:\n    "
@@ -150,7 +152,8 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         key.length == 1 && "-/*)".contains(key) -> "$key "
         key.length == 1 && "(".contains(key) -> key
         key.first().category in listOf(CharCategory.MATH_SYMBOL) -> "$key "
-        key.trimStart('-').first().isDigit() -> "$key "  // positive and negative numbers
+        // positive and negative numbers wrapped in dataType template (if defined)
+        key.trimStart('-').first().isDigit() -> (dataType?.toGeneratedValue(key) ?: key) + ' '
         key in entity.attributeNames -> "self.${key.normalize().snakeCase()} "
         else -> throw RuntimeException("Unrecognized primitive: $key (${key.first().category})")
     }
@@ -162,6 +165,7 @@ open class PyDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
 
     override fun buildBodyPostfix(): String {
         definedNames
+            .sorted()
             .joinToString("\n", "__all__ = [\n", "\n]") { "    \"${it}\"," }
             .also { addDefinition(it, "__all__") }
         return "\n"

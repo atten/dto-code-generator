@@ -73,10 +73,6 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
                 attrs["help_text"] = "_('${it.replace("'", "\\'")}')"
             }
 
-            // include metadata into definition if needed
-            if (dtypeProps.includeMetadataIntoDefinition)
-                field.metadata.forEach { (key, value) -> attrs[key.normalize().snakeCase()] = value  }
-
             val attrsString = attrs.map { entry -> "${entry.key}=${entry.value}" }.joinToString()
             lines.add("    $fieldName = ${dtypeProps.definition}($attrsString)")
         }
@@ -101,6 +97,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
     override fun buildBodyPostfix(): String {
         entities
             .map { buildEntityName(it.name) }
+            .sorted()
             .joinToString(",\n", "GENERATED_MODELS = [\n", "\n]") { "    $it" }
             .also { addDefinition(it, "GENERATED_MODELS") }
         return "\n"

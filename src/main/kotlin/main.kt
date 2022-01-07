@@ -4,7 +4,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import org.codegen.dto.*
 import org.codegen.generators.AllGeneratorsEnum
-import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.full.createInstance
 
 @Parameters(commandDescription = "Console tool which generates language-specific data classes and validators from JSON-like schema")
 class Args {
@@ -66,7 +66,7 @@ fun main(args: Array<String>) {
 
     val format = Json { ignoreUnknownKeys = true; isLenient = true }
     val generatorClass = params.target.generatorClass
-    val generator = generatorClass.primaryConstructor!!.call(null)
+    val generator = generatorClass.createInstance()
     val defaultInputFile = generatorClass.java.getResource("/builtinExtensions.json")!!.path
     val includedFiles = params.includeFiles.extractFiles().toMutableList().also { it.add(defaultInputFile) }
     val inputFiles = params.inputFiles.extractFiles()

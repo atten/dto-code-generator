@@ -75,9 +75,9 @@ abstract class AbstractCodeGenerator(
         includedEntityType.generatorClass.primaryConstructor!!.call(this)
     }
 
-    protected open fun addDefinition(body: String, name: String) {
+    protected open fun addDefinition(body: String, vararg names: String) {
         if (parent != null) {
-            parent.addDefinition(body, name)
+            parent.addDefinition(body, *names)
         }
         else {
             if (!includedDefinitions.contains(body))
@@ -100,8 +100,8 @@ abstract class AbstractCodeGenerator(
     }
 
     protected fun findEntity(name: String): Entity? {
-        val allEntities = entities + includedEntities + ((parent?.includedEntities ?: listOf()) + (parent?.entities ?: listOf()))
-        return allEntities.find { it.name == name }
+        val allEntities = entities + includedEntities
+        return allEntities.find { it.name == name } ?: parent?.findEntity(name)
     }
 
     protected fun getDtype(name: String): DataType {
@@ -124,7 +124,7 @@ abstract class AbstractCodeGenerator(
 
                 includedEntityGenerator
                     .buildEntity( entity )
-                    .also { addDefinition(it, name = buildEntityName(name)) }
+                    .also { addDefinition(it, buildEntityName(name)) }
             }
     }
 

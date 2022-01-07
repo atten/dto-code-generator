@@ -8,7 +8,7 @@ import java.io.File
 
 open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(PY_FORMAT_RULE, AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS, proxy) {
     protected open val baseClassName = "BaseJsonApiClient"
-    private val atomicJsonTypes = listOf("str", "float", "int", "None", "bool")
+    protected val atomicJsonTypes = listOf("str", "float", "int", "None", "bool")
     // list if __all__ items
     private val definedNames = mutableListOf<String>()
 
@@ -32,10 +32,12 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         }
     }
 
-    override fun addDefinition(body: String, name: String) {
-        super.addDefinition(body, name)
-        if (name.isNotEmpty() && name !in definedNames)
-            definedNames.add(name)
+    override fun addDefinition(body: String, vararg names: String) {
+        super.addDefinition(body, *names)
+        // add missing names into __all__
+        names
+            .filter { it.isNotEmpty() && it !in definedNames }
+            .forEach { definedNames.add(it) }
     }
 
     protected open fun buildMethodDefinition(name: String, arguments: List<String>, returnStatement: String, singleLine: Boolean?): String {
@@ -237,16 +239,21 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         headers.add("from datetime import datetime")
         headers.add("from datetime import timedelta")
         headers.add("from datetime import timezone")
+        headers.add("from decimal import Decimal")
 
-        this.javaClass.getResource("/restApiClient.py")!!.path
-            .let { File(it).readText() }
-            .let { addDefinition(it, "") }
+        listOf("/restApiClient.py", "/serializationMethods.py").map { path ->
+            this.javaClass.getResource(path)!!.path
+                .let { File(it).readText() }
+        }
+            .joinToString(separator = "\n\n")
+            .let { addDefinition(it) }
 
         return ""
     }
 
     override fun buildBodyPostfix(): String {
         definedNames
+            .sorted()
             .joinToString("\n", "__all__ = [\n", "\n]") { "    \"${it}\"," }
             .also { addDefinition(it, "__all__") }
         return "\n"

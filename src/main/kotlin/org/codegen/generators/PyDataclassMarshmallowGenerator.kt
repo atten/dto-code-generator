@@ -3,7 +3,7 @@ package org.codegen.generators
 import org.codegen.dto.*
 import org.codegen.extensions.*
 
-class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : PyDataclassGenerator(proxy) {
+class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : PyDataclassGenerator(AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS, proxy) {
 
     override fun buildEntity(entity: Entity): String {
         val preLines = mutableListOf<String>()
@@ -23,7 +23,6 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
         }
 
         headers.add("from dataclasses import dataclass, field")
-        definedNames.add(className)
 
         entity.description?.also {
             lines.add("    \"\"\"")
@@ -37,16 +36,6 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             val attrs = dtypeProps.definitionArguments.toMutableMap()
 
             var definition = dtypeProps.definition
-
-            if (field.multiple) {
-                definition = "t.List[$definition]"
-
-                // redefine marshmallow field in metadata (preserve attributes of original nested element)
-                attrs["metadata"]?.let {
-                    if ("marshmallow_field" in it)
-                        attrs["metadata"] = it.replace("marshmallow_field=", "marshmallow_field=fields.List(") + ")"
-                }
-            }
 
             if (field.default != UNSET) {
                 when {
@@ -96,23 +85,34 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 val choicesName = "${choicesPrefix}S"
                 val choices = enum.keys.associate { key -> buildChoiceVariableName(field, key) to dtypeProps.toGeneratedValue(key) }
 
-                definedNames.add(choicesName)
-                choices.keys.forEach { definedNames.add(it) }
-
                 val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
-                preLines.add("$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]\n\n")
+                addDefinition("$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]", choicesName, *choices.keys.toTypedArray())
 
                 headers.add("from marshmallow import fields as marshmallow_fields")
                 field.metadata["validate"] = "[marshmallow_fields.validate.OneOf($choicesName)]"
             }
 
+            if (field.multiple) {
+                val metadata = attrs["metadata"]
+                if (metadata != null && "marshmallow_field" in metadata) {
+                    // redefine marshmallow field in metadata (preserve attributes of original nested element)
+                    attrs["metadata"] = metadata.replace("marshmallow_field=", "marshmallow_field=fields.List(") + ")"
+                } else if (field.metadata.isNotEmpty()) {
+                    headers.add("import marshmallow_dataclass")
+                    attrs["metadata"] = "dict(marshmallow_field=fields.List(marshmallow_fields.Nested(marshmallow_dataclass.class_schema($definition)), {metadata}))"
+                }
+
+                definition = "t.List[$definition]"
+            }
+
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
             val metaString = field.metadata.map { entry -> "${entry.key.normalize().snakeCase()}=${entry.value}" }.joinToString()
-            attrs.forEach { entry -> attrs[entry.key] = entry.value.replace("{metadata}", metaString) }
-
-            // include metadata into definition if needed
-            if (dtypeProps.includeMetadataIntoDefinition)
-                field.metadata.forEach { (key, value) -> attrs[key.snakeCase()] = value  }
+            attrs.forEach { entry ->
+                if ("{metadata}" in entry.value) {
+                    attrs[entry.key] = entry.value.replace("{metadata}", metaString)
+                    field.metadata.clear()
+                }
+            }
 
             val expression = if (attrs.size == 1 && attrs.containsKey("default")) {
                 // = defaultValue
@@ -159,7 +159,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
         return choicesPrefix + "_" + key.normalize().snakeCase().uppercase()
     }
 
-    override fun buildPrimitive(key: String, entity: Entity): String {
+    override fun buildPrimitive(key: String, entity: Entity, dataType: DataType?): String {
         // detect field|enum_val and convert appropriately
         if ("|" in key) {
             val (fieldName, attribute) = key.split('|', limit = 2)
@@ -169,7 +169,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 return buildChoiceVariableName(field, attribute) + ' '
             }
         }
-        return super.buildPrimitive(key, entity)
+        return super.buildPrimitive(key, entity, dataType)
     }
 
 }
