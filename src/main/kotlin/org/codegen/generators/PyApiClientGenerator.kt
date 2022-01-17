@@ -60,7 +60,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         }
     }
 
-    private fun buildEndpointHeader(endpoint: Endpoint): String {
+    protected open fun buildEndpointHeader(endpoint: Endpoint): String {
         val name = endpoint.name.snakeCase()
         val returnDtypeProps = getDtype(endpoint.dtype)
         val returnStatement = returnDtypeProps.definition
@@ -106,11 +106,13 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         }
 
         lines.add(buildMethodDefinition(name, arguments, returnStatement, singleLine = null))
-        endpoint.description?.let {
-            lines.add("    \"\"\"")
-            lines.add("    $it")
-            lines.add("    \"\"\"")
-        }
+        endpoint.description
+            ?.replace("\n", "\n    ")
+            ?.let {
+                lines.add("    \"\"\"")
+                lines.add("    $it")
+                lines.add("    \"\"\"")
+            }
         return lines.joinToString(separator = "\n")
     }
 
@@ -208,7 +210,10 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         return lines.joinToString(separator = "\n")
     }
 
-    private fun buildEndpoint(endpoint: Endpoint) = buildEndpointHeader(endpoint) + buildEndpointBody(endpoint).let { "\n$it" }.replace("\n", "\n    ")
+    private fun buildEndpoint(endpoint: Endpoint) =
+        buildEndpointHeader(endpoint) + buildEndpointBody(endpoint)
+            .let { if (it.isNotEmpty()) "\n$it" else it }
+            .replace("\n", "\n    ")
 
     override fun buildEntityName(name: String) = name.camelCase().capitalize()
 

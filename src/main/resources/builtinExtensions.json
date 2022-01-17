@@ -34,9 +34,11 @@
             "false": "False"
           },
           "definitionArguments": {
-            "metadata" : "dict(marshmallow_field=fields.Boolean({metadata}))"
+            "metadata": "dict(marshmallow_field=marshmallow.fields.Boolean({metadata}))"
           },
-          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"]
+          "requiredHeaders": [
+            "import marshmallow"
+          ]
         }
       }
     },
@@ -58,9 +60,11 @@
         "PY_MARSHMALLOW_DATACLASS": {
           "definition": "str",
           "definitionArguments": {
-            "metadata" : "dict(marshmallow_field=fields.String({metadata}))"
+            "metadata": "dict(marshmallow_field=marshmallow.fields.String({metadata}))"
           },
-          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"],
+          "requiredHeaders": [
+            "import marshmallow"
+          ],
           "valueWrapper": "\"%s\""
         }
       }
@@ -80,9 +84,11 @@
         "PY_MARSHMALLOW_DATACLASS": {
           "definition": "int",
           "definitionArguments": {
-            "metadata" : "dict(marshmallow_field=fields.Integer({metadata}))"
+            "metadata": "dict(marshmallow_field=marshmallow.fields.Integer({metadata}))"
           },
-          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"]
+          "requiredHeaders": [
+            "import marshmallow"
+          ]
         }
       }
     },
@@ -101,9 +107,11 @@
         "PY_MARSHMALLOW_DATACLASS": {
           "definition": "float",
           "definitionArguments": {
-            "metadata" : "dict(marshmallow_field=fields.Float({metadata}))"
+            "metadata": "dict(marshmallow_field=marshmallow.fields.Float({metadata}))"
           },
-          "requiredHeaders": ["import ${FIELDS_MODULE} as fields"]
+          "requiredHeaders": [
+            "import marshmallow"
+          ]
         }
       }
     },
@@ -120,11 +128,11 @@
         "PY_MARSHMALLOW_DATACLASS": {
           "definition": "Decimal",
           "definitionArguments": {
-            "metadata" : "dict(marshmallow_field=fields.Decimal({metadata}))"
+            "metadata": "dict(marshmallow_field=marshmallow.fields.Decimal({metadata}))"
           },
           "requiredHeaders": [
             "from decimal import Decimal",
-            "import ${FIELDS_MODULE} as fields"
+            "import marshmallow"
           ],
           "valueWrapper": "Decimal(\"%s\")"
         },
@@ -156,10 +164,10 @@
           "definition": "datetime",
           "requiredHeaders": [
             "from datetime import datetime",
-            "import ${FIELDS_MODULE} as fields"
+            "import marshmallow"
           ],
           "definitionArguments": {
-            "metadata" : "dict(marshmallow_field=fields.DateTime({metadata}))"
+            "metadata": "dict(marshmallow_field=marshmallow.fields.DateTime({metadata}))"
           }
         }
       }

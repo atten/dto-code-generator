@@ -35,7 +35,8 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
             lines.add("class ${className}(${parentClassName}):")
         }
 
-        headers.add("from dataclasses import dataclass, field")
+        headers.add("from dataclasses import dataclass")
+        headers.add("from dataclasses import field")
 
         entity.description?.also {
             lines.add("    \"\"\"")

@@ -2,6 +2,7 @@ package org.codegen.dto
 
 import org.codegen.generators.*
 import kotlinx.serialization.*
+import java.io.File
 
 const val UNSET = "<UNSET>"
 
@@ -14,6 +15,8 @@ data class DataType(
     val requiredHeaders: List<String> = listOf(),
     // list of related entity names. If entities aren't present in target file, they will be included (if found in included schemas)
     val requiredEntities: List<String> = listOf(),
+    val includeFiles: List<String> = listOf(),
+    val sourcePath: String = "",    // Original file path. Should be filled during initialization
 ) {
     fun toGeneratedValue(value: String): String {
         var result = valuesMapping.getOrDefault(value, value)
@@ -22,6 +25,8 @@ data class DataType(
         }
         return result
     }
+
+    fun loadIncludedFiles(): List<String> = includeFiles.map { File(sourcePath).resolveSibling(it).readText() }
 }
 
 @Serializable

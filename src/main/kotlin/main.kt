@@ -68,34 +68,39 @@ fun main(args: Array<String>) {
     val generatorClass = params.target.generatorClass
     val generator = generatorClass.createInstance()
     val defaultInputFile = generatorClass.java.getResource("/builtinExtensions.json")!!.path
-    val includedFiles = params.includeFiles.extractFiles().toMutableList().also { it.add(defaultInputFile) }
+    val includedFiles = params.includeFiles.extractFiles().toMutableList()
+        .also {
+            // prepend default extensions (might be overridden by custom extensions)
+            it.add(0, defaultInputFile)
+        }
     val inputFiles = params.inputFiles.extractFiles()
 
     generator.excludeDefinitionNames.addAll(params.excludedEntities)
 
-    includedFiles
-        .map { format.decodeFromString<Document>(File(it).readText()) }
-        .forEach { document ->
+    includedFiles.forEach { filePath ->
+        format.decodeFromString<Document>(File(filePath).readText()).let { document ->
             // add dtype extensions to specified generator
             document.extensions
                 .forEach { extension ->
                     extension.getForGenerator(params.target)
-                        ?.let { generator.addDataType(extension.dtype, it) }
+                        ?.let {
+                            generator.addDataType(extension.dtype, it.copy(sourcePath = filePath))
+                        }
                 }
 
             // include entities to specified generator (do not add them to output)
             document.entities
                 .forEach { generator.addEntity(it, output=false) }
         }
+    }
 
-    inputFiles
-        .map { format.decodeFromString<Document>(File(it).readText()) }
-        .forEach { document ->
+    inputFiles.forEach { filePath ->
+        format.decodeFromString<Document>(File(filePath).readText()).let { document ->
             // add dtype extensions to specified generator
             document.extensions
                 .forEach { extension ->
                     extension.getForGenerator(params.target)
-                        ?.let { generator.addDataType(extension.dtype, it) }
+                        ?.let { generator.addDataType(extension.dtype, it.copy(sourcePath = filePath)) }
                 }
 
             // include entities to specified generator
@@ -111,6 +116,7 @@ fun main(args: Array<String>) {
             document.endpoints
                 .forEach { generator.defaultEntity.endpoints.add(it) }
         }
+    }
 
     // output to stdout
     print(generator.build())

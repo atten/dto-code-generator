@@ -1,16 +1,17 @@
-    def _serialize(self, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
+    @classmethod
+    def _serialize(cls, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
         # auto-detect collections
         many = False
         _type = type(value)
-        if isinstance(value, (list, tuple, set)):
+        if isinstance(value, (list, tuple, set)) and value:
             # non-empty sequence
             _type = type(next(iter(value)))
             many = True
 
         # pick built-in serializer if specified for class
         method_name = '_serialize_{type}'.format(type=_type.__name__.lower())
-        if hasattr(self, method_name):
-            method = getattr(self, method_name)
+        if hasattr(cls, method_name):
+            method = getattr(cls, method_name)
             if many:
                 return list(map(method, value))
             return method(value)

@@ -22,7 +22,8 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             lines.add("class ${className}(${parentClassName}):")
         }
 
-        headers.add("from dataclasses import dataclass, field")
+        headers.add("from dataclasses import dataclass")
+        headers.add("from dataclasses import field")
 
         entity.description?.also {
             lines.add("    \"\"\"")
@@ -88,18 +89,17 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
                 addDefinition("$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]", choicesName, *choices.keys.toTypedArray())
 
-                headers.add("from marshmallow import fields as marshmallow_fields")
-                field.metadata["validate"] = "[marshmallow_fields.validate.OneOf($choicesName)]"
+                field.metadata["validate"] = "[marshmallow.fields.validate.OneOf($choicesName)]"
             }
 
             if (field.multiple) {
                 val metadata = attrs["metadata"]
                 if (metadata != null && "marshmallow_field" in metadata) {
                     // redefine marshmallow field in metadata (preserve attributes of original nested element)
-                    attrs["metadata"] = metadata.replace("marshmallow_field=", "marshmallow_field=fields.List(") + ")"
+                    attrs["metadata"] = metadata.replace("marshmallow_field=", "marshmallow_field=marshmallow.fields.List(") + ")"
                 } else if (field.metadata.isNotEmpty()) {
                     headers.add("import marshmallow_dataclass")
-                    attrs["metadata"] = "dict(marshmallow_field=fields.List(marshmallow_fields.Nested(marshmallow_dataclass.class_schema($definition)), {metadata}))"
+                    attrs["metadata"] = "dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema($definition)), {metadata}))"
                 }
 
                 definition = "t.List[$definition]"

@@ -80,8 +80,10 @@ abstract class AbstractCodeGenerator(
             parent.addDefinition(body, *names)
         }
         else {
-            if (!includedDefinitions.contains(body))
-                includedDefinitions.add(body)
+            body.trim().let { trimmed ->
+                if (!includedDefinitions.contains(trimmed))
+                    includedDefinitions.add(trimmed)
+            }
         }
     }
 
@@ -114,6 +116,9 @@ abstract class AbstractCodeGenerator(
     private fun useDataType(type: DataType) {
         // include headers
         type.requiredHeaders.forEach { headers.add(it.substituteEnvVars()) }
+
+        // include files
+        type.loadIncludedFiles().forEach { addDefinition(it) }
 
         // add missing entities (if required)
         type.requiredEntities
