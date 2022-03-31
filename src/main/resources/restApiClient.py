@@ -1,4 +1,5 @@
 JSON_PAYLOAD = t.Union[dict, str, int, float, list]
+RESPONSE_BODY = [str, io.TextIOWrapper]
 
 
 def failsafe_call(
@@ -51,6 +52,25 @@ def failsafe_call(
         )
 
 
+# Source: https://github.com/daggaz/json-stream/blob/master/src/json_stream/requests/__init__.py
+class IterableStream(io.RawIOBase):
+    def __init__(self, iterable):
+        self.iterator = iter(iterable)
+        self.remainder = None
+
+    def readinto(self, buffer):
+        try:
+            chunk = self.remainder or next(self.iterator)
+            length = min(len(buffer), len(chunk))
+            buffer[:length], self.remainder = chunk[:length], chunk[length:]
+            return length
+        except StopIteration:
+            return 0    # indicate EOF
+
+    def readable(self):
+        return True
+
+
 class BaseSchema(marshmallow.Schema):
     class Meta:
         # allow backward-compatible changes when new fields have added (simply ignore them)
@@ -93,7 +113,7 @@ class BaseJsonApiClient:
         method: str = 'get',
         query_params: t.Optional[dict] = None,
         payload: t.Optional[JSON_PAYLOAD] = None,
-    ) -> JSON_PAYLOAD:
+    ) -> RESPONSE_BODY:
         """
         Retrieve JSON response from remote API request.
 
@@ -132,21 +152,23 @@ class BaseJsonApiClient:
                 error_verbose = error_verbose.split(':', maxsplit=1)[-1].strip()
             raise RuntimeError(f'Failed to {method} {full_url}: {error_verbose}')
 
-    def _mk_request(self, *args, **kwargs) -> JSON_PAYLOAD:
-        response = self.pool.request(*args, **kwargs)
+    def _mk_request(self, *args, **kwargs) -> RESPONSE_BODY:
+        response = self.pool.request(*args, **kwargs, preload_content=False)
         if response.status >= 400:
             raise urllib3.exceptions.HTTPError('Server respond with status code {status}: {data}'.format(
                 status=response.status,
                 data=response.data,
             ))
-        bytes_data = response.data
 
         if 'json' in response.headers.get('content-type', ''):
-            bytes_data = bytes_data.strip()
-            if not bytes_data:
-                return ''
-            return json.loads(bytes_data.decode('utf-8'))
-        return bytes_data
+            # Convert JSON I/O bytes into I/O string.
+            # Use intermediate socket buffer of 1M because JSON tokenizer reads by 1 symbol which strikes network performance.
+            # This variant shows the best performance among others (via codecs.getreader or TextIOWrapper(response))
+            # noinspection PyTypeChecker
+            return io.TextIOWrapper(IterableStream(response.stream(amt=1024 * 1024)))
+
+        # decode whole non-json response into string
+        return response.data.decode()
 
     def _get_full_url(self, url: str, query_params: t.Optional[dict] = None) -> str:
         if self.base_url:

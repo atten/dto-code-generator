@@ -67,7 +67,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             .let {
                 if (endpoint.multiple) {
                     headers.add("import typing as t")
-                    "t.List[$it]"
+                    if (endpoint.cacheable) "t.List[$it]" else "t.Iterator[$it]"
                 }
                 else if (endpoint.nullable) {
                     headers.add("import typing as t")
@@ -179,8 +179,6 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         // prepare 'fetch' method call
         if (returnType == "None")
             lines.add("self._fetch(")
-        else if (atomicJsonTypes.contains(returnType))
-            lines.add("return self._fetch(")
         else
             lines.add("raw_data = self._fetch(")
 
@@ -201,11 +199,17 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         lines.add(")")  // end of 'self._fetch('
 
         // prepare return statement
-        if (!atomicJsonTypes.contains(returnType)) {
-            if (endpoint.multiple)
-                lines.add("return self._deserialize(raw_data, $returnType, many=True)")
+        if (endpoint.multiple)
+            if (endpoint.cacheable)
+                lines.add("return list(self._deserialize(raw_data, $returnType, many=True))")
             else
-                lines.add("return self._deserialize(raw_data, $returnType)")
+                lines.add("yield from self._deserialize(raw_data, $returnType, many=True)")
+        else if (returnType != "None") {
+            if (atomicJsonTypes.contains(returnType))
+                lines.add("gen = self._deserialize(raw_data)")
+            else
+                lines.add("gen = self._deserialize(raw_data, $returnType)")
+            lines.add("return next(gen)")
         }
         return lines.joinToString(separator = "\n")
     }
@@ -233,8 +237,10 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
 
     override fun buildBodyPrefix(): String {
         headers.add("import os")
+        headers.add("import io")
         headers.add("import typing as t")
         headers.add("import json")
+        headers.add("import naya")
         headers.add("import urllib3")
         headers.add("from urllib.parse import urljoin, urlencode")
         headers.add("from time import sleep")

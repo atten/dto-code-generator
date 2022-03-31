@@ -7,6 +7,11 @@ import java.io.File
 open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiClientGenerator(proxy) {
     override val baseClassName = "AmqpApiWithBlockingListener"
 
+    override fun buildEndpointHeader(endpoint: Endpoint): String {
+        // amqp client does not support streaming yet
+        return super.buildEndpointHeader(endpoint).replace("Iterator", "List")
+    }
+
     override fun buildEndpointBody(endpoint: Endpoint): String {
         val returnDtypeProps = getDtype(endpoint.dtype)
         val returnType = returnDtypeProps.definition
@@ -56,9 +61,6 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         }.let {
             if (returnType == "None")
                 it.replace("raw_data = ", "")
-            else if (atomicJsonTypes.contains(returnType))
-                // optimize redundant return line
-                it.replace("raw_data =", "return")
             else
                 it
         }.let {
@@ -66,11 +68,14 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         }
 
         // prepare return statement
-        if (!atomicJsonTypes.contains(returnType)) {
-            if (endpoint.multiple)
-                lines.add("return self._deserialize(raw_data, $returnType, many=True)")
+        if (endpoint.multiple)
+            lines.add("return list(self._deserialize(raw_data, $returnType, many=True))")
+        else if (returnType != "None") {
+            if (atomicJsonTypes.contains(returnType))
+                lines.add("gen = self._deserialize(raw_data)")
             else
-                lines.add("return self._deserialize(raw_data, $returnType)")
+                lines.add("gen = self._deserialize(raw_data, $returnType)")
+            lines.add("return next(gen)")
         }
 
         return lines.joinToString(separator = "\n")
@@ -78,6 +83,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
 
     override fun buildBodyPrefix(): String {
         headers.add("import typing as t")
+        headers.add("import io")
         headers.add("from dataclasses import is_dataclass")
         headers.add("from dataclasses import astuple")
         headers.add("from dataclasses import dataclass")
@@ -87,6 +93,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         headers.add("from datetime import timezone")
         headers.add("from decimal import Decimal")
         headers.add("import marshmallow")
+        headers.add("import naya")
         headers.add("import logging")
         headers.add("import time")
         headers.add("from funcy import memoize")

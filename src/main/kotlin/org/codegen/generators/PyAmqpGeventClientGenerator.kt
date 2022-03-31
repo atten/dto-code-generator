@@ -7,6 +7,8 @@ class PyAmqpGeventClientGenerator(proxy: AbstractCodeGenerator? = null) : PyAmqp
 
     override fun buildBodyPrefix(): String {
         headers.add("import typing as t")
+        headers.add("import io")
+        headers.add("import json")
         headers.add("from dataclasses import is_dataclass")
         headers.add("from dataclasses import astuple")
         headers.add("from dataclasses import dataclass")
@@ -16,6 +18,7 @@ class PyAmqpGeventClientGenerator(proxy: AbstractCodeGenerator? = null) : PyAmqp
         headers.add("from datetime import timezone")
         headers.add("from decimal import Decimal")
         headers.add("import marshmallow")
+        headers.add("import naya")
         headers.add("import logging")
         headers.add("import time")
         headers.add("from funcy import memoize")

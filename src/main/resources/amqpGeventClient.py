@@ -1,6 +1,7 @@
 RECOVERABLE_EXCEPTIONS = (ConnectionError, ConnectionResetError, IOError, ConnectionForced, RecoverableConnectionError)
 
 JSON_PAYLOAD = t.Union[dict, str, int, float, list]
+RESPONSE_BODY = [str, io.TextIOWrapper]
 
 
 class BaseSchema(marshmallow.Schema):
