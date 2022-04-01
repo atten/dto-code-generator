@@ -18,7 +18,7 @@ class PyAmqpGeventClientGenerator(proxy: AbstractCodeGenerator? = null) : PyAmqp
         headers.add("from datetime import timezone")
         headers.add("from decimal import Decimal")
         headers.add("import marshmallow")
-        headers.add("import naya")
+        headers.add("import ijson")
         headers.add("import logging")
         headers.add("import time")
         headers.add("from funcy import memoize")
@@ -29,6 +29,7 @@ class PyAmqpGeventClientGenerator(proxy: AbstractCodeGenerator? = null) : PyAmqp
         headers.add("from urllib.parse import urlparse")
         headers.add("from amqp.exceptions import RecoverableConnectionError, ConnectionForced")
         headers.add("from kombu import Connection, Exchange, Queue, Message")
+        headers.add("from socket import timeout as SocketTimeout")
 
         listOf("/amqpGeventClient.py", "/serializationMethods.py").map { path ->
             this.javaClass.getResource(path)!!.path

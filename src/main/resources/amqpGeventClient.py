@@ -1,7 +1,7 @@
 RECOVERABLE_EXCEPTIONS = (ConnectionError, ConnectionResetError, IOError, ConnectionForced, RecoverableConnectionError)
 
 JSON_PAYLOAD = t.Union[dict, str, int, float, list]
-RESPONSE_BODY = [str, io.TextIOWrapper]
+RESPONSE_BODY = [str, io.IOBase]
 
 
 class BaseSchema(marshmallow.Schema):
@@ -93,6 +93,8 @@ class AmqpWrapper:
 
     def __init__(self, amqp_url: str, read_exchange_name: str, read_queue_name: str, write_exchange_name: str = None,
                  prefetch_count: int = 30, logger: logging.Logger = None):
+        assert read_queue_name, 'read_queue_name must not be empty'  # prevent assigning random name by amqp
+
         self.amqp_url = amqp_url
         self.read_exchange_name = read_exchange_name
         self.read_queue_name = read_queue_name
@@ -106,6 +108,7 @@ class AmqpWrapper:
         self.is_listening = False
         self.is_stopped = False
         self.producer = None
+        self._incoming_message_handlers = []
 
     def connect(self, force=False):
         """attempts to connect. If fails, will throw an exception"""
@@ -143,24 +146,37 @@ class AmqpWrapper:
             on_transitional_fail=lambda exc, info: time.sleep(5)
         )
 
-    def _drain_events(self):
-        self.connection.drain_events()
-
-    def listen(self, *args, **kwargs):
+    def listen(self, timeout=None, *args, **kwargs):
+        """If timeout is set, listen each message no more than defined seconds. Listen forever otherwise."""
         self.is_listening = False
         self.try_connect()
         while True:
             try:
                 read_queue = self.declare_read_queue(*args, **kwargs)
-                with self.connection.Consumer(read_queue, callbacks=[self.handle],
-                                              prefetch_count=self.prefetch_count,
-                                              auto_declare=None):
+                with self.connection.Consumer(
+                    read_queue,
+                    callbacks=[self.handle],
+                    prefetch_count=self.prefetch_count,
+                    auto_declare=None,
+                ):
+                    timeout_verbose = f'(timeout={timeout}s)' if timeout else 'permanently'
                     self.is_listening = True
-                    self.logger.info('consume queue %s' % read_queue.name)
+                    self.logger.info(f'listen queue {read_queue.name} {timeout_verbose}')
+
                     while True:
-                        self._drain_events()
+                        self.connection.drain_events(timeout=timeout)
+            except SocketTimeout:
+                if timeout:
+                    return
+                self._try_reconnect()
             except RECOVERABLE_EXCEPTIONS:
                 self._try_reconnect()
+            finally:
+                self.is_listening = False
+
+    def add_incoming_message_handler(self, func: t.Callable[[JSON_PAYLOAD, Message], None]):
+        """Apply 'observer' pattern for listeners"""
+        self._incoming_message_handlers.append(func)
 
     def handle(self, body: list, message: Message):
         if not self.is_connected:
@@ -168,7 +184,9 @@ class AmqpWrapper:
             # (for some reason will be started another drain_events() cycle)
             return
 
-        self._process_message(body, message)
+        # iterate over all listeners
+        for func in self._incoming_message_handlers:
+            func(body, message)
 
     def publish(self, data: t.Any, *args, **kwargs):
         self.try_connect()
@@ -194,9 +212,6 @@ class AmqpWrapper:
 
     def delete_read_queue(self):
         self.delete_queue(self.read_queue_name)
-
-    def _process_message(self, body: JSON_PAYLOAD, message: Message):
-        raise NotImplemented
 
     # noinspection PyUnusedLocal
     def _handle_undelivered(self, exception, exchange, routing_key: str, message):
@@ -266,9 +281,15 @@ class BaseAmqpApiClient(AmqpWrapper):
         self.request_timeout = request_timeout
 
         self.pending_async_results = {}
+        self.add_incoming_message_handler(self._process_async_result)
 
-    def _process_message(self, body: list, message: Message):
-        parsed_body = AmqpResponse(*body)
+    def _process_async_result(self, body: JSON_PAYLOAD, message: Message):
+        try:
+            parsed_body = AmqpResponse(*body)
+        except TypeError:
+            # message does not fit signature, skip
+            return
+
         result = self.pending_async_results.pop(parsed_body.id, None)
         message.ack()
 

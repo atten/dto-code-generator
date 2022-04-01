@@ -1,7 +1,7 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
     id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlinVersion"
-    id 'com.google.cloud.tools.jib' version "3.1.4"
+    id 'com.google.cloud.tools.jib' version "3.2.1"
     id 'application'
 }
 

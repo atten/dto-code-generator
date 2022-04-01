@@ -1,5 +1,5 @@
 JSON_PAYLOAD = t.Union[dict, str, int, float, list]
-RESPONSE_BODY = [str, io.TextIOWrapper]
+RESPONSE_BODY = [str, io.IOBase]
 
 
 def failsafe_call(
@@ -52,25 +52,6 @@ def failsafe_call(
         )
 
 
-# Source: https://github.com/daggaz/json-stream/blob/master/src/json_stream/requests/__init__.py
-class IterableStream(io.RawIOBase):
-    def __init__(self, iterable):
-        self.iterator = iter(iterable)
-        self.remainder = None
-
-    def readinto(self, buffer):
-        try:
-            chunk = self.remainder or next(self.iterator)
-            length = min(len(buffer), len(chunk))
-            buffer[:length], self.remainder = chunk[:length], chunk[length:]
-            return length
-        except StopIteration:
-            return 0    # indicate EOF
-
-    def readable(self):
-        return True
-
-
 class BaseSchema(marshmallow.Schema):
     class Meta:
         # allow backward-compatible changes when new fields have added (simply ignore them)
@@ -81,6 +62,7 @@ class BaseJsonApiClient:
     base_url = ''
     default_max_retries = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5))
     default_retry_timeout = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3))
+    use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1)))
 
     def __init__(
         self,
@@ -161,11 +143,8 @@ class BaseJsonApiClient:
             ))
 
         if 'json' in response.headers.get('content-type', ''):
-            # Convert JSON I/O bytes into I/O string.
-            # Use intermediate socket buffer of 1M because JSON tokenizer reads by 1 symbol which strikes network performance.
-            # This variant shows the best performance among others (via codecs.getreader or TextIOWrapper(response))
-            # noinspection PyTypeChecker
-            return io.TextIOWrapper(IterableStream(response.stream(amt=1024 * 1024)))
+            # provide Bytes I/O for file-like JSON read
+            return response
 
         # decode whole non-json response into string
         return response.data.decode()

@@ -240,7 +240,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         headers.add("import io")
         headers.add("import typing as t")
         headers.add("import json")
-        headers.add("import naya")
+        headers.add("import ijson")
         headers.add("import urllib3")
         headers.add("from urllib.parse import urljoin, urlencode")
         headers.add("from time import sleep")

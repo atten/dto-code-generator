@@ -55,10 +55,10 @@
         return str(value)
 
     def _deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Optional[t.Type] = None, many: bool = False) -> t.Iterator[t.Any]:
-        if isinstance(raw_data, io.TextIOWrapper):
+        if hasattr(raw_data, 'read'):
             # read singular JSON objects at once and multiple objects in stream to reduce memory footprint
-            if many:
-                raw_data = naya.stream_array(naya.tokenize(raw_data))
+            if many and self.use_response_streaming:
+                raw_data = ijson.items(raw_data, 'item', use_float=True)
             else:
                 raw_data = json.loads(raw_data.read())
 

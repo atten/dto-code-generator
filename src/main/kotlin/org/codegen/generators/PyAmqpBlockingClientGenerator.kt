@@ -84,6 +84,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
     override fun buildBodyPrefix(): String {
         headers.add("import typing as t")
         headers.add("import io")
+        headers.add("import json")
         headers.add("from dataclasses import is_dataclass")
         headers.add("from dataclasses import astuple")
         headers.add("from dataclasses import dataclass")
@@ -93,7 +94,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         headers.add("from datetime import timezone")
         headers.add("from decimal import Decimal")
         headers.add("import marshmallow")
-        headers.add("import naya")
+        headers.add("import ijson")
         headers.add("import logging")
         headers.add("import time")
         headers.add("from funcy import memoize")
@@ -102,6 +103,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         headers.add("from urllib.parse import urlparse")
         headers.add("from amqp.exceptions import RecoverableConnectionError, ConnectionForced")
         headers.add("from kombu import Connection, Exchange, Queue, Message")
+        headers.add("from socket import timeout as SocketTimeout")
 
         listOf("/amqpBlockingClient.py", "/serializationMethods.py").map { path ->
             this.javaClass.getResource(path)!!.path
