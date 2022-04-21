@@ -93,8 +93,6 @@ class AmqpWrapper:
 
     def __init__(self, amqp_url: str, read_exchange_name: str, read_queue_name: str, write_exchange_name: str = None,
                  prefetch_count: int = 30, logger: logging.Logger = None):
-        assert read_queue_name, 'read_queue_name must not be empty'  # prevent assigning random name by amqp
-
         self.amqp_url = amqp_url
         self.read_exchange_name = read_exchange_name
         self.read_queue_name = read_queue_name
@@ -200,6 +198,7 @@ class AmqpWrapper:
 
     @memoize
     def declare_read_queue(self, *args, **kwargs) -> Queue:
+        assert self.read_queue_name, 'read_queue_name must not be empty'  # prevent assigning random name by amqp
         self.connect()
         read_exchange = Exchange(self.read_exchange_name, 'direct', durable=True)
         read_queue = Queue(self.read_queue_name, exchange=read_exchange, *args, **kwargs)
