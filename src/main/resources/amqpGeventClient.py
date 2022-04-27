@@ -205,13 +205,6 @@ class AmqpWrapper:
         read_queue(self.connection).declare()
         return read_queue
 
-    def delete_queue(self, queue_name: str):
-        self.logger.info('{}: delete queue {}'.format(self.__class__.__name__, queue_name))
-        Queue(name=queue_name, channel=self.connection).delete()
-
-    def delete_read_queue(self):
-        self.delete_queue(self.read_queue_name)
-
     # noinspection PyUnusedLocal
     def _handle_undelivered(self, exception, exchange, routing_key: str, message):
         """
@@ -304,7 +297,10 @@ class BaseAmqpApiClient(AmqpWrapper):
 
     @property
     def _read_queue_kwargs(self) -> dict:
-        return dict(routing_key=self.read_queue_name)
+        return dict(
+            routing_key=self.read_queue_name,
+            auto_delete=True,  # incoming queue is one-off (only for this client)
+        )
 
     def _mk_request(self, routing_key: str, func: str, *args) -> AsyncAmqpResult:
         _id = str(uuid4())
@@ -329,40 +325,31 @@ class BaseAmqpApiClient(AmqpWrapper):
         self.publish(astuple(payload), **kwargs)
         return result
 
-    def stop(self):
-        if self.is_connected:
-            # cleanup before disconnect
-            self.delete_read_queue()
-        super().stop()
-
 
 class AmqpApiWithLazyListener(BaseAmqpApiClient):
     """Composition of normal Gateway API + gevent background listener launched on demand"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.listener = None
-        self.lock = Semaphore()
-
-    def _run_listener(self):
-        self.listen(routing_key=self.read_queue_name)
+        self._listener_greenlet = None
+        self._lock = Semaphore()
 
     def ensure_listen(self):
         another_try = False
 
-        with self.lock:
-            if self.listener and not self.is_listening:
-                self.listener.kill()
+        with self._lock:
+            if self._listener_greenlet and not self.is_listening:
+                self._listener_greenlet.kill()
 
-            if not self.listener or self.listener.dead:
+            if not self._listener_greenlet or self._listener_greenlet.dead:
                 total_waiting = 0
                 self.logger.debug('spawn %s' % self)
-                self.listener = gevent.spawn(self._run_listener)
+                self._listener_greenlet = gevent.spawn(self.listen, **self._read_queue_kwargs)
 
                 while not self.is_listening:
                     gevent.sleep(0.1)
-                    if self.listener.exception:
-                        raise self.listener.exception
+                    if self._listener_greenlet.exception:
+                        raise self._listener_greenlet.exception
 
                     total_waiting += 0.1
                     if self.is_connected and total_waiting > 5:
@@ -379,8 +366,8 @@ class AmqpApiWithLazyListener(BaseAmqpApiClient):
             self.ensure_listen()
 
     def stop(self):
-        if self.listener:
-            self.listener.kill()
+        if self._listener_greenlet:
+            self._listener_greenlet.kill()
         super().stop()
 
     def _mk_request(self, routing_key: str, func: str, *args) -> AsyncAmqpResult:

@@ -205,13 +205,6 @@ class AmqpWrapper:
         read_queue(self.connection).declare()
         return read_queue
 
-    def delete_queue(self, queue_name: str):
-        self.logger.info('{}: delete queue {}'.format(self.__class__.__name__, queue_name))
-        Queue(name=queue_name, channel=self.connection).delete()
-
-    def delete_read_queue(self):
-        self.delete_queue(self.read_queue_name)
-
     # noinspection PyUnusedLocal
     def _handle_undelivered(self, exception, exchange, routing_key: str, message):
         """
@@ -305,7 +298,10 @@ class BaseAmqpApiClient(AmqpWrapper):
 
     @property
     def _read_queue_kwargs(self) -> dict:
-        return dict(routing_key=self.read_queue_name)
+        return dict(
+            routing_key=self.read_queue_name,
+            auto_delete=True,  # incoming queue is one-off (only for this client)
+        )
 
     def _mk_request(self, routing_key: str, func: str, *args) -> SyncAmqpResult:
         _id = str(uuid4())
@@ -330,12 +326,6 @@ class BaseAmqpApiClient(AmqpWrapper):
         self.publish(astuple(payload), **kwargs)
         return result
 
-    def stop(self):
-        if self.is_connected:
-            # cleanup before disconnect
-            self.delete_read_queue()
-        super().stop()
-
 
 class AmqpApiWithBlockingListener(BaseAmqpApiClient):
     """
@@ -344,7 +334,7 @@ class AmqpApiWithBlockingListener(BaseAmqpApiClient):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.lock = Lock()
+        self._lock = Lock()
 
     def _process_async_result(self, body: list, message: Message):
         """
@@ -359,7 +349,7 @@ class AmqpApiWithBlockingListener(BaseAmqpApiClient):
             raise StopIteration
 
     def _mk_request(self, routing_key: str, func: str, *args) -> SyncAmqpResult:
-        with self.lock:
+        with self._lock:
             ret = super()._mk_request(routing_key, func, *args)
 
             # listen to queue and interrupt after first message
