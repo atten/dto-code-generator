@@ -1,4 +1,5 @@
 JSON_PAYLOAD = t.Union[dict, str, int, float, list]
+RESPONSE_BODY = JSON_PAYLOAD
 
 
 async def failsafe_call_async(
@@ -61,6 +62,7 @@ class BaseJsonApiClientAsync:
     base_url = ''
     default_max_retries = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5))
     default_retry_timeout = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3))
+    use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 0)))   # disabled for async client (not implemented yet)
 
     def __init__(
         self,

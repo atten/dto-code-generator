@@ -7,7 +7,10 @@ class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiCli
     override val baseClassName = "BaseJsonApiClientAsync"
 
     override fun buildMethodDefinition(name: String, arguments: List<String>, returnStatement: String, singleLine: Boolean?): String {
-        val ret = super.buildMethodDefinition(name, arguments, returnStatement, singleLine).let { if (it.startsWith("async")) it else "async $it" }
+        val newReturnStatement = returnStatement.replace("Iterator", "AsyncIterator")
+        val ret = super.buildMethodDefinition(name, arguments, newReturnStatement, singleLine)
+            .let { if (it.startsWith("async")) it else "async $it" }
+
         if (singleLine == null && ret.length > 120)
             return buildMethodDefinition(name, arguments, returnStatement, singleLine = false)
         return ret
@@ -16,6 +19,13 @@ class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiCli
     override fun buildEndpointBody(endpoint: Endpoint): String {
         return super.buildEndpointBody(endpoint)
             .replace("self._fetch", "await self._fetch")
+            .let {
+                if ("yield from" in it) {
+                    it.replace("yield from", "for item in") + ":\n    yield item"
+                } else {
+                    it
+                }
+            }
     }
 
     override fun buildBodyPrefix(): String {
