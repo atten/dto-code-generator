@@ -157,11 +157,13 @@ class AmqpWrapper:
                     prefetch_count=self.prefetch_count,
                     auto_declare=None,
                 ):
-                    timeout_verbose = f'(timeout={timeout}s)' if timeout else 'permanently'
+                    self.is_connected = True
                     self.is_listening = True
+                    timeout_verbose = f'(timeout={timeout}s)' if timeout else 'permanently'
                     self.logger.info(f'listen queue {read_queue.name} {timeout_verbose}')
 
-                    while True:
+                    # if connection.close() called, connection.connection set to None
+                    while self.connection.connection is not None:
                         self.connection.drain_events(timeout=timeout)
             except SocketTimeout:
                 if timeout:
@@ -179,7 +181,8 @@ class AmqpWrapper:
     def handle(self, body: list, message: Message):
         if not self.is_connected:
             # prevents processing of downloaded messages after connection.close()
-            # (for some reason will be started another drain_events() cycle)
+            # (for some reason another drain_events() cycle will be started)
+            self.logger.warning(f'skip message {message} due to disconnected state')
             return
 
         # iterate over all listeners
