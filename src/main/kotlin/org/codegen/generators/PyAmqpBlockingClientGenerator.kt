@@ -105,7 +105,11 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         headers.add("from kombu import Connection, Exchange, Queue, Message")
         headers.add("from socket import timeout as SocketTimeout")
 
-        listOf("/amqpBlockingClient.py", "/serializationMethods.py").map { path ->
+        listOf(
+            "/amqpBlockingClient.py",
+            "/serializationMethods.py",
+            "/failsafeCall.py",
+        ).map { path ->
             this.javaClass.getResource(path)!!.path
                 .let { File(it).readText() }
         }

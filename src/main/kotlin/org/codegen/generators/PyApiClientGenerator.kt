@@ -252,7 +252,11 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         headers.add("from datetime import timezone")
         headers.add("from decimal import Decimal")
 
-        listOf("/restApiClient.py", "/serializationMethods.py").map { path ->
+        listOf(
+            "/restApiClient.py",
+            "/serializationMethods.py",
+            "/failsafeCall.py",
+        ).map { path ->
             this.javaClass.getResource(path)!!.path
                 .let { File(it).readText() }
         }

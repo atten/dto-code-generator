@@ -10,56 +10,6 @@ class BaseSchema(marshmallow.Schema):
         unknown = marshmallow.EXCLUDE
 
 
-def failsafe_call(
-    func: t.Callable,
-    exceptions: t.Iterable[t.Type[Exception]],
-    args=None,
-    kwargs=None,
-    logger=None,
-    attempt=1,
-    max_attempts=10,
-    on_transitional_fail: t.Callable = None
-):
-    args = args or tuple()
-    kwargs = kwargs or dict()
-
-    if hasattr(func, '__self__'):
-        if hasattr(func.__self__, '__name__'):
-            func_name_verbose = '{}.{}'.format(func.__self__.__name__, func.__name__)
-        else:
-            func_name_verbose = '{}.{}'.format(func.__self__.__class__.__name__, func.__name__)
-    else:
-        func_name_verbose = func.__name__
-
-    try:
-        return func(*args, **kwargs)
-    except exceptions as e:
-        if logger:
-            logger.warning('got %s on %s, attempt %d / %d' % (
-                e.__class__.__name__,
-                func_name_verbose,
-                attempt,
-                max_attempts
-            ))
-
-        if attempt >= max_attempts:
-            raise e
-
-        if on_transitional_fail:
-            on_transitional_fail(e, dict(max_attempts=max_attempts, attempt=attempt))
-
-        return failsafe_call(
-            func,
-            exceptions,
-            args,
-            kwargs,
-            logger,
-            attempt + 1,
-            max_attempts,
-            on_transitional_fail
-        )
-
-
 def _check_amqp_alive(connection: Connection, raise_exception=False) -> bool:
     try:
         connection.connect()

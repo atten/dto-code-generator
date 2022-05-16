@@ -31,7 +31,11 @@ class PyAmqpGeventClientGenerator(proxy: AbstractCodeGenerator? = null) : PyAmqp
         headers.add("from kombu import Connection, Exchange, Queue, Message")
         headers.add("from socket import timeout as SocketTimeout")
 
-        listOf("/amqpGeventClient.py", "/serializationMethods.py").map { path ->
+        listOf(
+            "/amqpGeventClient.py",
+            "/serializationMethods.py",
+            "/failsafeCall.py",
+        ).map { path ->
             this.javaClass.getResource(path)!!.path
                 .let { File(it).readText() }
         }

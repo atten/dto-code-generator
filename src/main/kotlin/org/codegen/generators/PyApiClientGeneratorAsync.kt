@@ -42,7 +42,11 @@ class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiCli
         headers.add("from datetime import timezone")
         headers.add("from decimal import Decimal")
 
-        listOf("/restApiClientAsync.py", "/serializationMethods.py").map { path ->
+        listOf(
+            "/restApiClientAsync.py",
+            "/serializationMethods.py",
+            "/failsafeCallAsync.py",
+        ).map { path ->
             this.javaClass.getResource(path)!!.path
                 .let { File(it).readText() }
         }
