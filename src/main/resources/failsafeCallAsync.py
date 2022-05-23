@@ -13,10 +13,10 @@ async def failsafe_call_async(
     exceptions: t.Iterable[t.Type[Exception]],
     args=None,
     kwargs=None,
-    logger=None,
+    logger: t.Union[logging.Logger, t.Callable[[str], None]] = None,
     attempt=1,
     max_attempts=10,
-    on_transitional_fail: t.Callable = None
+    on_transitional_fail: t.Callable[[Exception, dict], None] = None,
 ):
     args = args or tuple()
     kwargs = kwargs or dict()
@@ -26,12 +26,16 @@ async def failsafe_call_async(
         return await func(*args, **kwargs)
     except exceptions as e:
         if logger:
-            logger.warning('got %s on %s, attempt %d / %d' % (
+            message = 'got %s on %s, attempt %d / %d' % (
                 e.__class__.__name__,
                 func_name_verbose,
                 attempt,
                 max_attempts
-            ))
+            )
+            if hasattr(logger, 'warning'):
+                logger.warning(message)
+            else:
+                logger(message)
 
         if attempt >= max_attempts:
             raise e

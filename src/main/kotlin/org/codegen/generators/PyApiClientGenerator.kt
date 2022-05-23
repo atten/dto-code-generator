@@ -239,6 +239,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         headers.add("import os")
         headers.add("import io")
         headers.add("import typing as t")
+        headers.add("import logging")
         headers.add("import json")
         headers.add("import ijson")
         headers.add("import urllib3")
