@@ -49,7 +49,7 @@ data class Field (
     val dtype: String,
     val shortDescription: String? = null,
     val longDescription: String? = null,
-    val metadata: MutableMap<String, String> = mutableMapOf(),
+    val metadata: Map<String, String> = mapOf(),
     val enum: Map<String, String>? = null,  // mappings <CONSTANT, REPRESENTATION> for field with fixed choices
     val enumPrefix: String? = null,
     val default: String? = UNSET,

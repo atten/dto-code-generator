@@ -35,6 +35,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             val dtypeProps = getDtype(field.dtype)
             val fieldName = field.name.normalize().snakeCase()
             val attrs = dtypeProps.definitionArguments.toMutableMap()
+            val fieldMetadata = field.metadata.toMutableMap()
 
             var definition = dtypeProps.definition
 
@@ -70,15 +71,15 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
 
             if (field.nullable) {
                 definition = "t.Optional[$definition]"
-                field.metadata["allow_none"] = "True"
+                fieldMetadata["allow_none"] = "True"
             }
 
             field.serializedName?.let {
-                field.metadata["data_key"] = "\"$it\""
+                fieldMetadata["data_key"] = "\"$it\""
             }
 
             if (field.excludeFromSerialization) {
-                field.metadata["load_only"] = "True"
+                fieldMetadata["load_only"] = "True"
             }
 
             field.enum?.let { enum ->
@@ -89,7 +90,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
                 addDefinition("$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]", choicesName, *choices.keys.toTypedArray())
 
-                field.metadata["validate"] = "[marshmallow.fields.validate.OneOf($choicesName)]"
+                fieldMetadata["validate"] = "[marshmallow.fields.validate.OneOf($choicesName)]"
             }
 
             if (field.multiple) {
@@ -97,7 +98,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 if (metadata != null && "marshmallow_field" in metadata) {
                     // redefine marshmallow field in metadata (preserve attributes of original nested element)
                     attrs["metadata"] = metadata.replace("marshmallow_field=", "marshmallow_field=marshmallow.fields.List(") + ")"
-                } else if (field.metadata.isNotEmpty()) {
+                } else if (fieldMetadata.isNotEmpty()) {
                     headers.add("import marshmallow_dataclass")
                     attrs["metadata"] = "dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema($definition)), {metadata}))"
                 }
@@ -106,11 +107,10 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             }
 
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
-            val metaString = field.metadata.map { entry -> "${entry.key.normalize().snakeCase()}=${entry.value}" }.joinToString()
+            val metaString = fieldMetadata.map { entry -> "${entry.key.normalize().snakeCase()}=${entry.value}" }.joinToString()
             attrs.forEach { entry ->
                 if ("{metadata}" in entry.value) {
                     attrs[entry.key] = entry.value.replace("{metadata}", metaString)
-                    field.metadata.clear()
                 }
             }
 
