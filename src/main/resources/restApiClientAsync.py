@@ -12,28 +12,32 @@ class BaseJsonApiClientAsync:
     base_url = ''
     default_max_retries = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5))
     default_retry_timeout = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3))
+    default_user_agent = os.environ.get('API_CLIENT_USER_AGENT')
     use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 0)))   # disabled for async client (not implemented yet)
 
     def __init__(
         self,
         base_url: str = '',
-        logger=None,
+        logger: t.Union[logging.Logger, t.Callable[[str], None]] = None,
         max_retries: int = default_max_retries,
         retry_timeout: float = default_retry_timeout,
+        user_agent: str = default_user_agent,
     ):
         """
         Remote API client constructor.
 
         :param base_url: protocol://url[:port]
-        :param logger: logger instance
+        :param logger: logger instance (or callable like print()) for requests diagnostics
         :param max_retries: number of connection attempts before RuntimeException raise
         :param retry_timeout: seconds between attempts
+        :param user_agent: request header
         """
         if base_url:
             self.base_url = base_url
         self.logger = logger
         self.max_retries = max_retries
         self.retry_timeout = retry_timeout
+        self.user_agent = user_agent
 
     def get_base_url(self) -> str:
         return self.base_url
@@ -62,6 +66,8 @@ class BaseJsonApiClientAsync:
         headers = headers or {}
         if payload:
             headers['content-type'] = 'application/json'
+        if self.user_agent:
+            headers['user-agent'] = self.user_agent
 
         try:
             return await failsafe_call_async(

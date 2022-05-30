@@ -16,7 +16,7 @@ async def failsafe_call_async(
     logger: t.Union[logging.Logger, t.Callable[[str], None]] = None,
     attempt=1,
     max_attempts=10,
-    on_transitional_fail: t.Callable[[Exception, dict], None] = None,
+    on_transitional_fail: t.Callable[[Exception, dict], t.Any] = None,
 ):
     args = args or tuple()
     kwargs = kwargs or dict()
