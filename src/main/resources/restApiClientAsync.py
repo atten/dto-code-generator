@@ -84,7 +84,7 @@ class BaseJsonApiClientAsync:
                 on_transitional_fail=lambda exc, info: asyncio.sleep(self.retry_timeout)
             )
         except Exception as e:
-            raise RuntimeError(f'Failed to {method} {full_url}: {e}')
+            raise RuntimeError(f'Failed to {method} {full_url}: {e}') from e
 
     @classmethod
     async def _mk_request(cls, full_url: str, method: str, payload: t.Optional[dict], headers: t.Optional[dict]) -> JSON_PAYLOAD:

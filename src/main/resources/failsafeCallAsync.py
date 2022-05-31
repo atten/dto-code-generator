@@ -38,7 +38,7 @@ async def failsafe_call_async(
                 logger(message)
 
         if attempt >= max_attempts:
-            raise e
+            raise e from None   # suppress context and multiple tracebacks of same error
 
         if on_transitional_fail:
             await on_transitional_fail(e, dict(max_attempts=max_attempts, attempt=attempt))

@@ -87,6 +87,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         headers.add("import json")
         headers.add("from dataclasses import is_dataclass")
         headers.add("from dataclasses import astuple")
+        headers.add("from dataclasses import asdict")
         headers.add("from dataclasses import dataclass")
         headers.add("import marshmallow_dataclass")
         headers.add("from datetime import datetime")

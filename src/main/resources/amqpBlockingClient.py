@@ -15,7 +15,7 @@ def _check_amqp_alive(connection: Connection, raise_exception=False) -> bool:
         connection.connect()
     except Exception as e:
         if raise_exception:
-            raise ConnectionError('Failed to connect to %s: %s' % (connection.host, e))
+            raise ConnectionError('Failed to connect to %s: %s' % (connection.host, e)) from e
         return False
     return True
 
@@ -195,7 +195,8 @@ class FailedAmqpRequestError(Exception):
 
 class SyncAmqpResult:
     """Simple, single-threaded implementation without gevent."""
-    def __init__(self, timeout: int):
+    def __init__(self, request: AmqpRequest, timeout: int):
+        self.request = request
         self._val = None
         self._exc = None
 
@@ -257,15 +258,14 @@ class BaseAmqpApiClient(AmqpWrapper):
         )
 
     def _mk_request(self, routing_key: str, func: str, *args) -> SyncAmqpResult:
-        _id = str(uuid4())
-        result = SyncAmqpResult(timeout=self.request_timeout)
-        payload = AmqpRequest(
-            id=_id,
+        request = AmqpRequest(
+            id=str(uuid4()),
             api_keys=self.api_keys or {},
             response_routing_key=self.read_queue_name,
             func=func,
             args=args
         )
+        result = SyncAmqpResult(request=request, timeout=self.request_timeout)
 
         kwargs = {
             'routing_key': routing_key,
@@ -273,10 +273,10 @@ class BaseAmqpApiClient(AmqpWrapper):
         if self.high_priority:
             kwargs['priority'] = 1
 
-        self.pending_async_results[_id] = result
+        self.pending_async_results[request.id] = result
         # declare incoming queue (if not yet done) before making of request, otherwise response may be lost
         self.declare_read_queue(**self._read_queue_kwargs)
-        self.publish(astuple(payload), **kwargs)
+        self.publish(astuple(request), **kwargs)
         return result
 
 

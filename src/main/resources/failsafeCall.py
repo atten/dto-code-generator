@@ -38,7 +38,7 @@ def failsafe_call(
                 logger(message)
 
         if attempt >= max_attempts:
-            raise e
+            raise e from None   # suppress context and multiple tracebacks of same error
 
         if on_transitional_fail:
             on_transitional_fail(e, dict(max_attempts=max_attempts, attempt=attempt))

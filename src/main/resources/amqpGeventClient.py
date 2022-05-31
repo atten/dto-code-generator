@@ -15,7 +15,7 @@ def _check_amqp_alive(connection: Connection, raise_exception=False) -> bool:
         connection.connect()
     except Exception as e:
         if raise_exception:
-            raise ConnectionError('Failed to connect to %s: %s' % (connection.host, e))
+            raise ConnectionError('Failed to connect to %s: %s' % (connection.host, e)) from e
         return False
     return True
 
@@ -196,8 +196,9 @@ class FailedAmqpRequestError(Exception):
 class AsyncAmqpResult:
     """Uses gevent.AsyncResult with pre-defined timeout."""
 
-    def __init__(self, timeout: int):
+    def __init__(self, request: AmqpRequest, timeout: int):
         self.timeout = timeout
+        self.request = request
         self.event = AsyncResult()
 
     def set_exception(self, exc: Exception):
@@ -210,7 +211,16 @@ class AsyncAmqpResult:
 
     def get(self) -> JSON_PAYLOAD:
         """Retrieve result or throw exception."""
-        return self.event.get(block=True, timeout=self.timeout)
+        try:
+            return self.event.get(block=True, timeout=self.timeout)
+        except gevent.Timeout as exc:
+            request_dict = asdict(self.request)
+            request_dict.pop('api_keys')
+            description = 'Timeout exceeded while waiting for AMQP result (timeout={timeout}s, request={request})'.format(
+                timeout=self.timeout,
+                request=request_dict,
+            )
+            raise RuntimeError(description) from exc
 
 
 class BaseAmqpApiClient(AmqpWrapper):
@@ -256,15 +266,14 @@ class BaseAmqpApiClient(AmqpWrapper):
         )
 
     def _mk_request(self, routing_key: str, func: str, *args) -> AsyncAmqpResult:
-        _id = str(uuid4())
-        result = AsyncAmqpResult(timeout=self.request_timeout)
-        payload = AmqpRequest(
-            id=_id,
+        request = AmqpRequest(
+            id=str(uuid4()),
             api_keys=self.api_keys or {},
             response_routing_key=self.read_queue_name,
             func=func,
             args=args
         )
+        result = AsyncAmqpResult(request=request, timeout=self.request_timeout)
 
         kwargs = {
             'routing_key': routing_key,
@@ -272,10 +281,10 @@ class BaseAmqpApiClient(AmqpWrapper):
         if self.high_priority:
             kwargs['priority'] = 1
 
-        self.pending_async_results[_id] = result
+        self.pending_async_results[request.id] = result
         # declare incoming queue (if not yet done) before making of request, otherwise response may be lost
         self.declare_read_queue(**self._read_queue_kwargs)
-        self.publish(astuple(payload), **kwargs)
+        self.publish(astuple(request), **kwargs)
         return result
 
 

@@ -88,7 +88,7 @@ class BaseJsonApiClient:
             if ' at 0x' in error_verbose:
                 # reduce noise in error description, e.g. in case of NewConnectionError
                 error_verbose = error_verbose.split(':', maxsplit=1)[-1].strip()
-            raise RuntimeError(f'Failed to {method} {full_url}: {error_verbose}')
+            raise RuntimeError(f'Failed to {method} {full_url}: {error_verbose}') from e
 
     def _mk_request(self, *args, **kwargs) -> RESPONSE_BODY:
         response = self.pool.request(*args, **kwargs, preload_content=False)
