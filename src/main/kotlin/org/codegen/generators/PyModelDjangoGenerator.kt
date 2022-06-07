@@ -23,23 +23,32 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
             val dtypeProps = getDtype(field.dtype)
             val fieldName = field.name.normalize().snakeCase()
             val attrs = dtypeProps.definitionArguments.toMutableMap()
+            val isScalar = plainDataTypes.contains(field.dtype)
 
             if (field.default != UNSET) {
-                dtypeProps.toGeneratedValue(field.default ?: "None").also {
-                    if ("[{".contains(it[0])) {
+                when {
+                    field.default == EMPTY_PLACEHOLDER -> {
+                        attrs["default"] = if (field.multiple) "list" else dtypeProps.definition
+                    }
+                    field.default == null -> {
+                        attrs["default"] = "None"
+                    }
+                    field.default.isNotEmpty() && "[{".contains(field.default[0]) -> {
                         // complex value (list/map/etc) should be inserted via function above class
                         val callableName = "default_$fieldName"
+                        val defaultValue = dtypeProps.toGeneratedValue(field.default)
                         preLines.add("def $callableName():")
-                        preLines.add("    return $it\n\n")
+                        preLines.add("    return $defaultValue\n\n")
                         attrs["default"] = callableName
-                    } else {
+                    }
+                    else -> {
                         // simple value -> insert inline
-                        attrs["default"] = it
+                        attrs["default"] = dtypeProps.toGeneratedValue(field.default)
                     }
                 }
 
-                // for complex data types with default value, 'blank' flag is required
-                if (!plainDataTypes.contains(field.dtype))
+                // 'blank' flag is required for non-scalar data types with default value
+                if (!isScalar || field.multiple)
                     attrs["blank"] = "True"
             }
 
@@ -49,6 +58,15 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
                 // redundant default argument
                 if (field.default == null)
                     attrs.remove("default")
+            }
+
+            val fieldClass = when {
+                field.multiple && isScalar -> "ArrayField".also {
+                    headers.add("from django.contrib.postgres.fields import ArrayField")
+                    attrs["base_field"] = dtypeProps.definition + "()"
+                }
+                field.multiple && !isScalar -> "models.JSONField"
+                else -> dtypeProps.definition
             }
 
             field.enum?.let {
@@ -74,7 +92,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
             }
 
             val attrsString = attrs.map { entry -> "${entry.key}=${entry.value}" }.joinToString()
-            lines.add("    $fieldName = ${dtypeProps.definition}($attrsString)")
+            lines.add("    $fieldName = ${fieldClass}($attrsString)")
         }
 
         if (entity.prefix != null && entity.prefix.isNotEmpty())
