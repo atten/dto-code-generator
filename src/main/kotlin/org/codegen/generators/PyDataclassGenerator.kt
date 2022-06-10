@@ -153,7 +153,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
         key.length == 1 && "-/*)".contains(key) -> "$key "
         key.length == 1 && "(".contains(key) -> key
         key.first().category in listOf(CharCategory.MATH_SYMBOL) -> "$key "
-        // positive and negative numbers wrapped in dataType template (if defined)
+        // wrap positive and negative numbers with dataType template (if defined)
         key.trimStart('-').first().isDigit() -> (dataType?.toGeneratedValue(key) ?: key) + ' '
         key in entity.attributeNames -> "self.${key.normalize().snakeCase()} "
         else -> throw RuntimeException("Unrecognized primitive: $key (${key.first().category})")

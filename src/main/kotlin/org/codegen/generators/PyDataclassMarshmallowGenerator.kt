@@ -160,13 +160,27 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
     }
 
     override fun buildPrimitive(key: String, entity: Entity, dataType: DataType?): String {
-        // detect field|enum_val and convert appropriately
+        // interpret "field|attribute" syntax
         if ("|" in key) {
             val (fieldName, attribute) = key.split('|', limit = 2)
             val field = entity.fields.find { it.name == fieldName }
+
+            // detect field|enum_val and convert appropriately
             if (field?.enum?.contains(attribute) == true) {
                 // add right indent
                 return buildChoiceVariableName(field, attribute) + ' '
+            } else if (field != null && attribute == "COUNT") {
+                // array length detected
+                val name = field.name.normalize().snakeCase()
+                return "len(self.$name) "
+            } else if (field != null && attribute == "UNIQUE_COUNT") {
+                // set length detected
+                val name = field.name.normalize().snakeCase()
+                return "len(set(self.$name)) "
+            } else if (field != null && attribute == "SORTED_ASC") {
+                // sorted list detected
+                val name = field.name.normalize().snakeCase()
+                return "sorted(self.$name) "
             }
         }
         return super.buildPrimitive(key, entity, dataType)
