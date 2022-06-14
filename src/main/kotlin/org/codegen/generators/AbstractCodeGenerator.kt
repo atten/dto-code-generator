@@ -122,7 +122,9 @@ abstract class AbstractCodeGenerator(
 
         // add missing entities (if required)
         type.requiredEntities
+             // filter both representations of entity names
             .filter { it !in excludeDefinitionNames }
+            .filter { buildEntityName(it) !in excludeDefinitionNames }
             .forEach { name ->
                 val entity = findEntity(name)
                 requireNotNull(entity) { "Missing required entity '$name'. Probably you forgot to include corresponding file: --include=<file>" }

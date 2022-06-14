@@ -103,10 +103,10 @@ fun main(args: Array<String>) {
                         ?.let { generator.addDataType(extension.dtype, it.copy(sourcePath = filePath)) }
                 }
 
-            // include entities to specified generator
+            // add entities to specified generator (with 'output' flag if not excluded)
             document.entities
                 .map { if (params.usePrefixed) it.prefixedFields() else it }
-                .forEach { generator.addEntity(it) }
+                .forEach { generator.addEntity(it, output = it.name !in params.excludedEntities && generator.buildEntityName(it.name ) !in params.excludedEntities) }
 
             // add root-level methods to default entity
             document.methods

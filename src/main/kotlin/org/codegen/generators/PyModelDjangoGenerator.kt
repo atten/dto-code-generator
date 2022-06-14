@@ -65,7 +65,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
                     headers.add("from django.contrib.postgres.fields import ArrayField")
                     attrs["base_field"] = dtypeProps.definition + "()"
                 }
-                field.multiple && !isScalar -> "models.JSONField"
+                field.multiple && !isScalar -> "models.JSONField" // use json field for multiple non-scalar values
                 else -> dtypeProps.definition
             }
 
