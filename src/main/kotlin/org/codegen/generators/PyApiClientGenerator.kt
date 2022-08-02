@@ -67,7 +67,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             .let {
                 if (endpoint.multiple) {
                     headers.add("import typing as t")
-                    if (endpoint.cacheable) "t.List[$it]" else "t.Iterator[$it]"
+                    if (endpoint.cacheable) "list[$it]" else "t.Iterator[$it]"
                 }
                 else if (endpoint.nullable) {
                     headers.add("import typing as t")

@@ -52,7 +52,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
             var definition = dtypeProps.definition
 
             if (field.multiple)
-                definition = "t.List[$definition]"
+                definition = "list[$definition]"
 
             if (field.default != UNSET) {
                 when {

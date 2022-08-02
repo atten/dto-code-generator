@@ -103,7 +103,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                     attrs["metadata"] = "dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema($definition)), {metadata}))"
                 }
 
-                definition = "t.List[$definition]"
+                definition = "list[$definition]"
             }
 
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
