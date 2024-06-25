@@ -22,6 +22,7 @@ class BaseJsonApiClient:
         max_retries: int = default_max_retries,
         retry_timeout: float = default_retry_timeout,
         user_agent: str = default_user_agent,
+        headers: t.Optional[t.Dict[str, str]] = None,
     ):
         """
         Remote API client constructor.
@@ -31,6 +32,7 @@ class BaseJsonApiClient:
         :param max_retries: number of connection attempts before RuntimeException raise
         :param retry_timeout: seconds between attempts
         :param user_agent: request header
+        :param headers: dict of HTTP headers (e.g. tokens)
         """
         if base_url:
             self.base_url = base_url
@@ -39,6 +41,7 @@ class BaseJsonApiClient:
         self.max_retries = max_retries
         self.retry_timeout = retry_timeout
         self.user_agent = user_agent
+        self.headers = headers
 
     def get_base_url(self) -> str:
         return self.base_url
@@ -62,7 +65,7 @@ class BaseJsonApiClient:
         :return: decoded JSON from server
         """
         full_url = self._get_full_url(url, query_params)
-        headers = dict()
+        headers = self.headers.copy() if self.headers else dict()
         if payload:
             payload = json.dumps(payload).encode('utf8')
             headers['content-type'] = 'application/json'
