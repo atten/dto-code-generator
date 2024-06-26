@@ -28,7 +28,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
             if (field.default != UNSET) {
                 when {
                     field.default == EMPTY_PLACEHOLDER -> {
-                        attrs["default"] = if (field.multiple) "list" else dtypeProps.definition
+                        attrs["default"] = if (field.many) "list" else dtypeProps.definition
                     }
                     field.default == null -> {
                         attrs["default"] = "None"
@@ -48,7 +48,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
                 }
 
                 // 'blank' flag is required for non-scalar data types with default value
-                if (!isScalar || field.multiple)
+                if (!isScalar || field.many)
                     attrs["blank"] = "True"
             }
 
@@ -61,11 +61,11 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
             }
 
             val fieldClass = when {
-                field.multiple && isScalar -> "ArrayField".also {
+                field.many && isScalar -> "ArrayField".also {
                     headers.add("from django.contrib.postgres.fields import ArrayField")
                     attrs["base_field"] = dtypeProps.definition + "()"
                 }
-                field.multiple && !isScalar -> "models.JSONField" // use json field for multiple non-scalar values
+                field.many && !isScalar -> "models.JSONField" // use json field for multiple non-scalar values
                 else -> dtypeProps.definition
             }
 

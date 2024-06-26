@@ -54,7 +54,7 @@ data class Field (
     val enumPrefix: String? = null,
     val default: String? = UNSET,
     val nullable: Boolean = false,
-    val multiple: Boolean = false,
+    val many: Boolean = false,
     val serializedName: String? = null,     // serialization/deserialization key
     val excludeFromSerialization: Boolean = false,
 ) {
@@ -70,7 +70,7 @@ data class MethodArgument (
     val enumPrefix: String? = null,
     val default: String? = UNSET,
     val nullable: Boolean = false,
-    val multiple: Boolean = false,   // whether more than one value can be provided
+    val many: Boolean = false,   // whether more than one value can be provided
 ) {
     val isEnum: Boolean = !enum.isNullOrEmpty()
 
@@ -81,7 +81,7 @@ data class MethodArgument (
         enum = enum,
         enumPrefix = enumPrefix,
         nullable = nullable,
-        multiple = multiple,
+        many = many,
         default = default
     )
 }

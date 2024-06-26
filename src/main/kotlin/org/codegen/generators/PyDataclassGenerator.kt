@@ -51,13 +51,13 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
 
             var definition = dtypeProps.definition
 
-            if (field.multiple)
+            if (field.many)
                 definition = "list[$definition]"
 
             if (field.default != UNSET) {
                 when {
                     field.default == EMPTY_PLACEHOLDER -> {
-                        attrs["default_factory"] = if (field.multiple) "list" else definition
+                        attrs["default_factory"] = if (field.many) "list" else definition
                     }
                     field.default == null -> {
                         attrs["default"] = "None"

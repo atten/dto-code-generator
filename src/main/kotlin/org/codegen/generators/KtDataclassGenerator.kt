@@ -17,7 +17,7 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
         val assignmentExpression = when (field.default) {
             UNSET -> ""
             null -> "null"
-            else -> if (field.multiple) {
+            else -> if (field.many) {
                 if (field.default == EMPTY_PLACEHOLDER)
                     "listOf()"
                 else
@@ -31,7 +31,7 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
         val typeName = dataType.definition
             .let { if (field.isEnum) (field.enumPrefix ?: field.name).camelCase().capitalize() else it }
             .let { if (field.nullable) "$it?" else it }
-            .let { if (field.multiple) "List<$it>" else it }
+            .let { if (field.many) "List<$it>" else it }
         return "$definitionKeyword $fieldName: $typeName $assignmentExpression".trim()
     }
 

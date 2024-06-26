@@ -16,7 +16,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         val dtypeProps = getDtype(argument.dtype)
         return if (argument.default == UNSET) {
             ""
-        } else if (argument.multiple) {
+        } else if (argument.many) {
             // use immutable tuple for default value
             if (argument.default == EMPTY_PLACEHOLDER) {
                 "()"
@@ -83,7 +83,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             val dtypeProps = getDtype(argument.dtype)
             val argTypeName = dtypeProps.definition
                 .let {
-                    if (argument.multiple) {
+                    if (argument.many) {
                         headers.add("import typing as t")
                         "t.Sequence[$it]"
                     }

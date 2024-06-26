@@ -19,7 +19,7 @@ class KtInterfaceGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeG
             val dtypeProps = getDtype(argument.dtype)
             val argTypeName = dtypeProps.definition
                 .let { if (argument.isEnum) argument.name.snakeCase().capitalize() else it }
-                .let { if (argument.multiple) "List<$it>" else it }
+                .let { if (argument.many) "List<$it>" else it }
                 .let { if (argument.nullable) "$it?" else it }
             val argDefaultValue = if (argument.default == UNSET) {
                 ""

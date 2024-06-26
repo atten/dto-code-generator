@@ -42,7 +42,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             if (field.default != UNSET) {
                 when {
                     field.default == EMPTY_PLACEHOLDER -> {
-                        attrs["default_factory"] = if (field.multiple) "list" else definition
+                        attrs["default_factory"] = if (field.many) "list" else definition
                     }
                     field.default == null -> {
                         attrs["default"] = "None"
@@ -93,7 +93,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 fieldMetadata["validate"] = "[marshmallow.fields.validate.OneOf($choicesName)]"
             }
 
-            if (field.multiple) {
+            if (field.many) {
                 val metadata = attrs["metadata"]
                 if (metadata != null && "marshmallow_field" in metadata) {
                     // redefine marshmallow field in metadata (preserve attributes of original nested element)
