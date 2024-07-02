@@ -15,13 +15,14 @@ class BaseJsonApiClient:
     default_user_agent = os.environ.get('API_CLIENT_USER_AGENT')
     use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1)))
 
+    @typechecked
     def __init__(
         self,
         base_url: str = '',
         logger: t.Union[logging.Logger, t.Callable[[str], None]] = None,
         max_retries: int = default_max_retries,
         retry_timeout: float = default_retry_timeout,
-        user_agent: str = default_user_agent,
+        user_agent: t.Optional[str] = default_user_agent,
         headers: t.Optional[t.Dict[str, str]] = None,
     ):
         """

@@ -252,6 +252,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         headers.add("from datetime import timedelta")
         headers.add("from datetime import timezone")
         headers.add("from decimal import Decimal")
+        headers.add("from typeguard import typechecked")
 
         listOf(
             "/restApiClient.py",

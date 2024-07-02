@@ -42,6 +42,7 @@ class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiCli
         headers.add("from datetime import timedelta")
         headers.add("from datetime import timezone")
         headers.add("from decimal import Decimal")
+        headers.add("from typeguard import typechecked")
 
         listOf(
             "/restApiClientAsync.py",
