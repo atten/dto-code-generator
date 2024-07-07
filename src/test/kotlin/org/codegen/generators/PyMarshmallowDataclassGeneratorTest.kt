@@ -9,11 +9,14 @@ import java.io.File
 class PyMarshmallowDataclassGeneratorTest {
     @Test
     fun entities() {
-        val args = Args()
-        args.target = AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS
-        args.inputFiles = listOf(
-            this.javaClass.getResource("/input/entities.json")!!.path,
-        )
+        val args = Args().also {
+            it.target = AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS
+            it.inputFiles = listOf(
+                this.javaClass.getResource("/input/entities.json")!!.path,
+            )
+        }
+
+        System.setProperty("DECORATOR_ARGS", "")
 
         val output = Builder(args).build()
         val expectedOutput = File(this.javaClass.getResource("PyMarshmallowGenerator/entitiesOutput.py")!!.path).readText()

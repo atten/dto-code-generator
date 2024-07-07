@@ -43,7 +43,10 @@ fun String.lowercaseFirst() = this.replaceFirstChar { it.lowercase() }
  */
 fun String.substituteEnvVars(required: Boolean = true): String {
     var str = this
-    System.getenv().forEach { (key, value) -> str = str.replace("\${$key}", value) }
+    System.getenv().forEach { (key, value) -> str = str.substituteEnvVariable(key, value) }
+    System.getProperties().forEach { (key, value) -> str = str.substituteEnvVariable(key.toString(), value.toString()) }
     require(!required || !str.contains("\${")) { "One or many env variables are missing: $str" }
     return str
 }
+
+private fun String.substituteEnvVariable(key: String, value: String): String = this.replace("\${$key}", value)

@@ -9,14 +9,18 @@ import java.io.File
 class PyAmqpBlockingClientGeneratorTest {
     @Test
     fun endpoints() {
-        val args = Args()
-        args.target = AllGeneratorsEnum.PY_AMQP_BLOCKING_CLIENT
-        args.includeFiles = listOf(
-            this.javaClass.getResource("/input/entities.json")!!.path,
-        )
-        args.inputFiles = listOf(
-            this.javaClass.getResource("/input/endpoints.json")!!.path,
-        )
+        val args = Args().also {
+            it.target = AllGeneratorsEnum.PY_AMQP_BLOCKING_CLIENT
+            it.includeFiles = listOf(
+                this.javaClass.getResource("/input/entities.json")!!.path,
+            )
+            it.inputFiles = listOf(
+                this.javaClass.getResource("/input/endpoints.json")!!.path,
+            )
+        }
+
+        System.setProperty("DECORATOR_ARGS", "")
+        System.setProperty("ENTITY_NAME", "TestApiClient")
 
         val output = Builder(args).build()
         val expectedOutput = File(this.javaClass.getResource("PyAmqpBlockingClientGenerator/endpointsOutput.py")!!.path).readText()

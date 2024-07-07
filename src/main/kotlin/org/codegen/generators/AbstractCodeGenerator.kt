@@ -44,7 +44,7 @@ abstract class AbstractCodeGenerator(
      * Pick primary corresponding enum value and it's aliases.
      */
     private val target: AllGeneratorsEnum by lazy {
-        AllGeneratorsEnum.values().forEach { enum ->
+        AllGeneratorsEnum.entries.forEach { enum ->
             if (this::class == enum.generatorClass) {
                 return@lazy enum
             }
