@@ -2,13 +2,14 @@ package org.codegen.generators
 
 import org.codegen.format.normalize
 import org.codegen.format.snakeCase
-import org.codegen.format.substituteEnvVars
 import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.DataType
 import org.codegen.schema.Entity
 import org.codegen.schema.Field
 import org.codegen.schema.Validator
+import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
+import kotlin.jvm.optionals.getOrNull
 
 class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : PyDataclassGenerator(AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS, proxy) {
 
@@ -16,8 +17,8 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
         val preLines = mutableListOf<String>()
         val className = buildEntityName(entity.name)
         val lines = mutableListOf<String>()
-        val decorator = "\${DECORATOR_ARGS}".substituteEnvVars().let {
-            if (it.isEmpty()) "@dataclass" else "@dataclass($it)"
+        val decorator = getEnvVariable("DECORATOR_ARGS").getOrNull().let {
+            if (it == null) "@dataclass" else "@dataclass($it)"
         }
 
         if (entity.parent == null) {

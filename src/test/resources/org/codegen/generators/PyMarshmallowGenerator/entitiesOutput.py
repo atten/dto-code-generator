@@ -19,7 +19,7 @@ class BasicDTO:
     enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
     # short description
     # very long description lol
-    documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="custom name")))
+    documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="customName")))
     optional_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()), default=0)
     nullable_value: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
 

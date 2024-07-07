@@ -1,18 +1,16 @@
 package org.codegen.generators
 
-import org.codegen.format.camelCase
-import org.codegen.format.lowercaseFirst
-import org.codegen.format.normalize
-import org.codegen.format.snakeCase
+import org.codegen.format.*
 import org.codegen.schema.Entity
 import org.codegen.schema.Field
+import org.codegen.utils.EnvironmentUtils.Companion.getEnvFlag
 
 /**
  * Supports kotlin serializer and jackson annotations
  */
 class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : KtDataclassGenerator(AllGeneratorsEnum.KT_SERIALIZABLE_DATACLASS, proxy) {
     private val builtinSerializableTypes = listOf("String", "Int", "Float", "Double", "Boolean")
-    private val useJackson = System.getenv()["USE_JACKSON"] == "1"
+    private val useJackson = getEnvFlag("USE_JACKSON")
     private val useKotlinX = true
 
     private fun getSerialName(field: Field): String {

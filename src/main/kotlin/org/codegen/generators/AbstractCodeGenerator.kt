@@ -1,8 +1,10 @@
 package org.codegen.generators
 
 import org.codegen.format.CodeFormatRules
-import org.codegen.format.substituteEnvVars
 import org.codegen.schema.*
+import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
+import org.codegen.utils.EnvironmentUtils.Companion.substituteEnvVariables
+import kotlin.jvm.optionals.getOrDefault
 import kotlin.reflect.full.primaryConstructor
 
 abstract class AbstractCodeGenerator(
@@ -34,10 +36,8 @@ abstract class AbstractCodeGenerator(
      * construct implied entity with name from env
      */
     val defaultEntity: Entity by lazy {
-        val namePlaceholder = "\${ENTITY_NAME}"
-        Entity(
-            name = namePlaceholder.substituteEnvVars(required = false)
-        ).also { addEntity(it) }
+        val name = getEnvVariable("ENTITY_NAME").getOrDefault("")
+        Entity(name = name).also { addEntity(it) }
     }
 
     /**
@@ -95,7 +95,7 @@ abstract class AbstractCodeGenerator(
 
     private fun useDataType(type: DataType) {
         // include headers
-        type.requiredHeaders.forEach { headers.add(it.substituteEnvVars()) }
+        type.requiredHeaders.forEach { headers.add(substituteEnvVariables(it)) }
 
         // include files
         type.loadIncludedFiles().forEach { addDefinition(it) }

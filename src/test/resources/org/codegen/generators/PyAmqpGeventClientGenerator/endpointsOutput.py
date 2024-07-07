@@ -547,7 +547,7 @@ class BasicDTO:
     enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
     # short description
     # very long description lol
-    documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="custom name")))
+    documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="customName")))
     optional_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()), default=0)
     nullable_value: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
 
@@ -559,6 +559,13 @@ class TestApiClient(AmqpApiWithLazyListener):
         """
         raw_data = self._mk_request(f'api/v1/basic', 'get_basic_dto_list').get()
         return list(self._deserialize(raw_data, BasicDTO, many=True))
+
+    def create_basic_dto_list(self, item: BasicDTO) -> BasicDTO:
+        item = self._serialize(item, is_payload=True)
+        args = (item,)
+        raw_data = self._mk_request(f'api/v1/basic', 'create_basic_dto_list', *args).get()
+        gen = self._deserialize(raw_data, BasicDTO)
+        return next(gen)
 
 
 __all__ = [

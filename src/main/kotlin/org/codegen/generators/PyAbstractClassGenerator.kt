@@ -10,7 +10,7 @@ open class PyAbstractClassGenerator(proxy: AbstractCodeGenerator? = null) : PyAp
     }
 
     override fun buildEndpointBody(endpoint: Endpoint): String {
-        return if (endpoint.description != null && endpoint.description.isNotEmpty()) {
+        return if (!endpoint.description.isNullOrEmpty()) {
             ""
         } else {
             "..."

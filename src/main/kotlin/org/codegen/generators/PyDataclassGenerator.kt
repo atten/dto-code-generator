@@ -6,6 +6,8 @@ import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.DataType
 import org.codegen.schema.Entity
 import org.codegen.schema.Property
+import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
+import kotlin.jvm.optionals.getOrNull
 
 open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGeneratorsEnum.PY_DATACLASS, proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
     CodeFormatRules.PYTHON, includedEntityType, proxy
@@ -27,8 +29,8 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
         val preLines = mutableListOf<String>()
         val className = buildEntityName(entity.name)
         val lines = mutableListOf<String>()
-        val decorator = "\${DECORATOR_ARGS}".substituteEnvVars().let {
-            if (it.isEmpty()) "@dataclass" else "@dataclass($it)"
+        val decorator = getEnvVariable("DECORATOR_ARGS").getOrNull().let {
+            if (it == null) "@dataclass" else "@dataclass($it)"
         }
 
         if (entity.parent == null) {
