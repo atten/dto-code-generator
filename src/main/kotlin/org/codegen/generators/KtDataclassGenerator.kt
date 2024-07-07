@@ -48,7 +48,7 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
         entity.description?.also {
             preLines.add("/**")
             preLines.add(" * " + entity.description)
-            preLines.add("*/")
+            preLines.add(" */")
         }
 
         // include parent class fields (because data class inheritance is not allowed)

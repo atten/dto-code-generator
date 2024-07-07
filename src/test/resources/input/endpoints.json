@@ -1,0 +1,11 @@
+{
+  "endpoints": [
+    {
+      "name": "get basic dto list",
+      "dtype": "basic DTO",
+      "multiple": true,
+      "description": "endpoint description",
+      "path": "api/v1/basic"
+    }
+  ]
+}

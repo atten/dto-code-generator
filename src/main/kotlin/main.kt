@@ -1,9 +1,13 @@
-import com.beust.jcommander.*
-import java.io.File
-import kotlinx.serialization.*
-import kotlinx.serialization.json.*
-import org.codegen.dto.*
+import com.beust.jcommander.JCommander
+import com.beust.jcommander.Parameter
+import com.beust.jcommander.ParameterException
+import com.beust.jcommander.Parameters
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import org.codegen.dto.Document
 import org.codegen.generators.AllGeneratorsEnum
+import java.io.File
+import java.util.*
 import kotlin.reflect.full.createInstance
 
 @Parameters(commandDescription = "Console tool which generates language-specific data classes and validators from JSON-like schema")
@@ -27,6 +31,31 @@ class Args {
     var help: Boolean = false
 }
 
+class ArgsParser(
+    private val input: Array<String>
+) {
+    fun parse(): Optional<Args> {
+        val params = Args()
+        val parser = JCommander(Args())
+//    parser.programName = "dto-codegen"
+
+        try {
+            JCommander.newBuilder().addObject(params).build().parse(*input)
+        }
+        catch (e: ParameterException) {
+            println(e.toString())
+            parser.usage()
+            return Optional.empty()
+        }
+        if (params.help) {
+            parser.usage()
+            return Optional.empty()
+        }
+        return Optional.of(params)
+    }
+
+}
+
 
 fun List<String>.extractFiles(): List<String> {
     // include input files / directories
@@ -45,25 +74,7 @@ fun List<String>.extractFiles(): List<String> {
 }
 
 
-fun main(args: Array<String>) {
-    val params = Args()
-    val parser = JCommander(Args())
-//    parser.programName = "dto-codegen"
-
-    try {
-        JCommander.newBuilder().addObject(params).build().parse(*args)
-    }
-    catch (e: ParameterException) {
-        println(e.toString())
-        parser.usage()
-        return
-    }
-
-    if (params.help) {
-        parser.usage()
-        return
-    }
-
+fun generate(params: Args): String {
     val format = Json { ignoreUnknownKeys = true; isLenient = true }
     val generatorClass = params.target.generatorClass
     val generator = generatorClass.createInstance()
@@ -118,6 +129,11 @@ fun main(args: Array<String>) {
         }
     }
 
-    // output to stdout
-    print(generator.build())
+    return generator.build()
+}
+
+
+fun main(args: Array<String>) {
+    val parser = ArgsParser(args)
+    parser.parse().ifPresent { print(generate(it)) }
 }

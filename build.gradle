@@ -1,8 +1,12 @@
 plugins {
+    // Apply the application plugin to add support for building a CLI application in Java.
+    id 'application'
     id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
     id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlinVersion"
+    // coverage
+    id 'jacoco'
+    // docker image builder
     id 'com.google.cloud.tools.jib' version "3.2.1"
-    id 'application'
 }
 
 group 'org.example'
@@ -21,4 +25,21 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3'
     implementation 'com.beust:jcommander:1.82'
+
+    // tests
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+}
+
+tasks.named('test') {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+
+    reports {
+        csv.required = true
+        html.required = false
+    }
 }

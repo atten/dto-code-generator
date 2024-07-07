@@ -1,0 +1,75 @@
+{
+  "entities": [
+    {
+      "name": "basic DTO",
+      "fields": [
+        {
+          "name": "timestamp",
+          "dtype": "datetime"
+        },
+        {
+          "name": "optional value",
+          "dtype": "float",
+          "default": 0
+        },
+        {
+          "name": "nullable value",
+          "dtype": "bool",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "enum value",
+          "dtype": "str",
+          "enum": {
+            "value 1": "name 1",
+            "value 2": "name 2",
+            "value 3": "name 3"
+          }
+        },
+        {
+          "name": "documented value",
+          "dtype": "float",
+          "shortDescription": "short description",
+          "longDescription": "very long description lol",
+          "serializedName": "custom name"
+        }
+      ]
+    },
+    {
+      "name": "advanced DTO",
+      "description": "entity with all-singing all-dancing properties",
+      "fields": [
+        {
+          "name": "a",
+          "dtype": "int"
+        },
+        {
+          "name": "b",
+          "dtype": "int"
+        }
+      ],
+      "validators": [
+        {
+          "message": "a must be < b",
+          "conditions": [
+            ["a", "<", "b"]
+          ]
+        },
+        {
+          "message": "a must be >= 0",
+          "conditions": [
+            ["a", ">=", "0"]
+          ]
+        }
+      ],
+      "properties": [
+        {
+          "name": "sum",
+          "expression": ["a", "+", "b"],
+          "dtype": "int"
+        }
+      ]
+    }
+  ]
+}

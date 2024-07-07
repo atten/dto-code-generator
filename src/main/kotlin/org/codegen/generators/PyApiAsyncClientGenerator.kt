@@ -3,7 +3,7 @@ package org.codegen.generators
 import org.codegen.dto.Endpoint
 import java.io.File
 
-class PyApiClientGeneratorAsync(proxy: AbstractCodeGenerator? = null) : PyApiClientGenerator(proxy) {
+class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiClientGenerator(proxy) {
     override val baseClassName = "BaseJsonApiClientAsync"
 
     override fun buildMethodDefinition(name: String, arguments: List<String>, returnStatement: String, singleLine: Boolean?): String {
