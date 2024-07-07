@@ -19,7 +19,7 @@ enum class AllGeneratorsEnum(val generatorClass: KClass<out AbstractCodeGenerato
     /**
      * define generator aliases for dtype implementation
      */
-    private fun dtypeAlias(): AllGeneratorsEnum? = when(this) {
+    private fun dtypeAlias(): AllGeneratorsEnum? = when (this) {
         KT_INTERFACE -> KT_DATACLASS
         KT_SERIALIZABLE_DATACLASS -> KT_DATACLASS
         PY_ABSTRACT_CLASS -> PY_MARSHMALLOW_DATACLASS

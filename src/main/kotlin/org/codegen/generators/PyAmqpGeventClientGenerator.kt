@@ -45,5 +45,4 @@ class PyAmqpGeventClientGenerator(proxy: AbstractCodeGenerator? = null) : PyAmqp
 
         return ""
     }
-
 }

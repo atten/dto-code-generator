@@ -1,7 +1,7 @@
 package org.codegen.generators
 
-import Args
-import generate
+import org.codegen.Args
+import org.codegen.Builder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -18,7 +18,7 @@ class PyAmqpGeventClientGeneratorTest {
             this.javaClass.getResource("/input/endpoints.json")!!.path,
         )
 
-        val output = generate(args)
+        val output = Builder(args).build()
         val expectedOutput = File(this.javaClass.getResource("PyAmqpGeventClientGenerator/endpointsOutput.py")!!.path).readText()
 
         Assertions.assertEquals(expectedOutput, output)

@@ -1,7 +1,14 @@
 package org.codegen.generators
 
-import org.codegen.dto.*
-import org.codegen.extensions.*
+import org.codegen.format.normalize
+import org.codegen.format.snakeCase
+import org.codegen.format.substituteEnvVars
+import org.codegen.schema.Constants.Companion.EMPTY
+import org.codegen.schema.Constants.Companion.UNSET
+import org.codegen.schema.DataType
+import org.codegen.schema.Entity
+import org.codegen.schema.Field
+import org.codegen.schema.Validator
 
 class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : PyDataclassGenerator(AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS, proxy) {
 
@@ -15,11 +22,11 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
 
         if (entity.parent == null) {
             lines.add(decorator)
-            lines.add("class ${className}:")
+            lines.add("class $className:")
         } else {
             val parentClassName = buildEntityName(entity.parent)
             lines.add(decorator)
-            lines.add("class ${className}(${parentClassName}):")
+            lines.add("class $className($parentClassName):")
         }
 
         headers.add("from dataclasses import dataclass")
@@ -41,7 +48,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
 
             if (field.default != UNSET) {
                 when {
-                    field.default == EMPTY_PLACEHOLDER -> {
+                    field.default == EMPTY -> {
                         attrs["default_factory"] = if (field.many) "list" else definition
                     }
                     field.default == null -> {
@@ -123,7 +130,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 "field($attrsString)"
             }
 
-            lines.add("    ${fieldName}: $definition = $expression")
+            lines.add("    $fieldName: $definition = $expression")
         }
 
         if (entity.validators.isNotEmpty()) {
@@ -132,7 +139,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
         }
 
         entity.validators
-            .map { buildValidator(it, entity)}
+            .map { buildValidator(it, entity) }
             .map { it.replace("\n", "\n        ") }
             .forEach { lines.add("        $it") }
 
@@ -185,5 +192,4 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
         }
         return super.buildPrimitive(key, entity, dataType)
     }
-
 }

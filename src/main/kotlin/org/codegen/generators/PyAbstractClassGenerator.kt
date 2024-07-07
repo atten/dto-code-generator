@@ -1,6 +1,6 @@
 package org.codegen.generators
 
-import org.codegen.dto.Endpoint
+import org.codegen.schema.Endpoint
 
 open class PyAbstractClassGenerator(proxy: AbstractCodeGenerator? = null) : PyApiClientGenerator(proxy) {
     override val baseClassName = "ABC"

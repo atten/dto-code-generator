@@ -1,17 +1,22 @@
 package org.codegen.generators
 
-import org.codegen.dto.*
-import org.codegen.extensions.*
+import org.codegen.format.CodeFormatRules
+import org.codegen.format.camelCase
+import org.codegen.format.normalize
+import org.codegen.format.snakeCase
+import org.codegen.schema.Constants.Companion.EMPTY
+import org.codegen.schema.Constants.Companion.UNSET
+import org.codegen.schema.Entity
 
-class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(PY_FORMAT_RULE, AllGeneratorsEnum.PY_DJANGO_MODEL, proxy) {
+class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(CodeFormatRules.PYTHON, AllGeneratorsEnum.PY_DJANGO_MODEL, proxy) {
     private val plainDataTypes = listOf("bool", "int", "float", "str")
 
-    override fun buildEntityName(name: String) = name.camelCase().capitalize()
+    override fun buildEntityName(name: String) = name.camelCase()
 
     override fun buildEntity(entity: Entity): String {
         val preLines = mutableListOf<String>()
         val className = buildEntityName(entity.name)
-        val lines = mutableListOf("class ${className}(models.Model):")
+        val lines = mutableListOf("class $className(models.Model):")
 
         entity.description?.also {
             lines.add("    \"\"\"")
@@ -27,7 +32,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
 
             if (field.default != UNSET) {
                 when {
-                    field.default == EMPTY_PLACEHOLDER -> {
+                    field.default == EMPTY -> {
                         attrs["default"] = if (field.many) "list" else dtypeProps.definition
                     }
                     field.default == null -> {
@@ -71,7 +76,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
 
             field.enum?.let {
                 val subclass = "models.TextChoices"
-                val enumName = (field.enumPrefix ?: field.name).camelCase().capitalize()
+                val enumName = (field.enumPrefix ?: field.name).camelCase()
                 val choicesDefinition = it.map { entry -> "    ${entry.key.snakeCase().uppercase()} = '${entry.key}', _('${entry.value}')" }.joinToString(
                     separator = "\n",
                     prefix = "class $enumName($subclass):\n",
@@ -92,7 +97,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
             }
 
             val attrsString = attrs.map { entry -> "${entry.key}=${entry.value}" }.joinToString()
-            lines.add("    $fieldName = ${fieldClass}($attrsString)")
+            lines.add("    $fieldName = $fieldClass($attrsString)")
         }
 
         if (entity.prefix != null && entity.prefix.isNotEmpty())

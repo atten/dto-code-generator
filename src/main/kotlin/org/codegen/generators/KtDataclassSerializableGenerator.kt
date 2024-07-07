@@ -1,7 +1,11 @@
 package org.codegen.generators
 
-import org.codegen.dto.*
-import org.codegen.extensions.*
+import org.codegen.format.camelCase
+import org.codegen.format.lowercaseFirst
+import org.codegen.format.normalize
+import org.codegen.format.snakeCase
+import org.codegen.schema.Entity
+import org.codegen.schema.Field
 
 /**
  * Supports kotlin serializer and jackson annotations
@@ -20,7 +24,7 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
         var definition = super.buildFieldDefinition(field)
         val serialName = getSerialName(field)
 
-        if (serialName != field.name.normalize().camelCase()) {
+        if (serialName != field.name.normalize().camelCase().lowercaseFirst()) {
             if (useKotlinX) {
                 headers.add("import kotlinx.serialization.SerialName")
                 definition = "@SerialName(\"$serialName\")\n$definition"
@@ -78,5 +82,4 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
             super.addDefinition(body, *names)
         }
     }
-
 }

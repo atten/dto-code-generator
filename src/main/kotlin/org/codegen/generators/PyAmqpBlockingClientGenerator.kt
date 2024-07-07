@@ -1,7 +1,7 @@
 package org.codegen.generators
 
-import org.codegen.dto.*
-import org.codegen.extensions.snakeCase
+import org.codegen.format.snakeCase
+import org.codegen.schema.Endpoint
 import java.io.File
 
 open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiClientGenerator(proxy) {
@@ -52,9 +52,9 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
             lines.add(payloadArgs.joinToString(", ", prefix = "args = (", postfix = ",)"))
 
         // prepare '_mk_request' method call
-        "raw_data = self._mk_request(${routingKey}, '${endpoint.name.snakeCase()}', *args).get()".let {
+        "raw_data = self._mk_request($routingKey, '${endpoint.name.snakeCase()}', *args).get()".let {
             if (payloadArgs.isEmpty())
-                // exclude empty args
+            // exclude empty args
                 it.replace(", *args", "")
             else
                 it

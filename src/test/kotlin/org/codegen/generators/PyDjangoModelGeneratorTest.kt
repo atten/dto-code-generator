@@ -1,8 +1,8 @@
 package org.codegen.generators
 
-import Args
-import generate
-import org.junit.jupiter.api.Assertions.*
+import org.codegen.Args
+import org.codegen.Builder
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -15,7 +15,7 @@ class PyDjangoModelGeneratorTest {
             this.javaClass.getResource("/input/entities.json")!!.path,
         )
 
-        val output = generate(args)
+        val output = Builder(args).build()
         val expectedOutput = File(this.javaClass.getResource("PyDjangoModelGenerator/entitiesOutput.py")!!.path).readText()
 
         assertEquals(expectedOutput, output)

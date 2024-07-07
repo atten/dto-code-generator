@@ -1,10 +1,15 @@
 package org.codegen.generators
 
-import org.codegen.dto.*
-import org.codegen.extensions.*
-import java.lang.RuntimeException
+import org.codegen.format.*
+import org.codegen.schema.Constants.Companion.EMPTY
+import org.codegen.schema.Constants.Companion.UNSET
+import org.codegen.schema.DataType
+import org.codegen.schema.Entity
+import org.codegen.schema.Property
 
-open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGeneratorsEnum.PY_DATACLASS, proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(PY_FORMAT_RULE, includedEntityType, proxy) {
+open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGeneratorsEnum.PY_DATACLASS, proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
+    CodeFormatRules.PYTHON, includedEntityType, proxy
+) {
     // list of __all__ items
     private val definedNames = mutableListOf<String>()
 
@@ -16,7 +21,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
             .forEach { definedNames.add(it) }
     }
 
-    override fun buildEntityName(name: String) = name.camelCase().capitalize()
+    override fun buildEntityName(name: String) = name.camelCase()
 
     override fun buildEntity(entity: Entity): String {
         val preLines = mutableListOf<String>()
@@ -28,11 +33,11 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
 
         if (entity.parent == null) {
             lines.add(decorator)
-            lines.add("class ${className}:")
+            lines.add("class $className:")
         } else {
-            val parentClassName = entity.parent.camelCase().capitalize()
+            val parentClassName = entity.parent.camelCase()
             lines.add(decorator)
-            lines.add("class ${className}(${parentClassName}):")
+            lines.add("class $className($parentClassName):")
         }
 
         headers.add("from dataclasses import dataclass")
@@ -56,7 +61,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
 
             if (field.default != UNSET) {
                 when {
-                    field.default == EMPTY_PLACEHOLDER -> {
+                    field.default == EMPTY -> {
                         attrs["default_factory"] = if (field.many) "list" else definition
                     }
                     field.default == null -> {
@@ -93,7 +98,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
             attrs.forEach { entry -> attrs[entry.key] = entry.value.replace("{metadata}", metaString) }
 
             // include metadata into definition
-            field.metadata.forEach { (key, value) -> attrs[key.snakeCase()] = value  }
+            field.metadata.forEach { (key, value) -> attrs[key.snakeCase()] = value }
 
             val expression = if (attrs.size == 1 && attrs.containsKey("default")) {
                 // = defaultValue
@@ -104,7 +109,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
                 "field($attrsString)"
             }
 
-            lines.add("    ${fieldName}: $definition = $expression")
+            lines.add("    $fieldName: $definition = $expression")
         }
 
         entity.properties
@@ -124,13 +129,13 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
         val dataType = getDtype(property.dtype)
         val returnName = dataType.definition
         val expression = buildExpression(property.expression, entity, dataType).let {
-            if ("\n" in it)  // contains if-else
+            if ("\n" in it) // contains if-else
                 it.replace(":\n   ", ":\n    return")
-            else  // one-liner
+            else // one-liner
                 "return $it"
         }
             .replace("\n", "\n    ")
-        return "@property\ndef ${methodName}(self) -> $returnName:\n    ${annotation}$expression"
+        return "@property\ndef $methodName(self) -> $returnName:\n    ${annotation}$expression"
     }
 
     protected fun buildExpression(primitives: List<String>, entity: Entity, dataType: DataType? = null) = primitives
@@ -171,5 +176,4 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
             .also { addDefinition(it, "__all__") }
         return "\n"
     }
-
 }

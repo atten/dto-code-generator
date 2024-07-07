@@ -1,6 +1,6 @@
 package org.codegen.generators
 
-import org.codegen.dto.Endpoint
+import org.codegen.schema.Endpoint
 import java.io.File
 
 class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiClientGenerator(proxy) {
@@ -57,5 +57,4 @@ class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiCli
 
         return ""
     }
-
 }
