@@ -2,7 +2,6 @@ package org.codegen.generators
 
 import org.codegen.format.CodeFormatRules
 import org.codegen.format.camelCase
-import org.codegen.format.normalize
 import org.codegen.format.snakeCase
 import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
@@ -26,7 +25,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
 
         for (field in entity.fields) {
             val dtypeProps = getDtype(field.dtype)
-            val fieldName = field.name.normalize().snakeCase()
+            val fieldName = field.name.snakeCase()
             val attrs = dtypeProps.definitionArguments.toMutableMap()
             val isScalar = plainDataTypes.contains(field.dtype)
 

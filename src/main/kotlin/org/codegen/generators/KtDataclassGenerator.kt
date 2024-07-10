@@ -16,7 +16,7 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
     protected open fun buildFieldDefinition(field: Field): String {
         val dataType = getDtype(field.dtype)
         val definitionKeyword = "val"
-        val fieldName = field.name.normalize().camelCase().lowercaseFirst()
+        val fieldName = field.name.camelCase().lowercaseFirst()
         val assignmentExpression = when (field.default) {
             UNSET -> ""
             null -> "null"

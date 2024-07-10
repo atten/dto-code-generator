@@ -15,14 +15,14 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
 
     private fun getSerialName(field: Field): String {
         // use camel_case (pythonic) serial names by default. This may be customized further
-        return field.name.normalize().snakeCase()
+        return field.name.snakeCase()
     }
 
     override fun buildFieldDefinition(field: Field): String {
         var definition = super.buildFieldDefinition(field)
         val serialName = getSerialName(field)
 
-        if (serialName != field.name.normalize().camelCase().lowercaseFirst()) {
+        if (serialName != field.name.camelCase().lowercaseFirst()) {
             if (useKotlinX) {
                 headers.add("import kotlinx.serialization.SerialName")
                 definition = "@SerialName(\"$serialName\")\n$definition"

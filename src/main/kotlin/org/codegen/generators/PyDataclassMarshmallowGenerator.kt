@@ -1,6 +1,5 @@
 package org.codegen.generators
 
-import org.codegen.format.normalize
 import org.codegen.format.snakeCase
 import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
@@ -41,7 +40,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
 
         for (field in entity.fieldsSortedByDefaults) {
             val dtypeProps = getDtype(field.dtype)
-            val fieldName = field.name.normalize().snakeCase()
+            val fieldName = field.name.snakeCase()
             val attrs = dtypeProps.definitionArguments.toMutableMap()
             val fieldMetadata = field.metadata.toMutableMap()
 
@@ -115,7 +114,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             }
 
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
-            val metaString = fieldMetadata.map { entry -> "${entry.key.normalize().snakeCase()}=${entry.value}" }.joinToString()
+            val metaString = fieldMetadata.map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
             attrs.forEach { entry ->
                 if ("{metadata}" in entry.value) {
                     attrs[entry.key] = entry.value.replace("{metadata}", metaString)
@@ -163,8 +162,8 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
     }
 
     private fun buildChoiceVariableName(field: Field, key: String): String {
-        val choicesPrefix = (field.enumPrefix ?: field.name.normalize()).snakeCase().uppercase()
-        return choicesPrefix + "_" + key.normalize().snakeCase().uppercase()
+        val choicesPrefix = (field.enumPrefix ?: field.name).snakeCase().uppercase()
+        return choicesPrefix + "_" + key.snakeCase().uppercase()
     }
 
     override fun buildPrimitive(key: String, entity: Entity, dataType: DataType?): String {
@@ -179,15 +178,15 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 return buildChoiceVariableName(field, attribute) + ' '
             } else if (field != null && attribute == "COUNT") {
                 // array length detected
-                val name = field.name.normalize().snakeCase()
+                val name = field.name.snakeCase()
                 return "len(self.$name) "
             } else if (field != null && attribute == "UNIQUE_COUNT") {
                 // set length detected
-                val name = field.name.normalize().snakeCase()
+                val name = field.name.snakeCase()
                 return "len(set(self.$name)) "
             } else if (field != null && attribute == "SORTED_ASC") {
                 // sorted list detected
-                val name = field.name.normalize().snakeCase()
+                val name = field.name.snakeCase()
                 return "sorted(self.$name) "
             }
         }

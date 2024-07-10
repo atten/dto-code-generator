@@ -53,7 +53,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
 
         for (field in entity.fieldsSortedByDefaults) {
             val dtypeProps = getDtype(field.dtype)
-            val fieldName = field.name.normalize().snakeCase()
+            val fieldName = field.name.snakeCase()
             val attrs = dtypeProps.definitionArguments.toMutableMap()
 
             var definition = dtypeProps.definition
@@ -96,7 +96,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
             }
 
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
-            val metaString = field.metadata.map { entry -> "${entry.key.normalize().snakeCase()}=${entry.value}" }.joinToString()
+            val metaString = field.metadata.map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
             attrs.forEach { entry -> attrs[entry.key] = entry.value.replace("{metadata}", metaString) }
 
             // include metadata into definition
@@ -126,7 +126,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
     }
 
     protected fun buildProperty(property: Property, entity: Entity): String {
-        val methodName = property.name.normalize().snakeCase()
+        val methodName = property.name.snakeCase()
         val annotation = if (property.description.isEmpty()) "" else "\"\"\"${property.description}\"\"\"\n    "
         val dataType = getDtype(property.dtype)
         val returnName = dataType.definition
@@ -162,7 +162,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
         key.first().category in listOf(CharCategory.MATH_SYMBOL) -> "$key "
         // wrap positive and negative numbers with dataType template (if defined)
         key.trimStart('-').first().isDigit() -> (dataType?.toGeneratedValue(key) ?: key) + ' '
-        key in entity.attributeNames -> "self.${key.normalize().snakeCase()} "
+        key in entity.attributeNames -> "self.${key.snakeCase()} "
         else -> throw RuntimeException("Unrecognized primitive: $key (${key.first().category})")
     }
 

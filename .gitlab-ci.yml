@@ -45,7 +45,7 @@ run-tests:
         - build/
   script:
     - ./gradlew jacocoTestReport
-    - awk -F, '{ instructions += $4 + $5; covered += $5 } END { print covered, "/", instructions, " instructions covered"; print 100*covered/instructions, "% covered" }' build/reports/jacoco/test/jacocoTestReport.csv
+    - awk -F, '{ lines += $8 + $9; covered += $9 } END { print covered, "/", lines, " lines covered"; print 100*covered/lines, "% covered" }' build/reports/jacoco/test/jacocoTestReport.csv
   coverage: '/([\d,.]+) \% covered/'
 
 docker-push:

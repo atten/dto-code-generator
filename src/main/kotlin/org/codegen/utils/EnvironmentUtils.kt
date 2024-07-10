@@ -27,6 +27,5 @@ class EnvironmentUtils {
         }
 
         private fun replacePlaceholder(input: String, key: String, value: String): String = input.replace("\${$key}", value)
-
     }
 }
