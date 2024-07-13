@@ -50,9 +50,9 @@ run-tests:
 
 run-generated-code-tests:
   stage: test
-  image: docker:stable
+  image: docker:25
   services:
-    - docker:stable-dind
+    - docker:25-dind
   script:
     - cd generatedCodeTests
     - sh run_all.sh
