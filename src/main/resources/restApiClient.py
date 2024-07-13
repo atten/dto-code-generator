@@ -19,7 +19,7 @@ class BaseJsonApiClient:
     def __init__(
         self,
         base_url: str = '',
-        logger: t.Union[logging.Logger, t.Callable[[str], None]] = None,
+        logger: t.Union[logging.Logger, t.Callable[[str], None], None] = None,
         max_retries: int = default_max_retries,
         retry_timeout: float = default_retry_timeout,
         user_agent: t.Optional[str] = default_user_agent,

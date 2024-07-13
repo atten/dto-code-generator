@@ -4,3 +4,9 @@ services:
   py_api_client_python_3_10:
     build:
       context: .
+    links:
+      - mock_server
+
+  mock_server:
+    build:
+      context: ../sidecars/mock_server
