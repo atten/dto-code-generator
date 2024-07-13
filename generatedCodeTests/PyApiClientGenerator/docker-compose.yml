@@ -6,6 +6,8 @@ services:
       context: .
     links:
       - mock_server
+    environment:
+      BASE_URL: 'http://mock_server'
 
   mock_server:
     build:

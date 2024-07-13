@@ -366,8 +366,7 @@ class AmqpApiWithLazyListener(BaseAmqpApiClient):
         self.ensure_listen()
         return super()._mk_request(routing_key, func, *args)
 
-    @classmethod
-    def _serialize(cls, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
+    def _serialize(self, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
         # auto-detect collections
         many = False
         _type = type(value)
@@ -378,8 +377,8 @@ class AmqpApiWithLazyListener(BaseAmqpApiClient):
 
         # pick built-in serializer if specified for class
         method_name = '_serialize_{type}'.format(type=_type.__name__.lower())
-        if hasattr(cls, method_name):
-            method = getattr(cls, method_name)
+        if hasattr(self, method_name):
+            method = getattr(self, method_name)
             if many:
                 return list(map(method, value))
             return method(value)
@@ -388,7 +387,14 @@ class AmqpApiWithLazyListener(BaseAmqpApiClient):
         if is_dataclass(_type):
             schema = marshmallow_dataclass.class_schema(_type)()
             func = schema.dump if is_payload else schema.dumps
-            return func(value, many=many)
+            serialized_data = func(value, many=many)
+
+            if self.use_request_payload_validation:
+                gen = self._deserialize(serialized_data, _type, many=many)
+                for _ in gen:
+                    pass
+
+            return serialized_data
 
         if isinstance(value, t.get_args(JSON_PAYLOAD)):
             return value

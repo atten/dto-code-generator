@@ -14,6 +14,7 @@ class BaseJsonApiClient:
     default_retry_timeout = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3))
     default_user_agent = os.environ.get('API_CLIENT_USER_AGENT')
     use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1)))
+    use_request_payload_validation = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1)))
 
     @typechecked
     def __init__(

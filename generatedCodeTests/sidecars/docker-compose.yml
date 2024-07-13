@@ -1,0 +1,8 @@
+version: '3'
+services:
+
+  mock_server:
+    build:
+      context: mock_server
+    ports:
+      - 8081:80

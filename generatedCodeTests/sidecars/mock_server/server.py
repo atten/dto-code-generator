@@ -1,8 +1,10 @@
-from flask import Flask
+from flask import Flask, request
+import json
+
 
 app = Flask(__name__)
 
-@app.route("/api/v1/basic")
+@app.get("/api/v1/basic")
 def get_basic_dto_list():
     return [
         {
@@ -12,3 +14,7 @@ def get_basic_dto_list():
             "list_value": [100, 200, 300]
         }
     ]
+
+@app.post("/api/v1/basic")
+def create_basic_dto():
+    return json.loads(request.get_data())
