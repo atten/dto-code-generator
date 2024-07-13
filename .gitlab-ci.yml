@@ -50,7 +50,7 @@ run-tests:
 
 run-generated-code-tests:
   stage: test
-  image: docker:stable-git
+  image: docker/compose:latest
   services:
     - docker:stable-dind
   script:
