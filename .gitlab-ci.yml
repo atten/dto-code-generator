@@ -54,7 +54,8 @@ run-generated-code-tests:
   services:
     - docker:stable-dind
   script:
-    - cd generatedCodeTests && sh run_all.sh
+    - cd generatedCodeTests
+    - sh run_all.sh
 
 docker-push:
   stage: registry-image

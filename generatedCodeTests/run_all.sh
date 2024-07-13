@@ -1,1 +1,1 @@
-cd PyApiClientGenerator && bash run.sh
+cd PyApiClientGenerator && ./run.sh
