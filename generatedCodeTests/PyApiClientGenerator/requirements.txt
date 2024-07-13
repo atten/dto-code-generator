@@ -1,0 +1,4 @@
+typeguard
+ijson
+marshmallow-dataclass==8.5.8
+urllib3

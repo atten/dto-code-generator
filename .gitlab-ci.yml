@@ -48,6 +48,15 @@ run-tests:
     - awk -F, '{ lines += $8 + $9; covered += $9 } END { print covered, "/", lines, " lines covered"; print 100*covered/lines, "% covered" }' build/reports/jacoco/test/jacocoTestReport.csv
   coverage: '/([\d,.]+) \% covered/'
 
+run-generated-code-tests:
+  stage: test
+  image: docker:stable-git
+  services:
+    - docker:stable-dind
+  script:
+    - cd generatedCodeTests
+    - sh run_all.sh
+
 docker-push:
   stage: registry-image
   image: docker:stable
