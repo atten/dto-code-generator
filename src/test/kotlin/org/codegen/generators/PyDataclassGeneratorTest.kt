@@ -4,7 +4,7 @@ import org.codegen.Args
 import org.codegen.Builder
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -32,8 +32,9 @@ class PyDataclassGeneratorTest {
     }
 
     companion object {
-        @BeforeEach
-        fun warmup() {
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
             System.setProperty("DECORATOR_ARGS", "")
         }
 

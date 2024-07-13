@@ -26,15 +26,21 @@ data class BasicDTO(
     val enumValue: EnumValue,
     // short description
     // very long description lol
-    @JsonProperty("documented_value")
-    @SerialName("documented_value")
+    @JsonProperty("customName")
+    @SerialName("customName")
     val documentedValue: Double,
+    @JsonProperty("list_value")
+    @SerialName("list_value")
+    val listValue: List<Int>,
     @JsonProperty("optional_value")
     @SerialName("optional_value")
     val optionalValue: Double = 0.0,
     @JsonProperty("nullable_value")
     @SerialName("nullable_value")
     val nullableValue: Boolean? = null,
+    @JsonProperty("optional_list_value")
+    @SerialName("optional_list_value")
+    val optionalListValue: List<Int> = listOf(),
 )
 
 /**

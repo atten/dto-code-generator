@@ -49,3 +49,14 @@ fun String.camelCase() = this.normalize().split(' ').joinToString("") { it.capit
 fun String.capitalizeFirst() = this.replaceFirstChar { it.uppercase() }
 
 fun String.lowercaseFirst() = this.replaceFirstChar { it.lowercase() }
+
+fun String.pluralize() = when {
+    this.endsWith("ES") -> this
+    this.endsWith("es") -> this
+    this.endsWith("S") -> "${this}ES"
+    this.endsWith("s") -> "${this}es"
+    this.endsWith("X") -> "${this}ES"
+    this.endsWith("x") -> "${this}es"
+    this.last().isUpperCase() -> "${this}S"
+    else -> "${this}s"
+}

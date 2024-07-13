@@ -15,7 +15,7 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
 
     private fun getSerialName(field: Field): String {
         // use camel_case (pythonic) serial names by default. This may be customized further
-        return field.name.snakeCase()
+        return field.serializedName ?: field.name.snakeCase()
     }
 
     override fun buildFieldDefinition(field: Field): String {

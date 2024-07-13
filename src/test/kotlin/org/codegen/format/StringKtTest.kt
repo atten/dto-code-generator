@@ -51,4 +51,13 @@ class StringKtTest {
         assertEquals("SimpleS3DTO", "simple S3 DTO".camelCase())
         assertEquals("Simple3dDTO", "simple 3d DTO".camelCase())
     }
+
+    @Test
+    fun testPluralize() {
+        assertEquals("SimpleTexts", "SimpleText".pluralize())
+        assertEquals("statuses", "status".pluralize())
+        assertEquals("STATUSES", "STATUS".pluralize())
+        assertEquals("REDUXES", "REDUX".pluralize())
+        assertEquals("status DTOS", "status DTO".pluralize())
+    }
 }

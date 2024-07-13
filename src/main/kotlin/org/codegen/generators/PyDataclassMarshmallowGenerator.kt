@@ -1,5 +1,6 @@
 package org.codegen.generators
 
+import org.codegen.format.pluralize
 import org.codegen.format.snakeCase
 import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
@@ -91,7 +92,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
 
             field.enum?.let { enum ->
                 val choicesPrefix = (field.enumPrefix ?: fieldName).snakeCase().uppercase()
-                val choicesName = "${choicesPrefix}S"
+                val choicesName = choicesPrefix.pluralize()
                 val choices = enum.keys.associate { key -> buildChoiceVariableName(field, key) to dtypeProps.toGeneratedValue(key) }
 
                 val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")

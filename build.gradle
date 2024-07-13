@@ -11,8 +11,7 @@ plugins {
     id 'com.google.cloud.tools.jib' version "3.2.1"
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+group 'org.codegen'
 
 repositories {
     mavenCentral()
@@ -35,6 +34,12 @@ dependencies {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+}
+
+ktlint {
+    filter {
+        exclude("**/resources/**")
+    }
 }
 
 jacocoTestReport {

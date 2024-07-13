@@ -2,8 +2,7 @@ package org.codegen.generators
 
 import org.codegen.Args
 import org.codegen.Builder
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import java.io.File
 
 class PyAmqpBlockingClientGeneratorTest {
@@ -19,12 +18,24 @@ class PyAmqpBlockingClientGeneratorTest {
             )
         }
 
-        System.setProperty("DECORATOR_ARGS", "")
-        System.setProperty("ENTITY_NAME", "TestApiClient")
-
         val output = Builder(args).build()
         val expectedOutput = File(this.javaClass.getResource("PyAmqpBlockingClientGenerator/endpointsOutput.py")!!.path).readText()
-
         Assertions.assertEquals(expectedOutput, output)
+    }
+
+    companion object {
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            System.setProperty("DECORATOR_ARGS", "")
+            System.setProperty("ENTITY_NAME", "TestApiClient")
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun teardown() {
+            System.clearProperty("DECORATOR_ARGS")
+            System.clearProperty("ENTITY_NAME")
+        }
     }
 }

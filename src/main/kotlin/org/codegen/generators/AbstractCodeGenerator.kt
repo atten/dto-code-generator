@@ -1,10 +1,10 @@
 package org.codegen.generators
 
 import org.codegen.format.CodeFormatRules
-import org.codegen.schema.*
-import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
+import org.codegen.schema.DataType
+import org.codegen.schema.Entity
+import org.codegen.utils.EnvironmentUtils.Companion.getRequiredEnvVariable
 import org.codegen.utils.EnvironmentUtils.Companion.substituteEnvVariables
-import kotlin.jvm.optionals.getOrDefault
 import kotlin.reflect.full.primaryConstructor
 
 abstract class AbstractCodeGenerator(
@@ -36,7 +36,7 @@ abstract class AbstractCodeGenerator(
      * construct implied entity with name from env
      */
     val defaultEntity: Entity by lazy {
-        val name = getEnvVariable("ENTITY_NAME").getOrDefault("")
+        val name = getRequiredEnvVariable("ENTITY_NAME")
         Entity(name = name).also { addEntity(it) }
     }
 

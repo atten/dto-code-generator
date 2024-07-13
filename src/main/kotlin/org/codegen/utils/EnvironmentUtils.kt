@@ -10,6 +10,8 @@ class EnvironmentUtils {
             return if (value == null || value.toString().isEmpty()) Optional.empty() else Optional.of(value.toString())
         }
 
+        fun getRequiredEnvVariable(name: String): String = getEnvVariable(name).orElseThrow { RuntimeException("No value present for env variable ENTITY_NAME") }
+
         fun getEnvFlag(name: String): Boolean {
             val value = getEnvVariable(name)
             return if (value.isPresent) listOf("true", "True", "1").contains(value.get()) else false

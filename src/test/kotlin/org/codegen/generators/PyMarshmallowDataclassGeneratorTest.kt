@@ -2,25 +2,38 @@ package org.codegen.generators
 
 import org.codegen.Args
 import org.codegen.Builder
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.File
 
 class PyMarshmallowDataclassGeneratorTest {
+    val args = Args().also {
+        it.target = AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS
+        it.inputFiles = listOf(
+            this.javaClass.getResource("/input/entities.json")!!.path,
+        )
+    }
+
     @Test
     fun entities() {
-        val args = Args().also {
-            it.target = AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS
-            it.inputFiles = listOf(
-                this.javaClass.getResource("/input/entities.json")!!.path,
-            )
+        val output = Builder(args).build()
+        val expectedOutput = File(this.javaClass.getResource("PyMarshmallowDataclassGenerator/entitiesOutput.py")!!.path).readText()
+        assertEquals(expectedOutput, output)
+    }
+
+    companion object {
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            System.setProperty("DECORATOR_ARGS", "")
         }
 
-        System.setProperty("DECORATOR_ARGS", "")
-
-        val output = Builder(args).build()
-        val expectedOutput = File(this.javaClass.getResource("PyMarshmallowGenerator/entitiesOutput.py")!!.path).readText()
-
-        assertEquals(expectedOutput, output)
+        @JvmStatic
+        @AfterAll
+        fun teardown() {
+            System.clearProperty("DECORATOR_ARGS")
+        }
     }
 }

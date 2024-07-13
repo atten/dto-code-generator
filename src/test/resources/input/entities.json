@@ -33,6 +33,17 @@
           "shortDescription": "short description",
           "longDescription": "very long description lol",
           "serializedName": "customName"
+        },
+        {
+          "name": "list value",
+          "dtype": "int",
+          "many": true
+        },
+        {
+          "name": "optional list value",
+          "dtype": "int",
+          "many": true,
+          "default": "EMPTY"
         }
       ]
     },

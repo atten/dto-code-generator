@@ -13,8 +13,10 @@ class BasicDTO:
     # short description
     # very long description lol
     documented_value: float = field()
+    list_value: list[int] = field()
     optional_value: float = 0
     nullable_value: t.Optional[bool] = None
+    optional_list_value: list[int] = field(default_factory=list)
 
 
 @dataclass

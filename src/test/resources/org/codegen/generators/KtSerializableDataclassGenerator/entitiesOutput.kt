@@ -24,12 +24,16 @@ data class BasicDTO(
     val enumValue: EnumValue,
     // short description
     // very long description lol
-    @SerialName("documented_value")
+    @SerialName("customName")
     val documentedValue: Double,
+    @SerialName("list_value")
+    val listValue: List<Int>,
     @SerialName("optional_value")
     val optionalValue: Double = 0.0,
     @SerialName("nullable_value")
     val nullableValue: Boolean? = null,
+    @SerialName("optional_list_value")
+    val optionalListValue: List<Int> = listOf(),
 )
 
 /**
