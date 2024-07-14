@@ -348,7 +348,15 @@ class TestApiClient(BaseJsonApiClientAsync):
         for item in self._deserialize(raw_data, BasicDTO, many=True):
             yield item
 
-    async def create_basic_dto_list(self, item: BasicDTO) -> BasicDTO:
+    async def get_basic_dto_by_timestamp(self, timestamp: datetime) -> BasicDTO:
+        timestamp = self._serialize(timestamp)
+        raw_data = await self._fetch(
+            url=f'api/v1/basic/{timestamp}',
+        )
+        gen = self._deserialize(raw_data, BasicDTO)
+        return next(gen)
+
+    async def create_basic_dto(self, item: BasicDTO) -> BasicDTO:
         item = self._serialize(item, is_payload=True)
         raw_data = await self._fetch(
             url=f'api/v1/basic',
@@ -357,6 +365,16 @@ class TestApiClient(BaseJsonApiClientAsync):
         )
         gen = self._deserialize(raw_data, BasicDTO)
         return next(gen)
+
+    async def create_basic_dto_bulk(self, items: t.Sequence[BasicDTO]) -> t.AsyncAsyncIterator[BasicDTO]:
+        items = self._serialize(items, is_payload=True)
+        raw_data = await self._fetch(
+            url=f'api/v1/basic/bulk',
+            method='POST',
+            payload=items,
+        )
+        for item in self._deserialize(raw_data, BasicDTO, many=True):
+            yield item
 
 
 __all__ = [

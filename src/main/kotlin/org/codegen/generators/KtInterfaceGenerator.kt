@@ -11,7 +11,7 @@ class KtInterfaceGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeG
         val name = method.name.camelCase().lowercaseFirst()
         val returnDtypeProps = getDtype(method.dtype)
         val returnStatement = returnDtypeProps.definition
-            .let { if (method.multiple) "Iterable<$it>" else it }
+            .let { if (method.many) "Iterable<$it>" else it }
             .let { if (method.nullable) "$it?" else it }
             .let { if (it == "Unit") "" else ": $it" }
         val arguments = mutableListOf<String>()

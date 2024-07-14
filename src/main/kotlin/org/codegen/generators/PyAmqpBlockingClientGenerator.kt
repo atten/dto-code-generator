@@ -68,7 +68,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         }
 
         // prepare return statement
-        if (endpoint.multiple)
+        if (endpoint.many)
             lines.add("return list(self._deserialize(raw_data, $returnType, many=True))")
         else if (returnType != "None") {
             if (atomicJsonTypes.contains(returnType))

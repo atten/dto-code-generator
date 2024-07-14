@@ -568,12 +568,24 @@ class TestApiClient(AmqpApiWithLazyListener):
         raw_data = self._mk_request(f'api/v1/basic', 'get_basic_dto_list').get()
         return list(self._deserialize(raw_data, BasicDTO, many=True))
 
-    def create_basic_dto_list(self, item: BasicDTO) -> BasicDTO:
-        item = self._serialize(item, is_payload=True)
-        args = (item,)
-        raw_data = self._mk_request(f'api/v1/basic', 'create_basic_dto_list', *args).get()
+    def get_basic_dto_by_timestamp(self, timestamp: datetime) -> BasicDTO:
+        timestamp = self._serialize(timestamp)
+        raw_data = self._mk_request(f'api/v1/basic/{timestamp}', 'get_basic_dto_by_timestamp').get()
         gen = self._deserialize(raw_data, BasicDTO)
         return next(gen)
+
+    def create_basic_dto(self, item: BasicDTO) -> BasicDTO:
+        item = self._serialize(item, is_payload=True)
+        args = (item,)
+        raw_data = self._mk_request(f'api/v1/basic', 'create_basic_dto', *args).get()
+        gen = self._deserialize(raw_data, BasicDTO)
+        return next(gen)
+
+    def create_basic_dto_bulk(self, items: t.Sequence[BasicDTO]) -> t.List[BasicDTO]:
+        items = self._serialize(items, is_payload=True)
+        args = (items,)
+        raw_data = self._mk_request(f'api/v1/basic/bulk', 'create_basic_dto_bulk', *args).get()
+        return list(self._deserialize(raw_data, BasicDTO, many=True))
 
 
 __all__ = [

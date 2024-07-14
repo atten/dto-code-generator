@@ -3,20 +3,44 @@
     {
       "name": "get basic dto list",
       "dtype": "basic DTO",
-      "multiple": true,
+      "many": true,
       "description": "endpoint description",
       "path": "api/v1/basic"
     },
     {
-      "name": "create basic dto list",
+      "name": "get basic dto by timestamp",
+      "dtype": "basic DTO",
+      "path": "api/v1/basic/{timestamp}",
+      "arguments": [
+        {
+          "name": "timestamp",
+          "dtype": "datetime"
+        }
+      ]
+    },
+    {
+      "name": "create basic dto",
       "dtype": "basic DTO",
       "verb": "POST",
       "path": "api/v1/basic",
       "arguments": [
         {
           "name": "item",
+          "dtype": "basic DTO"
+        }
+      ]
+    },
+    {
+      "name": "create basic dto bulk",
+      "dtype": "basic DTO",
+      "many": true,
+      "verb": "POST",
+      "path": "api/v1/basic/bulk",
+      "arguments": [
+        {
+          "name": "items",
           "dtype": "basic DTO",
-          "multiple": true
+          "many": true
         }
       ]
     }

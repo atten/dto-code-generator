@@ -4,5 +4,6 @@ services:
   mock_server:
     build:
       context: mock_server
+    restart: unless-stopped
     ports:
       - 8081:80

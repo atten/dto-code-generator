@@ -11,7 +11,7 @@ data class Endpoint(
     val path: String, // HTTP path (may include arguments in format: "/api/v1/path/{arg1}/{arg2}"
     val arguments: List<MethodArgument> = listOf(),
     val nullable: Boolean = false, // whether return value can be null
-    val multiple: Boolean = false, // whether array of values is returned
+    val many: Boolean = false, // whether array of values is returned
     val cacheable: Boolean = false, // whether return data can be memoized
     val verb: EndpointVerb = EndpointVerb.GET,
 ) {
@@ -19,5 +19,5 @@ data class Endpoint(
     private val argumentsWithDefaults = arguments.filter { it.default != UNSET }
     val argumentsSortedByDefaults = argumentsWithoutDefaults + argumentsWithDefaults
 
-    fun toMethod() = Method(name = name, description = description, arguments = arguments, dtype = dtype, nullable = nullable, multiple = multiple)
+    fun toMethod() = Method(name = name, description = description, arguments = arguments, dtype = dtype, nullable = nullable, many = many)
 }

@@ -10,7 +10,7 @@ data class Method(
     val arguments: List<MethodArgument>,
     val dtype: String = "void", // return value dtype (does not return anything by default)
     val nullable: Boolean = false, // whether return value can be null
-    val multiple: Boolean = false, // whether array of values is returned
+    val many: Boolean = false, // whether array of values is returned
 ) {
     private val argumentsWithoutDefaults = arguments.filter { it.default == UNSET }
     private val argumentsWithDefaults = arguments.filter { it.default != UNSET }

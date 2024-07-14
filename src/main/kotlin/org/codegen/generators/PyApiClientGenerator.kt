@@ -71,7 +71,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         val returnDtypeProps = getDtype(endpoint.dtype)
         val returnStatement = returnDtypeProps.definition
             .let {
-                if (endpoint.multiple) {
+                if (endpoint.many) {
                     headers.add("import typing as t")
                     if (endpoint.cacheable) "list[$it]" else "t.Iterator[$it]"
                 } else if (endpoint.nullable) {
@@ -202,7 +202,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         lines.add(")") // end of 'self._fetch('
 
         // prepare return statement
-        if (endpoint.multiple)
+        if (endpoint.many)
             if (endpoint.cacheable)
                 lines.add("return list(self._deserialize(raw_data, $returnType, many=True))")
             else
