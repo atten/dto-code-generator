@@ -8,6 +8,8 @@ services:
       - mock_server
     environment:
       BASE_URL: 'http://mock_server'
+    volumes:
+      - './htmlcov/:/app/htmlcov/'
 
   mock_server:
     build:
