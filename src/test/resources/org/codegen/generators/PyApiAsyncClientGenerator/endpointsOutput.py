@@ -338,7 +338,7 @@ class BasicDTO:
 
 
 class TestApiClient(BaseJsonApiClientAsync):
-    async def get_basic_dto_list(self) -> t.AsyncAsyncIterator[BasicDTO]:
+    async def get_basic_dto_list(self) -> t.AsyncIterator[BasicDTO]:
         """
         endpoint description
         """
@@ -366,7 +366,7 @@ class TestApiClient(BaseJsonApiClientAsync):
         gen = self._deserialize(raw_data, BasicDTO)
         return next(gen)
 
-    async def create_basic_dto_bulk(self, items: t.Sequence[BasicDTO]) -> t.AsyncAsyncIterator[BasicDTO]:
+    async def create_basic_dto_bulk(self, items: t.Sequence[BasicDTO]) -> t.AsyncIterator[BasicDTO]:
         items = self._serialize(items, is_payload=True)
         raw_data = await self._fetch(
             url=f'api/v1/basic/bulk',

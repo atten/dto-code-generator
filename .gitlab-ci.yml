@@ -62,6 +62,20 @@ run-tests-PyApiClientGenerator:
     - sh run.sh
   coverage: '/TOTAL.*\s(\d+%)/'
 
+run-tests-PyApiAsyncClientGenerator:
+  stage: test
+  image: docker:25
+  services:
+    - docker:25-dind
+  artifacts:
+    name: coverage
+    paths:
+      - generatedCodeTests/PyApiAsyncClientGenerator/htmlcov/
+  script:
+    - cd generatedCodeTests/PyApiAsyncClientGenerator
+    - sh run.sh
+  coverage: '/TOTAL.*\s(\d+%)/'
+
 docker-push:
   stage: registry-image
   image: docker:stable

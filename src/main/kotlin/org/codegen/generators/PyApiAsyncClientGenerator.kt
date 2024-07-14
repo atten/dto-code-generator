@@ -7,7 +7,7 @@ class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiCli
     override val baseClassName = "BaseJsonApiClientAsync"
 
     override fun buildMethodDefinition(name: String, arguments: List<String>, returnStatement: String, singleLine: Boolean?): String {
-        val newReturnStatement = returnStatement.replace("Iterator", "AsyncIterator")
+        val newReturnStatement = if(returnStatement.contains("AsyncIterator")) returnStatement else returnStatement.replace("Iterator", "AsyncIterator")
         val ret = super.buildMethodDefinition(name, arguments, newReturnStatement, singleLine)
             .let { if (it.startsWith("async")) it else "async $it" }
 

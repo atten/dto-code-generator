@@ -1,0 +1,8 @@
+version: '3'
+services:
+
+  py_api_async_client_python_3_10:
+    build:
+      context: .
+    volumes:
+      - './htmlcov/:/app/htmlcov/'
