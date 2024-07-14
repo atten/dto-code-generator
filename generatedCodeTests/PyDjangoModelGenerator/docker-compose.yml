@@ -4,3 +4,5 @@ services:
   py_django_model_python_3_10:
     build:
       context: .
+    volumes:
+      - './app/migrations/:/app/app/migrations/'
