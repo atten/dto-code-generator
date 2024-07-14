@@ -10,7 +10,7 @@ Console tool which generates language-specific data classes, validators and API 
 
 | Name                    | Coverage                                                                                                                                                           |
 |-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| PyApiClient             | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyApiClientGenerator)](http://www.jacoco.org/jacoco)            |
+| PyApiClient             | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyApiClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyApiClientGenerator/htmlcov?job=run-tests-PyApiClientGenerator)            |
 | PyApiClientAsync        | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyApiClientAsyncGenerator)](http://www.jacoco.org/jacoco)       |
 | PyAmqpBlockingClient    | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyAmqpBlockingClientGenerator)](http://www.jacoco.org/jacoco)   |
 | PyAmqpGeventClient      | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyAmqpGeventClientGenerator)](http://www.jacoco.org/jacoco)     |
