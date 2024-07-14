@@ -7,7 +7,7 @@ import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.Entity
 
-class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(CodeFormatRules.PYTHON, AllGeneratorsEnum.PY_DJANGO_MODEL, proxy) {
+class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(CodeFormatRules.PYTHON, AllGeneratorsEnum.PY_DJANGO_MODEL, proxy) {
     private val plainDataTypes = listOf("bool", "int", "float", "str")
 
     override fun buildEntityName(name: String) = name.camelCase()
@@ -99,7 +99,7 @@ class PyModelDjangoGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
             lines.add("    $fieldName = $fieldClass($attrsString)")
         }
 
-        if (entity.prefix != null && entity.prefix.isNotEmpty())
+        if (!entity.prefix.isNullOrEmpty())
             lines.add("\n    PREFIX = '${entity.actualPrefix.snakeCase()}'")
 
         // add Meta section

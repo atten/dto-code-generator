@@ -104,6 +104,20 @@ run-tests-PyMarshmallowDataclassGenerator:
     - sh run.sh
   coverage: '/TOTAL.*\s(\d+%)/'
 
+run-tests-PyDjangoModelGenerator:
+  stage: test
+  image: docker:25
+  services:
+    - docker:25-dind
+  artifacts:
+    name: migrations
+    paths:
+      - generatedCodeTests/PyDjangoModelGenerator/app/migrations/
+  script:
+    - cd generatedCodeTests/PyDjangoModelGenerator
+    - sh run.sh
+  coverage: '/TOTAL.*\s(\d+%)/'
+
 docker-push:
   stage: registry-image
   image: docker:stable

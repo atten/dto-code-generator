@@ -8,7 +8,7 @@ enum class AllGeneratorsEnum(val generatorClass: KClass<out AbstractCodeGenerato
     KT_SERIALIZABLE_DATACLASS(KtDataclassSerializableGenerator::class),
     KT_INTERFACE(KtInterfaceGenerator::class),
     PY_ABSTRACT_CLASS(PyAbstractClassGenerator::class),
-    PY_DJANGO_MODEL(PyModelDjangoGenerator::class),
+    PY_DJANGO_MODEL(PyDjangoModelGenerator::class),
     PY_API_CLIENT(PyApiClientGenerator::class),
     PY_API_ASYNC_CLIENT(PyApiAsyncClientGenerator::class),
     PY_AMQP_BLOCKING_CLIENT(PyAmqpBlockingClientGenerator::class),
