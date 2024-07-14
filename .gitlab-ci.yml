@@ -76,6 +76,34 @@ run-tests-PyApiAsyncClientGenerator:
     - sh run.sh
   coverage: '/TOTAL.*\s(\d+%)/'
 
+run-tests-PyDataclassGenerator:
+  stage: test
+  image: docker:25
+  services:
+    - docker:25-dind
+  artifacts:
+    name: coverage
+    paths:
+      - generatedCodeTests/PyDataclassGenerator/htmlcov/
+  script:
+    - cd generatedCodeTests/PyDataclassGenerator
+    - sh run.sh
+  coverage: '/TOTAL.*\s(\d+%)/'
+
+run-tests-PyMarshmallowDataclassGenerator:
+  stage: test
+  image: docker:25
+  services:
+    - docker:25-dind
+  artifacts:
+    name: coverage
+    paths:
+      - generatedCodeTests/PyMarshmallowDataclassGenerator/htmlcov/
+  script:
+    - cd generatedCodeTests/PyMarshmallowDataclassGenerator
+    - sh run.sh
+  coverage: '/TOTAL.*\s(\d+%)/'
+
 docker-push:
   stage: registry-image
   image: docker:stable
