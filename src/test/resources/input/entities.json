@@ -81,6 +81,24 @@
           "dtype": "int"
         }
       ]
+    },
+    {
+      "name": "container DTO",
+      "description": "entity with containers",
+      "fields": [
+        {
+          "name": "basic single",
+          "dtype": "basic DTO",
+          "serializedName": "basic"
+        },
+        {
+          "name": "basic list",
+          "dtype": "basic DTO",
+          "many": true,
+          "nullable": true,
+          "serializedName": "basics"
+        }
+      ]
     }
   ]
 }

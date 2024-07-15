@@ -44,3 +44,15 @@ data class AdvancedDTO(
     val a: Int,
     val b: Int,
 )
+
+/**
+ * entity with containers
+ */
+@Serializable
+data class ContainerDTO(
+    @Contextual
+    @SerialName("basic")
+    val basicSingle: BasicDTO,
+    @SerialName("basics")
+    val basicList: List<@Contextual BasicDTO?>,
+)

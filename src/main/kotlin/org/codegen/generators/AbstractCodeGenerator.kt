@@ -53,7 +53,11 @@ abstract class AbstractCodeGenerator(
     }
 
     protected val includedEntityGenerator: AbstractCodeGenerator by lazy {
-        includedEntityType.generatorClass.primaryConstructor!!.call(this)
+        if (target == includedEntityType) {
+            return@lazy this
+        } else {
+            includedEntityType.generatorClass.primaryConstructor!!.call(this)
+        }
     }
 
     protected open fun addDefinition(body: String, vararg names: String) {

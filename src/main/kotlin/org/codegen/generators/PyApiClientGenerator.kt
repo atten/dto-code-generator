@@ -258,6 +258,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         headers.add("from typeguard import typechecked")
 
         listOf(
+            "/baseSchema.py",
             "/restApiClient.py",
             "/serializationMethods.py",
             "/failsafeCall.py",

@@ -9,9 +9,25 @@ import org.codegen.schema.Entity
 import org.codegen.schema.Field
 import org.codegen.schema.Validator
 import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
+import java.io.File
 import kotlin.jvm.optionals.getOrNull
 
 class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : PyDataclassGenerator(AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS, proxy) {
+
+    override fun buildBodyPrefix(): String {
+        headers.add("import typing as t")
+
+        listOf(
+            "/baseSchema.py",
+        ).map { path ->
+            this.javaClass.getResource(path)!!.path
+                .let { File(it).readText() }
+        }
+            .joinToString(separator = "\n\n")
+            .let { addDefinition(it) }
+
+        return ""
+    }
 
     override fun buildEntity(entity: Entity): String {
         val preLines = mutableListOf<String>()
@@ -46,6 +62,12 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             val fieldMetadata = field.metadata.toMutableMap()
 
             var definition = dtypeProps.definition
+
+            // build nested field
+            if (dtypeProps.requiredEntities.contains(field.dtype)) {
+                headers.add("import marshmallow_dataclass")
+                attrs["metadata"] = "dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema($definition, base_schema=BaseSchema), {metadata}))"
+            }
 
             if (field.default != UNSET) {
                 when {

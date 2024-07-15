@@ -45,6 +45,7 @@ class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiCli
         headers.add("from typeguard import typechecked")
 
         listOf(
+            "/baseSchema.py",
             "/restApiClientAsync.py",
             "/serializationMethods.py",
             "/failsafeCallAsync.py",

@@ -40,9 +40,9 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
 
     override fun buildEntityName(name: String) = name.camelCase()
 
-    override fun buildEntity(entity: Entity) = buildEntity(entity, listOf())
+    override fun buildEntity(entity: Entity) = buildEntity(entity, setOf())
 
-    open fun buildEntity(entity: Entity, annotations: List<String>): String {
+    open fun buildEntity(entity: Entity, annotations: Set<String>): String {
         val preLines = mutableListOf<String>()
         val className = buildEntityName(entity.name)
         val definition = "data class $className("

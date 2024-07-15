@@ -107,6 +107,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         headers.add("from socket import timeout as SocketTimeout")
 
         listOf(
+            "/baseSchema.py",
             "/amqpBlockingClient.py",
             "/serializationMethods.py",
             "/failsafeCall.py",

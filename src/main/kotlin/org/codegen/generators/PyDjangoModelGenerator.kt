@@ -28,6 +28,7 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
             val fieldName = field.name.snakeCase()
             val attrs = dtypeProps.definitionArguments.toMutableMap()
             val isScalar = plainDataTypes.contains(field.dtype)
+            val isDjangoModel = dtypeProps.definition.startsWith("models.")
 
             if (field.default != UNSET) {
                 when {
@@ -70,6 +71,7 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
                     attrs["base_field"] = dtypeProps.definition + "()"
                 }
                 field.many && !isScalar -> "models.JSONField" // use json field for multiple non-scalar values
+                !isDjangoModel -> "models.JSONField"
                 else -> dtypeProps.definition
             }
 

@@ -18,14 +18,14 @@ import os
 import typing as t
 
 
-JSON_PAYLOAD = t.Union[dict, str, int, float, list]
-RESPONSE_BODY = JSON_PAYLOAD
-
-
 class BaseSchema(marshmallow.Schema):
     class Meta:
         # allow backward-compatible changes when new fields have added (simply ignore them)
         unknown = marshmallow.EXCLUDE
+
+
+JSON_PAYLOAD = t.Union[dict, str, int, float, list]
+RESPONSE_BODY = JSON_PAYLOAD
 
 
 class BaseJsonApiClientAsync:

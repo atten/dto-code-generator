@@ -32,7 +32,17 @@ class AdvancedDTO:
         return self.a + self.b
 
 
+@dataclass(frozen=True)
+class ContainerDTO:
+    """
+    entity with containers
+    """
+    basic_single: BasicDTO = field()
+    basic_list: t.Optional[list[BasicDTO]] = field()
+
+
 __all__ = [
     "AdvancedDTO",
     "BasicDTO",
+    "ContainerDTO",
 ]

@@ -51,3 +51,17 @@ data class AdvancedDTO(
     val a: Int,
     val b: Int,
 )
+
+/**
+ * entity with containers
+ */
+@Serializable
+data class ContainerDTO(
+    @Contextual
+    @JsonProperty("basic")
+    @SerialName("basic")
+    val basicSingle: BasicDTO,
+    @JsonProperty("basics")
+    @SerialName("basics")
+    val basicList: List<@Contextual BasicDTO?>,
+)

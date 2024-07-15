@@ -2,12 +2,6 @@ JSON_PAYLOAD = t.Union[dict, str, int, float, list]
 RESPONSE_BODY = [str, io.IOBase]
 
 
-class BaseSchema(marshmallow.Schema):
-    class Meta:
-        # allow backward-compatible changes when new fields have added (simply ignore them)
-        unknown = marshmallow.EXCLUDE
-
-
 class BaseJsonApiClient:
     base_url = ''
     default_max_retries = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5))

@@ -35,7 +35,19 @@ class AdvancedDTO(models.Model):
         abstract = True
 
 
+class ContainerDTO(models.Model):
+    """
+    entity with containers
+    """
+    basic_single = models.JSONField()
+    basic_list = models.JSONField(blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+
 GENERATED_MODELS = [
     AdvancedDTO,
-    BasicDTO
+    BasicDTO,
+    ContainerDTO
 ]

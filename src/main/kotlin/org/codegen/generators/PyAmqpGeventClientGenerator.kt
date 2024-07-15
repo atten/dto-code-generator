@@ -33,6 +33,7 @@ class PyAmqpGeventClientGenerator(proxy: AbstractCodeGenerator? = null) : PyAmqp
         headers.add("from socket import timeout as SocketTimeout")
 
         listOf(
+            "/baseSchema.py",
             "/amqpGeventClient.py",
             "/serializationMethods.py",
             "/failsafeCall.py",

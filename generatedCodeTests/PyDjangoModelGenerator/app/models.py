@@ -1,4 +1,4 @@
-from generated.models import BasicDTO, AdvancedDTO
+from generated.models import *
 
 
 class BasicModel(BasicDTO):
@@ -6,4 +6,8 @@ class BasicModel(BasicDTO):
 
 
 class AdvancedModel(AdvancedDTO):
+    pass
+
+
+class ContainerModel(ContainerDTO):
     pass

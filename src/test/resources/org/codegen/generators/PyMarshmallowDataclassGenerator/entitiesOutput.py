@@ -4,7 +4,14 @@ from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
 import marshmallow
+import marshmallow_dataclass
 import typing as t
+
+
+class BaseSchema(marshmallow.Schema):
+    class Meta:
+        # allow backward-compatible changes when new fields have added (simply ignore them)
+        unknown = marshmallow.EXCLUDE
 
 
 ENUM_VALUE_VALUE_1 = "value 1"
@@ -45,9 +52,19 @@ class AdvancedDTO:
         return self.a + self.b
 
 
+@dataclass
+class ContainerDTO:
+    """
+    entity with containers
+    """
+    basic_single: BasicDTO = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDTO, base_schema=BaseSchema), data_key="basic")))
+    basic_list: list[t.Optional[BasicDTO]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDTO, base_schema=BaseSchema), allow_none=True, data_key="basics"))))
+
+
 __all__ = [
     "AdvancedDTO",
     "BasicDTO",
+    "ContainerDTO",
     "ENUM_VALUES",
     "ENUM_VALUE_VALUE_1",
     "ENUM_VALUE_VALUE_2",

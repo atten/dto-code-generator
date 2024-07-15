@@ -4,12 +4,6 @@ JSON_PAYLOAD = t.Union[dict, str, int, float, list]
 RESPONSE_BODY = [str, io.IOBase]
 
 
-class BaseSchema(marshmallow.Schema):
-    class Meta:
-        # allow backward-compatible changes when new fields have added (simply ignore them)
-        unknown = marshmallow.EXCLUDE
-
-
 def _check_amqp_alive(connection: Connection, raise_exception=False) -> bool:
     try:
         connection.connect()
