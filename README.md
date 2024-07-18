@@ -18,3 +18,12 @@ Console tool which generates language-specific data classes, validators and API 
 | PyMarshmallowDataclass  | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyMarshmallowDataclassGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyMarshmallowDataclassGenerator/htmlcov?job=run-tests-PyMarshmallowDataclassGenerator)    |
 | PyDjangoModel           | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyDjangoModelGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyDjangoModelGenerator/app/migrations?job=run-tests-PyDjangoModelGenerator)                        |
 | KtSerializableDataclass | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-KtSerializableDataclassGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/KtSerializableDataclassGenerator/htmlcov?job=run-tests-KtSerializableDataclassGenerator) |
+
+
+## Install
+
+Download and extract archive into current dir:
+
+```
+wget -qO- https://github.com/atten/dto-code-generator/releases/download/v1.0.0/dto-codegen-1.0.0.zip | busybox unzip -
+```

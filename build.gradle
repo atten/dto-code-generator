@@ -12,6 +12,7 @@ plugins {
 }
 
 group 'org.codegen'
+version '1.0.0'
 
 repositories {
     mavenCentral()
@@ -34,12 +35,6 @@ dependencies {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
-}
-
-ktlint {
-    filter {
-        exclude("**/resources/**")
-    }
 }
 
 jacocoTestReport {

@@ -29,7 +29,7 @@ gradle:
 
 run-tests:
   stage: test
-  image: amazoncorretto:17-alpine
+  image: openjdk:17
   only:
     variables:
       # run for protected branches only
@@ -118,8 +118,26 @@ run-tests-PyDjangoModelGenerator:
     - sh run.sh
   coverage: '/TOTAL.*\s(\d+%)/'
 
+publish-distro:
+  stage: publish
+  image: openjdk:17
+  only:
+    - master
+  cache:
+    key: $CI_PIPELINE_ID
+    policy: pull
+    paths:
+      - build/
+  artifacts:
+    name: distribution
+    paths:
+      - build/distributions/
+  script:
+    - ./gradlew build
+
+
 docker-push:
-  stage: registry-image
+  stage: publish
   image: docker:stable
   only:
     - master
