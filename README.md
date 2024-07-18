@@ -22,8 +22,20 @@ Console tool which generates language-specific data classes, validators and API 
 
 ## Install
 
+### Stable version (1.0.0)
+
 Download and extract archive into current dir:
 
 ```
 wget -qO- https://github.com/atten/dto-code-generator/releases/download/v1.0.0/dto-codegen-1.0.0.zip | busybox unzip -
+```
+
+### Latest version
+
+#### Zip and tar.gz
+https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/build/distributions/?job=publish-distro
+
+#### Docker image
+```
+docker image pull registry.gitlab.com/atten0/dto-code-generator:master
 ```
