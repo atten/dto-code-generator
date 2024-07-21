@@ -10,7 +10,7 @@ class Builder(
     private val params: Args
 ) {
     fun build(): String {
-        val format = Json { ignoreUnknownKeys = true; isLenient = true }
+        val format = Json { ignoreUnknownKeys = false; isLenient = true }
         val generatorClass = params.target.generatorClass
         val generator = generatorClass.createInstance()
         val defaultInputFile = generatorClass.java.getResource("/builtinExtensions.json")!!.path

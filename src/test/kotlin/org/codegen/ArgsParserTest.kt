@@ -1,4 +1,5 @@
-import org.codegen.ArgsParser
+package org.codegen
+
 import org.codegen.generators.AllGeneratorsEnum
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
