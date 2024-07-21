@@ -561,6 +561,9 @@ class BasicDTO:
 
 
 class TestApiClient(AmqpApiWithLazyListener):
+    def ping(self):
+        self._mk_request(f'api/v1/ping', 'ping').get()
+
     def get_basic_dto_list(self) -> t.List[BasicDTO]:
         """
         endpoint description

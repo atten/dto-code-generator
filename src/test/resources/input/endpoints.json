@@ -1,6 +1,11 @@
 {
   "endpoints": [
     {
+      "name": "ping",
+      "dtype": "void",
+      "path": "api/v1/ping"
+    },
+    {
       "name": "get basic dto list",
       "dtype": "basic DTO",
       "many": true,

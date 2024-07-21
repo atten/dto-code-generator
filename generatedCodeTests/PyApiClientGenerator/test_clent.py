@@ -1,4 +1,5 @@
 import os
+from generated.api import TestApiClient, BasicDTO, ENUM_VALUE_VALUE_1
 
 import pytest
 import types
@@ -6,8 +7,8 @@ from datetime import datetime, timezone
 from marshmallow.exceptions import ValidationError
 
 
-def get_base_url() -> str:
-    return os.environ.get('BASE_URL')
+BASE_URL = os.environ['BASE_URL']
+SECURED_BASE_URL = os.environ['SECURED_BASE_URL']
 
 
 def test_import():
@@ -15,9 +16,7 @@ def test_import():
 
 
 def test_get():
-    from generated.api import TestApiClient, BasicDTO
-
-    api = TestApiClient(base_url=get_base_url())
+    api = TestApiClient(base_url=BASE_URL)
     timestamp = datetime.now(tz=timezone.utc)
     result = api.get_basic_dto_by_timestamp(timestamp)
 
@@ -25,9 +24,7 @@ def test_get():
 
 
 def test_get_list():
-    from generated.api import TestApiClient, BasicDTO
-
-    api = TestApiClient(base_url=get_base_url())
+    api = TestApiClient(base_url=BASE_URL)
     result = api.get_basic_dto_list()
 
     assert isinstance(result, types.GeneratorType)
@@ -35,9 +32,7 @@ def test_get_list():
 
 
 def test_post():
-    from generated.api import TestApiClient, BasicDTO, ENUM_VALUE_VALUE_1
-
-    api = TestApiClient(base_url=get_base_url())
+    api = TestApiClient(base_url=BASE_URL)
     item = BasicDTO(
         timestamp=datetime.now(),
         enum_value=ENUM_VALUE_VALUE_1,
@@ -50,9 +45,7 @@ def test_post():
 
 
 def test_post_list_required_fields_only():
-    from generated.api import TestApiClient, BasicDTO, ENUM_VALUE_VALUE_1
-
-    api = TestApiClient(base_url=get_base_url())
+    api = TestApiClient(base_url=BASE_URL)
     item = BasicDTO(
         timestamp=datetime.now(),
         enum_value=ENUM_VALUE_VALUE_1,
@@ -67,8 +60,6 @@ def test_post_list_required_fields_only():
 
 
 def test_post_request_wrong_enum_value():
-    from generated.api import TestApiClient, BasicDTO, ENUM_VALUE_VALUE_1
-
     api = TestApiClient('http://none')
     item = BasicDTO(
         timestamp=datetime.now(),
@@ -81,3 +72,20 @@ def test_post_request_wrong_enum_value():
     with pytest.raises(ValidationError):
         result = api.create_basic_dto_bulk(payload)
         next(result)
+
+
+def test_403():
+    api = TestApiClient(base_url=SECURED_BASE_URL, max_retries=1)
+    with pytest.raises(RuntimeError):
+        api.ping()
+
+
+def test_user_agent_and_headers():
+    api = TestApiClient(
+        base_url=SECURED_BASE_URL,
+        user_agent=os.environ['SECURED_USER_AGENT'],
+        headers={
+            os.environ['SECURED_HEADER_NAME']: os.environ['SECURED_HEADER_VALUE']
+        }
+    )
+    api.ping()

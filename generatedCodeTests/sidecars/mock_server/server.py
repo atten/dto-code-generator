@@ -1,35 +1,37 @@
-from flask import Flask, request
+from flask import Flask
 
+from utils import item_factory, auth_required
 
 app = Flask(__name__)
 
 
-def _item() -> dict:
-    return {
-        "timestamp": "2024-07-14T12:00:00Z",
-        "enum_value": "value 1",
-        "customName": 100.5,
-        "list_value": [100, 200, 300]
-    }
+@app.get("/api/v1/ping")
+@auth_required
+def ping():
+    return 'pong'
 
 
 @app.get("/api/v1/basic")
+@auth_required
 def get_basic_dto_list():
-    return [_item()]
+    return [item_factory()]
 
 
 @app.get("/api/v1/basic/<timestamp>")
+@auth_required
 def get_basic_dto_by_timestamp(timestamp: str):
-    result = _item()
+    result = item_factory()
     result['timestamp'] = timestamp
     return result
 
 
 @app.post("/api/v1/basic")
+@auth_required
 def create_basic_dto():
-    return _item()
+    return item_factory()
 
 
 @app.post("/api/v1/basic/bulk")
+@auth_required
 def create_basic_dto_bulk():
-    return [_item(), _item(), _item()]
+    return [item_factory(), item_factory(), item_factory()]

@@ -105,8 +105,8 @@ class BaseJsonApiClient:
         return response.data.decode()
 
     def _get_full_url(self, url: str, query_params: t.Optional[dict] = None) -> str:
-        if self.base_url:
-            url = urljoin(self.base_url, url)
+        if self.get_base_url():
+            url = urljoin(self.get_base_url(), url)
 
         if query_params:
             query_tuples = []
