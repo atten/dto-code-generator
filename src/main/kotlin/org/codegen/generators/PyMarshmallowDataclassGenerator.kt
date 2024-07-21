@@ -12,18 +12,17 @@ import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
 import java.io.File
 import kotlin.jvm.optionals.getOrNull
 
-class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : PyDataclassGenerator(AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS, proxy) {
+class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : PyDataclassGenerator(AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS, proxy) {
 
     override fun buildBodyPrefix(): String {
         headers.add("import typing as t")
 
         listOf(
             "/baseSchema.py",
-        ).map { path ->
+        ).joinToString(separator = "\n\n") { path ->
             this.javaClass.getResource(path)!!.path
                 .let { File(it).readText() }
         }
-            .joinToString(separator = "\n\n")
             .let { addDefinition(it) }
 
         return ""
@@ -100,7 +99,6 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             }
 
             if (field.nullable) {
-                definition = "t.Optional[$definition]"
                 fieldMetadata["allow_none"] = "True"
             }
 
@@ -126,8 +124,11 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
             if (field.many) {
                 val metadata = attrs["metadata"]
                 if (metadata != null && "marshmallow_field" in metadata) {
-                    // redefine marshmallow field in metadata (preserve attributes of original nested element)
-                    attrs["metadata"] = metadata.replace("marshmallow_field=", "marshmallow_field=marshmallow.fields.List(") + ")"
+                    // wrap field in list and move metadata to the upper level (from nested field to list field)
+                    attrs["metadata"] = metadata
+                        .replace(", {metadata})", "), {metadata}")
+                        .replace("marshmallow_field=", "marshmallow_field=marshmallow.fields.List(") +
+                        ")"
                 } else if (fieldMetadata.isNotEmpty()) {
                     headers.add("import marshmallow_dataclass")
                     attrs["metadata"] = "dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema($definition)), {metadata}))"
@@ -136,11 +137,18 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 definition = "list[$definition]"
             }
 
+            if (field.nullable) {
+                // should go after "many" condition check: wraps both singular and array entities at the outer level
+                definition = "t.Optional[$definition]"
+            }
+
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
             val metaString = fieldMetadata.map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
             attrs.forEach { entry ->
                 if ("{metadata}" in entry.value) {
-                    attrs[entry.key] = entry.value.replace("{metadata}", metaString)
+                    attrs[entry.key] = entry.value
+                        .replace("{metadata}", metaString)
+                        .replace(", )", ")")
                 }
             }
 

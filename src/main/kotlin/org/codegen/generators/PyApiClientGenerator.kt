@@ -228,7 +228,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         // either build an interface or regular DTO
         if (entity.fields.isEmpty())
             return buildClass(entity)
-        return PyDataclassMarshmallowGenerator(this).buildEntity(entity)
+        return PyMarshmallowDataclassGenerator(this).buildEntity(entity)
     }
 
     private fun buildClass(entity: Entity): String {

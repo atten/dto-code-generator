@@ -111,7 +111,7 @@ class ContainerDTO:
     entity with containers
     """
     basic_single: BasicDTO = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDTO, base_schema=BaseSchema), data_key="basic")))
-    basic_list: list[t.Optional[BasicDTO]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDTO, base_schema=BaseSchema), allow_none=True, data_key="basics"))))
+    basic_list: t.Optional[list[BasicDTO]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDTO, base_schema=BaseSchema)), allow_none=True, data_key="basics")))
 
 
 __all__ = [

@@ -13,7 +13,7 @@ enum class AllGeneratorsEnum(val generatorClass: KClass<out AbstractCodeGenerato
     PY_API_ASYNC_CLIENT(PyApiAsyncClientGenerator::class),
     PY_AMQP_BLOCKING_CLIENT(PyAmqpBlockingClientGenerator::class),
     PY_AMQP_GEVENT_CLIENT(PyAmqpGeventClientGenerator::class),
-    PY_MARSHMALLOW_DATACLASS(PyDataclassMarshmallowGenerator::class),
+    PY_MARSHMALLOW_DATACLASS(PyMarshmallowDataclassGenerator::class),
     PY_DATACLASS(PyDataclassGenerator::class);
 
     /**
