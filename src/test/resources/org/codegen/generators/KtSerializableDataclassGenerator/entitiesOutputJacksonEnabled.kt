@@ -2,6 +2,7 @@
 package org.codegen.generators
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import java.time.Duration
 import java.time.Instant
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
@@ -21,6 +22,8 @@ enum class EnumValue(val value: String) {
 data class BasicDTO(
     @Contextual
     val timestamp: Instant,
+    @Contextual
+    val duration: Duration,
     @JsonProperty("enum_value")
     @SerialName("enum_value")
     val enumValue: EnumValue,

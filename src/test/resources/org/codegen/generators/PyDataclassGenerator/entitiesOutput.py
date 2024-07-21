@@ -3,12 +3,14 @@
 from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
+from datetime import timedelta
 import typing as t
 
 
 @dataclass
 class BasicDTO:
     timestamp: datetime = field()
+    duration: timedelta = field()
     enum_value: str = field()
     # short description
     # very long description lol

@@ -3,7 +3,7 @@ from generated.api import TestApiClient, BasicDTO, ENUM_VALUE_VALUE_1
 
 import pytest
 import types
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from marshmallow.exceptions import ValidationError
 
 
@@ -35,6 +35,7 @@ def test_post():
     api = TestApiClient(base_url=BASE_URL)
     item = BasicDTO(
         timestamp=datetime.now(),
+        duration=timedelta(minutes=5),
         enum_value=ENUM_VALUE_VALUE_1,
         documented_value=2.5,
         list_value=[50, 100, 150]
@@ -48,6 +49,7 @@ def test_post_list_required_fields_only():
     api = TestApiClient(base_url=BASE_URL)
     item = BasicDTO(
         timestamp=datetime.now(),
+        duration=timedelta(minutes=5),
         enum_value=ENUM_VALUE_VALUE_1,
         documented_value=2.5,
         list_value=[50, 100, 150]
@@ -63,6 +65,7 @@ def test_post_request_wrong_enum_value():
     api = TestApiClient('http://none')
     item = BasicDTO(
         timestamp=datetime.now(),
+        duration=timedelta(minutes=5),
         enum_value=ENUM_VALUE_VALUE_1 + 'azaza',
         documented_value=2.5,
         list_value=[50, 100, 150]

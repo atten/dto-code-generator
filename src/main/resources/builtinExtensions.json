@@ -180,6 +180,44 @@
           ]
         }
       }
+    },
+    {
+      "dtype": "java duration",
+      "implementations": {
+        "KT_DATACLASS": {
+          "definition": "Duration",
+          "requiredHeaders": [
+            "import java.time.Duration"
+          ]
+        },
+        "PY_DATACLASS": {
+          "definition": "timedelta",
+          "requiredHeaders": [
+            "from datetime import timedelta"
+          ]
+        },
+        "PY_MARSHMALLOW_DATACLASS": {
+          "definition": "timedelta",
+          "valueWrapper": "str_java_duration_to_timedelta(\"%s\")",
+          "requiredHeaders": [
+            "from datetime import timedelta",
+            "import re",
+            "import marshmallow"
+          ],
+          "definitionArguments": {
+            "metadata": "dict(marshmallow_field=JavaDurationField({metadata}))"
+          },
+          "includeFiles": [
+            "javaDurationField.py"
+          ]
+        },
+        "PY_DJANGO_MODEL": {
+          "definition": "models.CharField",
+          "requiredHeaders": [
+            "from django.db import models"
+          ]
+        }
+      }
     }
   ]
 }

@@ -6,4 +6,4 @@ RUN pip install pytest-cov
 
 ADD . .
 
-CMD pytest --cov=. --cov-report term --cov-report html
+CMD pytest --doctest-modules --cov=. --cov-report term --cov-report html

@@ -13,6 +13,7 @@ class EnumValue(models.TextChoices):
 
 class BasicDTO(models.Model):
     timestamp = models.DateTimeField()
+    duration = models.CharField()
     optional_value = models.FloatField(default=0)
     nullable_value = models.BooleanField(blank=True, null=True)
     enum_value = models.CharField(choices=EnumValue.choices, max_length=7)

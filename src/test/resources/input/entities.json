@@ -8,6 +8,10 @@
           "dtype": "datetime"
         },
         {
+          "name": "duration",
+          "dtype": "java duration"
+        },
+        {
           "name": "optional value",
           "dtype": "float",
           "default": 0
