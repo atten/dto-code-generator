@@ -3,16 +3,17 @@ def str_java_duration_to_timedelta(duration: str) -> timedelta:
     :param duration: string duration:'PT5S', 'PT10H59S' etc
     :return: timedelta()
     """
-    groups = re.findall(r'PT(\d+H)?([\d.]+S)', duration)[0]
+    groups = re.findall(r'PT(\d+H)?(\d+M)?([\d.]+S)?', duration)[0]
     if not groups:
         raise ValueError('Invalid duration: %s' % duration)
 
-    hours, seconds = groups
+    hours, minutes, seconds = groups
 
     hours = int((hours or '0H').rstrip('H'))
+    minutes = int((minutes or '0M').rstrip('M'))
     seconds = float((seconds or '0S').rstrip('S'))
 
-    return timedelta(hours=hours, seconds=seconds)
+    return timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
 
 def timedelta_to_java_duration(delta: timedelta) -> str:
@@ -23,7 +24,7 @@ def timedelta_to_java_duration(delta: timedelta) -> str:
     >>> timedelta_to_java_duration(timedelta(minutes=15))
     'PT900S'
 
-    >>> timedelta_to_java_duration(timedelta(days=1, seconds=35, minutes=21))
+    >>> timedelta_to_java_duration(timedelta(days=1, minutes=21, seconds=35))
     'PT87695S'
 
     >>> timedelta_to_java_duration(timedelta(microseconds=123456))
