@@ -12,7 +12,6 @@ plugins {
 }
 
 group 'org.codegen'
-version '1.0.0'
 
 repositories {
     mavenCentral()

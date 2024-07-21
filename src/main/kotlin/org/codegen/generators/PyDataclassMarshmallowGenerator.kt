@@ -91,7 +91,7 @@ class PyDataclassMarshmallowGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 }
             }
 
-            field.shortDescription?.let {
+            field.description?.let {
                 lines.add("    # $it")
             }
 

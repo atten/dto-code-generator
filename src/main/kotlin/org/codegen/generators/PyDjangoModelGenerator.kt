@@ -89,7 +89,7 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
                 attrs["max_length"] = it.keys.map { s -> s.length }.maxOrNull().toString()
             }
 
-            field.shortDescription?.let {
+            field.description?.let {
                 attrs["verbose_name"] = "_('${it.replace("'", "\\'")}')"
             }
 

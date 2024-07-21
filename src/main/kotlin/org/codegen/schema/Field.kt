@@ -7,7 +7,7 @@ import org.codegen.schema.Constants.Companion.UNSET
 data class Field(
     val name: String,
     val dtype: String,
-    val shortDescription: String? = null,
+    val description: String? = null,
     val longDescription: String? = null,
     val metadata: Map<String, String> = mapOf(),
     val enum: Map<String, String>? = null, // mappings <CONSTANT, REPRESENTATION> for field with fixed choices

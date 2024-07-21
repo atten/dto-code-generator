@@ -30,7 +30,7 @@
         {
           "name": "documented value",
           "dtype": "float",
-          "shortDescription": "short description",
+          "description": "short description",
           "longDescription": "very long description lol",
           "serializedName": "customName"
         },

@@ -70,7 +70,7 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
                 addDefinition(enumBody, enumName)
             }
 
-            field.shortDescription?.let { lines.add("    // $it") }
+            field.description?.let { lines.add("    // $it") }
             field.longDescription?.let { lines.add("    // $it") }
             lines.add("    ${fullDefinition.replace("\n", "\n    ")},")
         }

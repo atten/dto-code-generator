@@ -83,7 +83,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
                 }
             }
 
-            field.shortDescription?.let {
+            field.description?.let {
                 lines.add("    # $it")
             }
 
