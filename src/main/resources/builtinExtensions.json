@@ -215,7 +215,10 @@
           "definition": "models.CharField",
           "requiredHeaders": [
             "from django.db import models"
-          ]
+          ],
+          "definitionArguments": {
+            "max_length": 32
+          }
         }
       }
     }
