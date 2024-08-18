@@ -8,6 +8,7 @@ data class Property(
     val title: String? = null,
     val description: String? = null,
     val type: String? = null,
+    val format: String? = null,
     val enum: List<String>? = null,
     @SerialName("\$ref")
     val ref: String? = null,
@@ -20,6 +21,10 @@ data class Property(
 
         if (type == "array") {
             return items!!.definitionName()
+        }
+
+        if (type == "string" && format == "date-time") {
+            return "datetime"
         }
 
         if (type != null) {

@@ -11,10 +11,6 @@ BASE_URL = os.environ['BASE_URL']
 SECURED_BASE_URL = os.environ['SECURED_BASE_URL']
 
 
-def test_import():
-    from generated.api import TestApiClient  # noqa
-
-
 def test_get():
     api = TestApiClient(base_url=BASE_URL)
     timestamp = datetime.now(tz=timezone.utc)

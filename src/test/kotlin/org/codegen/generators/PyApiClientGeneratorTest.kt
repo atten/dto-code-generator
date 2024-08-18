@@ -23,6 +23,20 @@ class PyApiClientGeneratorTest {
         Assertions.assertEquals(expectedOutput, output)
     }
 
+    @Test
+    fun openApi() {
+        val args = Args().also {
+            it.target = AllGeneratorsEnum.PY_API_CLIENT
+            it.inputFiles = listOf(
+                this.javaClass.getResource("/input/openApi.json")!!.path,
+            )
+        }
+
+        val output = Builder(args).build()
+        val expectedOutput = File(this.javaClass.getResource("PyApiClientGenerator/openApiOutput.py")!!.path).readText()
+        Assertions.assertEquals(expectedOutput, output)
+    }
+
     companion object {
         @JvmStatic
         @BeforeAll

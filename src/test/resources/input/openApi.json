@@ -1,0 +1,170 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Some REST API",
+    "version": "1.0.0"
+  },
+  "host": "foo.com",
+  "schemes": [
+    "http"
+  ],
+  "basePath": "/api/v1",
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "securityDefinitions": {
+    "Basic": {
+      "type": "basic"
+    }
+  },
+  "security": [
+    {
+      "Basic": []
+    }
+  ],
+  "paths": {
+    "/api/v1/basic/": {
+      "get": {
+        "operationId": "get_basic_dto_list",
+        "description": "endpoint description",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BasicDto"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "create_basic_dto",
+        "description": "",
+        "parameters": [
+          {
+            "name": "item",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BasicDto"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/BasicDto"
+            }
+          }
+        }
+      },
+      "parameters": []
+    },
+    "/api/v1/basic/{timestamp}/": {
+      "get": {
+        "operationId": "get-basic-dto-by-timestamp",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/BasicDto"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "name": "timestamp",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "BasicDto": {
+      "required": [
+        "some_integer",
+        "some_number"
+      ],
+      "type": "object",
+      "properties": {
+        "some_string": {
+          "title": "SomeString",
+          "type": "string",
+          "maxLength": 150,
+          "minLength": 1
+        },
+        "some_integer": {
+          "title": "Some integer",
+          "description": "Field description",
+          "type": "integer",
+          "maximum": 2147483647,
+          "minimum": -2147483648
+        },
+        "some_number": {
+          "title": "Some number",
+          "description": "Field description",
+          "type": "number"
+        },
+        "some_boolean": {
+          "title": "Some boolean",
+          "type": "boolean"
+        },
+        "timestamp": {
+          "title": "Timestamp",
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "some_enum": {
+          "title": "Some enum",
+          "type": "string",
+          "enum": [
+            "variant1",
+            "variant2",
+            "variant3"
+          ]
+        },
+        "nested_object": {
+          "$ref": "#/definitions/AdvancedDTO"
+        }
+      }
+    },
+    "AdvancedDTO": {
+      "type": "object",
+      "properties": {
+        "json": {
+          "title": "Some object",
+          "description": "Example: [{\"foo\": \"bar\"}]",
+          "type": "object"
+        }
+      }
+    }
+  }
+}
