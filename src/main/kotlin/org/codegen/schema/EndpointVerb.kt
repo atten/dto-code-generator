@@ -4,6 +4,7 @@ package org.codegen.schema
 enum class EndpointVerb {
     GET,
     POST,
+    PUT,
     PATCH,
     DELETE,
 }

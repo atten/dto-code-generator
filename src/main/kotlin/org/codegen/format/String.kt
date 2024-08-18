@@ -57,6 +57,8 @@ fun String.pluralize() = when {
     this.endsWith("s") -> "${this}es"
     this.endsWith("X") -> "${this}ES"
     this.endsWith("x") -> "${this}es"
+    this.endsWith("y") -> this.substring(0, this.length - 1) + "ies"
+    this.endsWith("Y") -> this.substring(0, this.length - 1) + "IES"
     this.last().isUpperCase() -> "${this}S"
     else -> "${this}s"
 }

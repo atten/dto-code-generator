@@ -1,9 +1,9 @@
 package org.codegen
 
-import kotlinx.serialization.SerializationException
 import org.codegen.generators.AllGeneratorsEnum
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.text.ParseException
 
 class BuilderTest {
 
@@ -17,6 +17,6 @@ class BuilderTest {
             )
         }
         val builder = Builder(args)
-        assertThrows(SerializationException::class.java) { builder.build() }
+        assertThrows(ParseException::class.java) { builder.build() }
     }
 }

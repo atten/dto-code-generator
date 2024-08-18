@@ -58,6 +58,8 @@ class StringKtTest {
         assertEquals("statuses", "status".pluralize())
         assertEquals("STATUSES", "STATUS".pluralize())
         assertEquals("REDUXES", "REDUX".pluralize())
+        assertEquals("currencies", "currency".pluralize())
+        assertEquals("CURRENCIES", "CURRENCY".pluralize())
         assertEquals("status DTOS", "status DTO".pluralize())
     }
 }

@@ -221,6 +221,14 @@
           }
         }
       }
+    },
+    {
+      "dtype": "json",
+      "implementations": {
+        "PY_DATACLASS": {
+          "definition": "dict"
+        }
+      }
     }
   ]
 }
