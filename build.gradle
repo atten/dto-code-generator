@@ -8,7 +8,7 @@ plugins {
     // coverage
     id 'jacoco'
     // docker image builder
-    id 'com.google.cloud.tools.jib' version "3.2.1"
+    id 'com.google.cloud.tools.jib' version "3.3.1"
 }
 
 group 'org.codegen'
