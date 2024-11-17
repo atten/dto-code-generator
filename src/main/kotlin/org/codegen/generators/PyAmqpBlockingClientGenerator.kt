@@ -28,53 +28,61 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
             val isAtomicType = argBaseType in atomicJsonTypes
 
             if (!isAtomicType) {
-                if (isPathVariable)
+                if (isPathVariable) {
                     lines.add("$argName = self._serialize($argName)")
-                else
+                } else {
                     lines.add("$argName = self._serialize($argName, is_payload=True)")
+                }
             }
 
-            if (isPathVariable)
+            if (isPathVariable) {
                 routingKeyArgs.add(argName)
-            else
+            } else {
                 payloadArgs.add(argName)
+            }
         }
 
-        val routingKey = "f'${endpoint.path}'".let {
-            // optimize string expression if it contains nothing but single string-like parameter
-            if (routingKeyArgs.count() == 1 && it == "f'{${routingKeyArgs.first()}}'")
-                routingKeyArgs.first()
-            else
-                it
-        }
+        val routingKey =
+            "f'${endpoint.path}'".let {
+                // optimize string expression if it contains nothing but single string-like parameter
+                if (routingKeyArgs.count() == 1 && it == "f'{${routingKeyArgs.first()}}'") {
+                    routingKeyArgs.first()
+                } else {
+                    it
+                }
+            }
 
-        if (payloadArgs.isNotEmpty())
+        if (payloadArgs.isNotEmpty()) {
             lines.add(payloadArgs.joinToString(", ", prefix = "args = (", postfix = ",)"))
+        }
 
         // prepare '_mk_request' method call
         "raw_data = self._mk_request($routingKey, '${endpoint.name.snakeCase()}', *args).get()".let {
-            if (payloadArgs.isEmpty())
-            // exclude empty args
+            if (payloadArgs.isEmpty()) {
+                // exclude empty args
                 it.replace(", *args", "")
-            else
+            } else {
                 it
+            }
         }.let {
-            if (returnType == "None")
+            if (returnType == "None") {
                 it.replace("raw_data = ", "")
-            else
+            } else {
                 it
+            }
         }.let {
             lines.add(it)
         }
 
         // prepare return statement
-        if (endpoint.many)
+        if (endpoint.many) {
             lines.add("return list(self._deserialize(raw_data, $returnType, many=True))")
-        else if (returnType != "None") {
-            if (atomicJsonTypes.contains(returnType))
+        } else if (returnType != "None") {
+            if (atomicJsonTypes.contains(returnType)) {
                 lines.add("gen = self._deserialize(raw_data)")
-            else
+            } else {
                 lines.add("gen = self._deserialize(raw_data, $returnType)")
+            }
             lines.add("return next(gen)")
         }
 

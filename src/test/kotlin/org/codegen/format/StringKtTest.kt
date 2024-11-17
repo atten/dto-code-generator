@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class StringKtTest {
-
     @Test
     fun testNormalize() {
         assertEquals("simple text", " Simple  Text ".normalize())

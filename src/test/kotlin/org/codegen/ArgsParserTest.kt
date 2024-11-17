@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ArgsParserTest {
-
     @Test
     fun parseOk() {
         val parser = ArgsParser(arrayOf("file1.json", "file2.json", "-t", "KT_DATACLASS", "--prefixed"))

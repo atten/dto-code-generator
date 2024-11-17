@@ -13,7 +13,8 @@ data class DataType(
     // list of related entity names. If entities aren't present in target file, they will be included (if found in included schemas)
     val requiredEntities: List<String> = listOf(),
     val includeFiles: List<String> = listOf(),
-    val sourcePath: String = "", // Original file path. Should be filled during initialization
+    // Original file path. Should be filled during initialization
+    val sourcePath: String = "",
 ) {
     fun toGeneratedValue(value: String): String {
         var result = valuesMapping.getOrDefault(value, value)

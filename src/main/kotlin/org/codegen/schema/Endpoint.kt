@@ -7,12 +7,17 @@ import org.codegen.schema.Constants.Companion.UNSET
 data class Endpoint(
     val name: String,
     val description: String? = null,
-    val dtype: String, // return value dtype
-    val path: String, // HTTP path (may include arguments in format: "/api/v1/path/{arg1}/{arg2}"
+    // return value dtype
+    val dtype: String,
+    // HTTP path (may include arguments in format: "/api/v1/path/{arg1}/{arg2}"
+    val path: String,
     val arguments: List<MethodArgument> = listOf(),
-    val nullable: Boolean = false, // whether return value can be null
-    val many: Boolean = false, // whether array of values is returned
-    val cacheable: Boolean = false, // whether return data can be memoized
+    // whether return value can be null
+    val nullable: Boolean = false,
+    // whether array of values is returned
+    val many: Boolean = false,
+    // whether return data can be memoized
+    val cacheable: Boolean = false,
     val verb: EndpointVerb = EndpointVerb.GET,
 ) {
     private val argumentsWithoutDefaults = arguments.filter { it.default == UNSET }

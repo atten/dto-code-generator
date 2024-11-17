@@ -9,7 +9,7 @@ import org.codegen.schema.Field
 open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
     CodeFormatRules.KOTLIN,
     includedEntityType,
-    parent
+    parent,
 ) {
     private val kotlinKeywords = setOf("open", "fun") // incomplete and contains only known
 
@@ -17,24 +17,28 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
         val dataType = getDtype(field.dtype)
         val definitionKeyword = "val"
         val fieldName = field.name.camelCase().lowercaseFirst()
-        val assignmentExpression = when (field.default) {
-            UNSET -> ""
-            null -> "null"
-            else -> if (field.many) {
-                if (field.default == EMPTY)
-                    "listOf()"
-                else
-                    "listOf(${dataType.toGeneratedValue(field.default)})"
-            } else {
-                dataType.toGeneratedValue(field.default)
+        val assignmentExpression =
+            when (field.default) {
+                UNSET -> ""
+                null -> "null"
+                else ->
+                    if (field.many) {
+                        if (field.default == EMPTY) {
+                            "listOf()"
+                        } else {
+                            "listOf(${dataType.toGeneratedValue(field.default)})"
+                        }
+                    } else {
+                        dataType.toGeneratedValue(field.default)
+                    }
             }
-        }
-            .let { if (it.isEmpty()) "" else "= $it" }
+                .let { if (it.isEmpty()) "" else "= $it" }
 
-        val typeName = dataType.definition
-            .let { if (field.isEnum) (field.enumPrefix ?: field.name).camelCase() else it }
-            .let { if (field.nullable) "$it?" else it }
-            .let { if (field.many) "List<$it>" else it }
+        val typeName =
+            dataType.definition
+                .let { if (field.isEnum) (field.enumPrefix ?: field.name).camelCase() else it }
+                .let { if (field.nullable) "$it?" else it }
+                .let { if (field.many) "List<$it>" else it }
         return "$definitionKeyword $fieldName: $typeName $assignmentExpression".trim()
     }
 
@@ -42,7 +46,10 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
 
     override fun buildEntity(entity: Entity) = buildEntity(entity, setOf())
 
-    open fun buildEntity(entity: Entity, annotations: Set<String>): String {
+    open fun buildEntity(
+        entity: Entity,
+        annotations: Set<String>,
+    ): String {
         val preLines = mutableListOf<String>()
         val className = buildEntityName(entity.name)
         val definition = "data class $className("
@@ -62,11 +69,12 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
 
             field.enum?.let { enum ->
                 val enumName = (field.enumPrefix ?: field.name).camelCase()
-                val enumBody = enum.map { row -> buildEnumItem(row.key) }.joinToString(
-                    separator = "\n",
-                    prefix = "enum class $enumName(val value: String) {\n",
-                    postfix = "\n}\n"
-                ) { "    ${it.replace("\n", "\n    ")}," }
+                val enumBody =
+                    enum.map { row -> buildEnumItem(row.key) }.joinToString(
+                        separator = "\n",
+                        prefix = "enum class $enumName(val value: String) {\n",
+                        postfix = "\n}\n",
+                    ) { "    ${it.replace("\n", "\n    ")}," }
                 addDefinition(enumBody, enumName)
             }
 

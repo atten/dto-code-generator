@@ -9,12 +9,14 @@ import org.junit.jupiter.api.Test
 import java.io.File
 
 class KtSerializableDataclassGeneratorTest {
-    val args = Args().also {
-        it.target = AllGeneratorsEnum.KT_SERIALIZABLE_DATACLASS
-        it.inputFiles = listOf(
-            this.javaClass.getResource("/input/entities.json")!!.path,
-        )
-    }
+    val args =
+        Args().also {
+            it.target = AllGeneratorsEnum.KT_SERIALIZABLE_DATACLASS
+            it.inputFiles =
+                listOf(
+                    this.javaClass.getResource("/input/entities.json")!!.path,
+                )
+        }
 
     @Test
     fun entities() {
@@ -27,7 +29,10 @@ class KtSerializableDataclassGeneratorTest {
     fun entitiesJacksonEnabled() {
         System.setProperty("USE_JACKSON", "true")
         val output = Builder(args).build()
-        val expectedOutput = File(this.javaClass.getResource("KtSerializableDataclassGenerator/entitiesOutputJacksonEnabled.kt")!!.path).readText()
+        val expectedOutput =
+            File(
+                this.javaClass.getResource("KtSerializableDataclassGenerator/entitiesOutputJacksonEnabled.kt")!!.path,
+            ).readText()
         assertEquals(expectedOutput, output)
     }
 

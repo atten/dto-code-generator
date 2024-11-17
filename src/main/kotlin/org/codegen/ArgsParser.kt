@@ -6,7 +6,7 @@ import java.io.File
 import java.util.*
 
 class ArgsParser(
-    private val input: Array<String>
+    private val input: Array<String>,
 ) {
     fun parse(): Optional<Args> {
         val params = Args()

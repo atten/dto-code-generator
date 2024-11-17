@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class Root(
     val basePath: String,
     val paths: Map<String, Path>,
-    val definitions: Map<String, Definition>
+    val definitions: Map<String, Definition>,
 )

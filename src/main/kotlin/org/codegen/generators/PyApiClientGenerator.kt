@@ -12,9 +12,14 @@ import org.codegen.schema.Entity
 import org.codegen.schema.MethodArgument
 import java.io.File
 
-open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(CodeFormatRules.PYTHON, AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS, proxy) {
+open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
+    CodeFormatRules.PYTHON,
+    AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS,
+    proxy,
+) {
     protected open val baseClassName = "BaseJsonApiClient"
     protected val atomicJsonTypes = listOf("str", "float", "int", "None", "bool")
+
     // list if __all__ items
     private val definedNames = mutableListOf<String>()
 
@@ -38,7 +43,10 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         }
     }
 
-    override fun addDefinition(body: String, vararg names: String) {
+    override fun addDefinition(
+        body: String,
+        vararg names: String,
+    ) {
         super.addDefinition(body, *names)
         // add missing names into __all__
         names
@@ -46,7 +54,12 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             .forEach { definedNames.add(it) }
     }
 
-    protected open fun buildMethodDefinition(name: String, arguments: List<String>, returnStatement: String, singleLine: Boolean?): String {
+    protected open fun buildMethodDefinition(
+        name: String,
+        arguments: List<String>,
+        returnStatement: String,
+        singleLine: Boolean?,
+    ): String {
         when (singleLine) {
             true -> {
                 val argumentsString = arguments.joinToString(separator = ", ")
@@ -59,8 +72,9 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             else -> {
                 // auto-choice
                 val oneLiner = buildMethodDefinition(name, arguments, returnStatement, singleLine = true)
-                if (oneLiner.length > 120)
+                if (oneLiner.length > 120) {
                     return buildMethodDefinition(name, arguments, returnStatement, singleLine = false)
+                }
                 return oneLiner
             }
         }
@@ -69,33 +83,40 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     protected open fun buildEndpointHeader(endpoint: Endpoint): String {
         val name = endpoint.name.snakeCase()
         val returnDtypeProps = getDtype(endpoint.dtype)
-        val returnStatement = returnDtypeProps.definition
-            .let {
-                if (endpoint.many) {
-                    headers.add("import typing as t")
-                    if (endpoint.cacheable) "list[$it]" else "t.Iterator[$it]"
-                } else if (endpoint.nullable) {
-                    headers.add("import typing as t")
-                    "t.Optional[$it]"
-                } else it
-            }
-            .let { if (it == "None") ":" else " -> $it:" }
+        val returnStatement =
+            returnDtypeProps.definition
+                .let {
+                    if (endpoint.many) {
+                        headers.add("import typing as t")
+                        if (endpoint.cacheable) "list[$it]" else "t.Iterator[$it]"
+                    } else if (endpoint.nullable) {
+                        headers.add("import typing as t")
+                        "t.Optional[$it]"
+                    } else {
+                        it
+                    }
+                }
+                .let { if (it == "None") ":" else " -> $it:" }
         val arguments = mutableListOf("self")
 
         for (argument in endpoint.argumentsSortedByDefaults) {
             val argName = argument.name.snakeCase()
             val dtypeProps = getDtype(argument.dtype)
-            val argTypeName = dtypeProps.definition
-                .let {
-                    if (argument.many) {
-                        headers.add("import typing as t")
-                        "t.Sequence[$it]"
-                    } else it
-                }
-                .let { if (argument.nullable) "t.Optional[$it]" else it }
+            val argTypeName =
+                dtypeProps.definition
+                    .let {
+                        if (argument.many) {
+                            headers.add("import typing as t")
+                            "t.Sequence[$it]"
+                        } else {
+                            it
+                        }
+                    }
+                    .let { if (argument.nullable) "t.Optional[$it]" else it }
 
-            val argDefaultValue = buildArgumentDefaultValue(argument)
-                .let { if (it.isEmpty()) "" else "= $it" }
+            val argDefaultValue =
+                buildArgumentDefaultValue(argument)
+                    .let { if (it.isEmpty()) "" else "= $it" }
 
             val argumentString = "$argName: $argTypeName $argDefaultValue".trim()
             arguments.add(argumentString)
@@ -139,10 +160,11 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             val isPayload = !isPathVariable && !isQueryVariable
 
             if (!isAtomicType) {
-                if (isPayload)
+                if (isPayload) {
                     lines.add("$argName = self._serialize($argName, is_payload=True)")
-                else
+                } else {
                     lines.add("$argName = self._serialize($argName)")
+                }
             }
 
             if (isQueryVariable) {
@@ -164,13 +186,14 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         queryParams.forEach { (queryParam, variable, defaultValue) ->
             val useCondition = defaultValue != null
             if (useCondition) {
-                val expression = when (defaultValue) {
-                    "None" -> "$variable is not None"
-                    "()" -> "len($variable)"
-                    "False" -> variable
-                    "True" -> "not $variable"
-                    else -> "$variable != $defaultValue"
-                }
+                val expression =
+                    when (defaultValue) {
+                        "None" -> "$variable is not None"
+                        "()" -> "len($variable)"
+                        "False" -> variable
+                        "True" -> "not $variable"
+                        else -> "$variable != $defaultValue"
+                    }
 
                 lines.add("if $expression:")
                 lines.add("    query_params['$queryParam'] = $variable")
@@ -180,10 +203,11 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         }
 
         // prepare 'fetch' method call
-        if (returnType == "None")
+        if (returnType == "None") {
             lines.add("self._fetch(")
-        else
+        } else {
             lines.add("raw_data = self._fetch(")
+        }
 
         lines.add("    url=f'${endpoint.path}',")
 
@@ -202,32 +226,36 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         lines.add(")") // end of 'self._fetch('
 
         // prepare return statement
-        if (endpoint.many)
-            if (endpoint.cacheable)
+        if (endpoint.many) {
+            if (endpoint.cacheable) {
                 lines.add("return list(self._deserialize(raw_data, $returnType, many=True))")
-            else
+            } else {
                 lines.add("yield from self._deserialize(raw_data, $returnType, many=True)")
-        else if (returnType != "None") {
-            if (atomicJsonTypes.contains(returnType))
+            }
+        } else if (returnType != "None") {
+            if (atomicJsonTypes.contains(returnType)) {
                 lines.add("gen = self._deserialize(raw_data)")
-            else
+            } else {
                 lines.add("gen = self._deserialize(raw_data, $returnType)")
+            }
             lines.add("return next(gen)")
         }
         return lines.joinToString(separator = "\n")
     }
 
     private fun buildEndpoint(endpoint: Endpoint) =
-        buildEndpointHeader(endpoint) + buildEndpointBody(endpoint)
-            .let { if (it.isNotEmpty()) "\n$it" else it }
-            .replace("\n", "\n    ")
+        buildEndpointHeader(endpoint) +
+            buildEndpointBody(endpoint)
+                .let { if (it.isNotEmpty()) "\n$it" else it }
+                .replace("\n", "\n    ")
 
     override fun buildEntityName(name: String) = name.camelCase()
 
     override fun buildEntity(entity: Entity): String {
         // either build an interface or regular DTO
-        if (entity.fields.isEmpty())
+        if (entity.fields.isEmpty()) {
             return buildClass(entity)
+        }
         return PyMarshmallowDataclassGenerator(this).buildEntity(entity)
     }
 

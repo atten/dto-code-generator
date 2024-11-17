@@ -12,5 +12,5 @@ data class Parameter(
     val required: Boolean,
     val type: String? = null,
     val format: String? = null,
-    val schema: Schema? = null
+    val schema: Schema? = null,
 )

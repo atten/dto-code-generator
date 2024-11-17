@@ -10,12 +10,17 @@ import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
 import kotlin.jvm.optionals.getOrNull
 
 open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGeneratorsEnum.PY_DATACLASS, proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
-    CodeFormatRules.PYTHON, includedEntityType, proxy
+    CodeFormatRules.PYTHON,
+    includedEntityType,
+    proxy,
 ) {
     // list of __all__ items
     private val definedNames = mutableListOf<String>()
 
-    override fun addDefinition(body: String, vararg names: String) {
+    override fun addDefinition(
+        body: String,
+        vararg names: String,
+    ) {
         super.addDefinition(body, *names)
         // add missing names into __all__
         names
@@ -29,9 +34,10 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
         val preLines = mutableListOf<String>()
         val className = buildEntityName(entity.name)
         val lines = mutableListOf<String>()
-        val decorator = getEnvVariable("DECORATOR_ARGS").getOrNull().let {
-            if (it == null) "@dataclass" else "@dataclass($it)"
-        }
+        val decorator =
+            getEnvVariable("DECORATOR_ARGS").getOrNull().let {
+                if (it == null) "@dataclass" else "@dataclass($it)"
+            }
 
         if (entity.parent == null) {
             lines.add(decorator)
@@ -58,8 +64,9 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
 
             var definition = dtypeProps.definition
 
-            if (field.many)
+            if (field.many) {
                 definition = "list[$definition]"
+            }
 
             if (field.default != UNSET) {
                 when {
@@ -102,14 +109,15 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
             // include metadata into definition
             field.metadata.forEach { (key, value) -> attrs[key.snakeCase()] = value }
 
-            val expression = if (attrs.size == 1 && attrs.containsKey("default")) {
-                // = defaultValue
-                attrs.getValue("default")
-            } else {
-                // = field(param1=..., param2=...)
-                val attrsString = attrs.map { entry -> "${entry.key}=${entry.value}" }.joinToString()
-                "field($attrsString)"
-            }
+            val expression =
+                if (attrs.size == 1 && attrs.containsKey("default")) {
+                    // = defaultValue
+                    attrs.getValue("default")
+                } else {
+                    // = field(param1=..., param2=...)
+                    val attrsString = attrs.map { entry -> "${entry.key}=${entry.value}" }.joinToString()
+                    "field($attrsString)"
+                }
 
             lines.add("    $fieldName: $definition = $expression")
         }
@@ -125,22 +133,33 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
         return (preLines + lines).joinToString("\n")
     }
 
-    protected fun buildProperty(property: Property, entity: Entity): String {
+    protected fun buildProperty(
+        property: Property,
+        entity: Entity,
+    ): String {
         val methodName = property.name.snakeCase()
         val annotation = if (property.description.isEmpty()) "" else "\"\"\"${property.description}\"\"\"\n    "
         val dataType = getDtype(property.dtype)
         val returnName = dataType.definition
-        val expression = buildExpression(property.expression, entity, dataType).let {
-            if ("\n" in it) // contains if-else
-                it.replace(":\n   ", ":\n    return")
-            else // one-liner
-                "return $it"
-        }
-            .replace("\n", "\n    ")
+        val expression =
+            buildExpression(property.expression, entity, dataType).let {
+                if ("\n" in it) {
+                    // contains if-else
+                    it.replace(":\n   ", ":\n    return")
+                } else {
+                    // one-liner
+                    "return $it"
+                }
+            }
+                .replace("\n", "\n    ")
         return "@property\ndef $methodName(self) -> $returnName:\n    ${annotation}$expression"
     }
 
-    protected fun buildExpression(primitives: List<String>, entity: Entity, dataType: DataType? = null) = primitives
+    protected fun buildExpression(
+        primitives: List<String>,
+        entity: Entity,
+        dataType: DataType? = null,
+    ) = primitives
         .joinToString("") { buildPrimitive(it, entity, dataType) }
         // remove redundant spaces
         .replace(" )", ")")
@@ -148,23 +167,28 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
         .replace(" \n", "\n")
         .trim()
 
-    protected open fun buildPrimitive(key: String, entity: Entity, dataType: DataType? = null): String = when {
-        key == "IF" -> "if "
-        key == "THEN" -> ":\n    "
-        key == "ELSE" -> "\nelse:\n    "
-        key == "OR" -> "or "
-        key == "AND" -> "and "
-        key == "NOT" -> "not "
-        key == "NOW" -> "now()"
-        key == "ABS" -> "abs"
-        key.length == 1 && "-/*)".contains(key) -> "$key "
-        key.length == 1 && "(".contains(key) -> key
-        key.first().category in listOf(CharCategory.MATH_SYMBOL) -> "$key "
-        // wrap positive and negative numbers with dataType template (if defined)
-        key.trimStart('-').first().isDigit() -> (dataType?.toGeneratedValue(key) ?: key) + ' '
-        key in entity.attributeNames -> "self.${key.snakeCase()} "
-        else -> throw RuntimeException("Unrecognized primitive: $key (${key.first().category})")
-    }
+    protected open fun buildPrimitive(
+        key: String,
+        entity: Entity,
+        dataType: DataType? = null,
+    ): String =
+        when {
+            key == "IF" -> "if "
+            key == "THEN" -> ":\n    "
+            key == "ELSE" -> "\nelse:\n    "
+            key == "OR" -> "or "
+            key == "AND" -> "and "
+            key == "NOT" -> "not "
+            key == "NOW" -> "now()"
+            key == "ABS" -> "abs"
+            key.length == 1 && "-/*)".contains(key) -> "$key "
+            key.length == 1 && "(".contains(key) -> key
+            key.first().category in listOf(CharCategory.MATH_SYMBOL) -> "$key "
+            // wrap positive and negative numbers with dataType template (if defined)
+            key.trimStart('-').first().isDigit() -> (dataType?.toGeneratedValue(key) ?: key) + ' '
+            key in entity.attributeNames -> "self.${key.snakeCase()} "
+            else -> throw RuntimeException("Unrecognized primitive: $key (${key.first().category})")
+        }
 
     override fun buildBodyPrefix(): String {
         headers.add("import typing as t")

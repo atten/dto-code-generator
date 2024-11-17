@@ -60,18 +60,25 @@ abstract class AbstractCodeGenerator(
         }
     }
 
-    protected open fun addDefinition(body: String, vararg names: String) {
+    protected open fun addDefinition(
+        body: String,
+        vararg names: String,
+    ) {
         if (parent != null) {
             parent.addDefinition(body, *names)
         } else {
             body.trim().let { trimmed ->
-                if (!includedDefinitions.contains(trimmed))
+                if (!includedDefinitions.contains(trimmed)) {
                     includedDefinitions.add(trimmed)
+                }
             }
         }
     }
 
-    fun addDataType(dtype: String, attrs: DataType) {
+    fun addDataType(
+        dtype: String,
+        attrs: DataType,
+    ) {
         if (parent != null) {
             parent.addDataType(dtype, attrs)
         } else {
@@ -79,7 +86,10 @@ abstract class AbstractCodeGenerator(
         }
     }
 
-    fun addEntity(entity: Entity, output: Boolean = true) {
+    fun addEntity(
+        entity: Entity,
+        output: Boolean = true,
+    ) {
         val destination = if (output) entities else includedEntities
         if (destination.contains(entity)) {
             // found exact match
@@ -99,7 +109,9 @@ abstract class AbstractCodeGenerator(
 
     protected fun getDtype(name: String): DataType {
         val dtype = parent?.getDtype(name) ?: dataTypes[name] ?: findEntity(name)?.toDataType()?.copy(definition = buildEntityName(name))
-        requireNotNull(dtype) { "${this::class.simpleName}: Missing extension for dtype '$name'. Define it in any of following sections: ${target.dtypeAliases()}." }
+        requireNotNull(dtype) {
+            "${this::class.simpleName}: Missing extension for dtype '$name'. Define it in any of following sections: ${target.dtypeAliases()}."
+        }
         useDataType(dtype)
         return dtype
     }
@@ -118,7 +130,9 @@ abstract class AbstractCodeGenerator(
             .filter { buildEntityName(it) !in excludeDefinitionNames }
             .forEach { name ->
                 val entity = findEntity(name)
-                requireNotNull(entity) { "Missing required entity '$name'. Probably you forgot to include corresponding file: --include=<file>" }
+                requireNotNull(entity) {
+                    "Missing required entity '$name'. Probably you forgot to include corresponding file: --include=<file>"
+                }
 
                 includedEntityGenerator
                     .buildEntity(entity)

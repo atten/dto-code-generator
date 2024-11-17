@@ -10,12 +10,14 @@ data class Field(
     val description: String? = null,
     val longDescription: String? = null,
     val metadata: Map<String, String> = mapOf(),
-    val enum: Map<String, String>? = null, // mappings <CONSTANT, REPRESENTATION> for field with fixed choices
+    // mappings <CONSTANT, REPRESENTATION> for field with fixed choices
+    val enum: Map<String, String>? = null,
     val enumPrefix: String? = null,
     val default: String? = UNSET,
     val nullable: Boolean = false,
     val many: Boolean = false,
-    val serializedName: String? = null, // serialization/deserialization key
+    // serialization/deserialization key
+    val serializedName: String? = null,
     val excludeFromSerialization: Boolean = false,
 ) {
     val isEnum: Boolean = !enum.isNullOrEmpty()

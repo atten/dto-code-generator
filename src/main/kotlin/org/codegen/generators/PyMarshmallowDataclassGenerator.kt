@@ -12,8 +12,10 @@ import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
 import java.io.File
 import kotlin.jvm.optionals.getOrNull
 
-class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : PyDataclassGenerator(AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS, proxy) {
-
+class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : PyDataclassGenerator(
+    AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS,
+    proxy,
+) {
     override fun buildBodyPrefix(): String {
         headers.add("import typing as t")
 
@@ -32,9 +34,10 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
         val preLines = mutableListOf<String>()
         val className = buildEntityName(entity.name)
         val lines = mutableListOf<String>()
-        val decorator = getEnvVariable("DECORATOR_ARGS").getOrNull().let {
-            if (it == null) "@dataclass" else "@dataclass($it)"
-        }
+        val decorator =
+            getEnvVariable("DECORATOR_ARGS").getOrNull().let {
+                if (it == null) "@dataclass" else "@dataclass($it)"
+            }
 
         if (entity.parent == null) {
             lines.add(decorator)
@@ -116,7 +119,11 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 val choices = enum.keys.associate { key -> buildChoiceVariableName(field, key) to dtypeProps.toGeneratedValue(key) }
 
                 val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
-                addDefinition("$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]", choicesName, *choices.keys.toTypedArray())
+                addDefinition(
+                    "$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]",
+                    choicesName,
+                    *choices.keys.toTypedArray(),
+                )
 
                 fieldMetadata["validate"] = "[marshmallow.fields.validate.OneOf($choicesName)]"
             }
@@ -146,20 +153,22 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             val metaString = fieldMetadata.map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
             attrs.forEach { entry ->
                 if ("{metadata}" in entry.value) {
-                    attrs[entry.key] = entry.value
-                        .replace("{metadata}", metaString)
-                        .replace(", )", ")")
+                    attrs[entry.key] =
+                        entry.value
+                            .replace("{metadata}", metaString)
+                            .replace(", )", ")")
                 }
             }
 
-            val expression = if (attrs.size == 1 && attrs.containsKey("default")) {
-                // = defaultValue
-                attrs.getValue("default")
-            } else {
-                // = field(param1=..., param2=...)
-                val attrsString = attrs.map { entry -> "${entry.key}=${entry.value}" }.joinToString()
-                "field($attrsString)"
-            }
+            val expression =
+                if (attrs.size == 1 && attrs.containsKey("default")) {
+                    // = defaultValue
+                    attrs.getValue("default")
+                } else {
+                    // = field(param1=..., param2=...)
+                    val attrsString = attrs.map { entry -> "${entry.key}=${entry.value}" }.joinToString()
+                    "field($attrsString)"
+                }
 
             lines.add("    $fieldName: $definition = $expression")
         }
@@ -185,19 +194,29 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
         return (preLines + lines).joinToString("\n")
     }
 
-    private fun buildValidator(validator: Validator, entity: Entity): String {
+    private fun buildValidator(
+        validator: Validator,
+        entity: Entity,
+    ): String {
         headers.add("import marshmallow")
         return validator.conditions
             .map { buildExpression(it, entity) }
             .joinToString("\n  ") { "if not($it):\n    raise marshmallow.ValidationError('${validator.message.replace("'", "\\'")}')" }
     }
 
-    private fun buildChoiceVariableName(field: Field, key: String): String {
+    private fun buildChoiceVariableName(
+        field: Field,
+        key: String,
+    ): String {
         val choicesPrefix = (field.enumPrefix ?: field.name).snakeCase().uppercase()
         return choicesPrefix + "_" + key.snakeCase().uppercase()
     }
 
-    override fun buildPrimitive(key: String, entity: Entity, dataType: DataType?): String {
+    override fun buildPrimitive(
+        key: String,
+        entity: Entity,
+        dataType: DataType?,
+    ): String {
         // interpret "field|attribute" syntax
         if ("|" in key) {
             val (fieldName, attribute) = key.split('|', limit = 2)

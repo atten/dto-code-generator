@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Validator(
-    val message: String, // error message
+    // error message
+    val message: String,
     val conditions: List<List<String>>,
 )

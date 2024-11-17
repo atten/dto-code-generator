@@ -6,28 +6,31 @@ import org.junit.jupiter.api.Test
 import java.text.ParseException
 
 class BuilderTest {
-
     @Test
     fun shouldFailOnSchemaWithUnknownFields() {
-        val args = Args().also {
-            it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
-            it.inputFiles = listOf(
-                this.javaClass.getResource("/input/entities.json")!!.path,
-                this.javaClass.getResource("/input/unknownSchemaFields.json")!!.path,
-            )
-        }
+        val args =
+            Args().also {
+                it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
+                it.inputFiles =
+                    listOf(
+                        this.javaClass.getResource("/input/entities.json")!!.path,
+                        this.javaClass.getResource("/input/unknownSchemaFields.json")!!.path,
+                    )
+            }
         val builder = Builder(args)
         assertThrows(ParseException::class.java) { builder.build() }
     }
 
     @Test
     fun shouldFailOnSchemaWithDuplicatedEntityNames() {
-        val args = Args().also {
-            it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
-            it.inputFiles = listOf(
-                this.javaClass.getResource("/input/entitiesWithSameName.json")!!.path,
-            )
-        }
+        val args =
+            Args().also {
+                it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
+                it.inputFiles =
+                    listOf(
+                        this.javaClass.getResource("/input/entitiesWithSameName.json")!!.path,
+                    )
+            }
         val builder = Builder(args)
         assertThrows(IllegalArgumentException::class.java) { builder.build() }
     }

@@ -7,7 +7,11 @@ import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.Entity
 
-class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(CodeFormatRules.PYTHON, AllGeneratorsEnum.PY_DJANGO_MODEL, proxy) {
+class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
+    CodeFormatRules.PYTHON,
+    AllGeneratorsEnum.PY_DJANGO_MODEL,
+    proxy,
+) {
     private val plainDataTypes = listOf("bool", "int", "float", "str")
 
     override fun buildEntityName(name: String) = name.camelCase()
@@ -53,36 +57,41 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
                 }
 
                 // 'blank' flag is required for non-scalar data types with default value
-                if (!isScalar || field.many)
+                if (!isScalar || field.many) {
                     attrs["blank"] = "True"
+                }
             }
 
             if (field.nullable) {
                 attrs["blank"] = "True"
                 attrs["null"] = "True"
                 // redundant default argument
-                if (field.default == null)
+                if (field.default == null) {
                     attrs.remove("default")
+                }
             }
 
-            val fieldClass = when {
-                field.many && isScalar -> "ArrayField".also {
-                    headers.add("from django.contrib.postgres.fields import ArrayField")
-                    attrs["base_field"] = dtypeProps.definition + "()"
+            val fieldClass =
+                when {
+                    field.many && isScalar ->
+                        "ArrayField".also {
+                            headers.add("from django.contrib.postgres.fields import ArrayField")
+                            attrs["base_field"] = dtypeProps.definition + "()"
+                        }
+                    field.many && !isScalar -> "models.JSONField" // use json field for multiple non-scalar values
+                    !isDjangoModel -> "models.JSONField"
+                    else -> dtypeProps.definition
                 }
-                field.many && !isScalar -> "models.JSONField" // use json field for multiple non-scalar values
-                !isDjangoModel -> "models.JSONField"
-                else -> dtypeProps.definition
-            }
 
             field.enum?.let {
                 val subclass = "models.TextChoices"
                 val enumName = (field.enumPrefix ?: field.name).camelCase()
-                val choicesDefinition = it.map { entry -> "    ${entry.key.snakeCase().uppercase()} = '${entry.key}', _('${entry.value}')" }.joinToString(
-                    separator = "\n",
-                    prefix = "class $enumName($subclass):\n",
-                    postfix = "\n\n"
-                )
+                val choicesDefinition =
+                    it.map { entry -> "    ${entry.key.snakeCase().uppercase()} = '${entry.key}', _('${entry.value}')" }.joinToString(
+                        separator = "\n",
+                        prefix = "class $enumName($subclass):\n",
+                        postfix = "\n\n",
+                    )
                 preLines.add(choicesDefinition)
 
                 attrs["choices"] = "$enumName.choices"
@@ -101,8 +110,9 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
             lines.add("    $fieldName = $fieldClass($attrsString)")
         }
 
-        if (!entity.prefix.isNullOrEmpty())
+        if (!entity.prefix.isNullOrEmpty()) {
             lines.add("\n    PREFIX = '${entity.actualPrefix.snakeCase()}'")
+        }
 
         // add Meta section
         lines.add("")

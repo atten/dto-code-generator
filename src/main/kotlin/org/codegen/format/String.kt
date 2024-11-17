@@ -12,20 +12,22 @@ internal fun String.normalize(): String {
         cleaned = cleaned.replace("  ", " ")
     }
 
-    cleaned = if (cleaned.all { it.isUpperCase() }) {
-        // transform uppercase string to lowercase
-        cleaned.lowercase()
-    } else {
-        // Apply more complex rule for string with mixed case. Prepend uppercase char with space:
-        // minValue -> min Value
-        // MyDTO -> My D T O
-        cleaned.zipWithNext { a, b ->
-            if (b.isLetter() && !b.isLowerCase())
-                "$a "
-            else
-                a.lowercase()
-        }.joinToString("") + cleaned.last()
-    }
+    cleaned =
+        if (cleaned.all { it.isUpperCase() }) {
+            // transform uppercase string to lowercase
+            cleaned.lowercase()
+        } else {
+            // Apply more complex rule for string with mixed case. Prepend uppercase char with space:
+            // minValue -> min Value
+            // MyDTO -> My D T O
+            cleaned.zipWithNext { a, b ->
+                if (b.isLetter() && !b.isLowerCase()) {
+                    "$a "
+                } else {
+                    a.lowercase()
+                }
+            }.joinToString("") + cleaned.last()
+        }
 
     while (cleaned.contains("  ")) {
         cleaned = cleaned.replace("  ", " ")
@@ -33,16 +35,17 @@ internal fun String.normalize(): String {
     return cleaned
 }
 
-fun String.snakeCase() = this.normalize().let {
-    it.zipWithNext {
-        a, b ->
-        when {
-            (!a.isUpperCase() && b == ' ') -> "${a}_"
-            a == ' ' -> ""
-            else -> a
-        }
-    }.joinToString("") + it.last()
-}
+fun String.snakeCase() =
+    this.normalize().let {
+        it.zipWithNext {
+                a, b ->
+            when {
+                (!a.isUpperCase() && b == ' ') -> "${a}_"
+                a == ' ' -> ""
+                else -> a
+            }
+        }.joinToString("") + it.last()
+    }
 
 fun String.camelCase() = this.normalize().split(' ').joinToString("") { it.capitalizeFirst() }
 
@@ -50,15 +53,16 @@ fun String.capitalizeFirst() = this.replaceFirstChar { it.uppercase() }
 
 fun String.lowercaseFirst() = this.replaceFirstChar { it.lowercase() }
 
-fun String.pluralize() = when {
-    this.endsWith("ES") -> this
-    this.endsWith("es") -> this
-    this.endsWith("S") -> "${this}ES"
-    this.endsWith("s") -> "${this}es"
-    this.endsWith("X") -> "${this}ES"
-    this.endsWith("x") -> "${this}es"
-    this.endsWith("y") -> this.substring(0, this.length - 1) + "ies"
-    this.endsWith("Y") -> this.substring(0, this.length - 1) + "IES"
-    this.last().isUpperCase() -> "${this}S"
-    else -> "${this}s"
-}
+fun String.pluralize() =
+    when {
+        this.endsWith("ES") -> this
+        this.endsWith("es") -> this
+        this.endsWith("S") -> "${this}ES"
+        this.endsWith("s") -> "${this}es"
+        this.endsWith("X") -> "${this}ES"
+        this.endsWith("x") -> "${this}es"
+        this.endsWith("y") -> this.substring(0, this.length - 1) + "ies"
+        this.endsWith("Y") -> this.substring(0, this.length - 1) + "IES"
+        this.last().isUpperCase() -> "${this}S"
+        else -> "${this}s"
+    }

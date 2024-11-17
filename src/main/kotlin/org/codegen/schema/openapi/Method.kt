@@ -8,5 +8,5 @@ data class Method(
     val summary: String? = null,
     val description: String,
     val parameters: List<Parameter>,
-    val responses: Map<Int, Response>
+    val responses: Map<Int, Response>,
 )

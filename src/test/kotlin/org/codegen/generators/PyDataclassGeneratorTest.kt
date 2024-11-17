@@ -9,12 +9,14 @@ import org.junit.jupiter.api.Test
 import java.io.File
 
 class PyDataclassGeneratorTest {
-    val args = Args().also {
-        it.target = AllGeneratorsEnum.PY_DATACLASS
-        it.inputFiles = listOf(
-            this.javaClass.getResource("/input/entities.json")!!.path,
-        )
-    }
+    val args =
+        Args().also {
+            it.target = AllGeneratorsEnum.PY_DATACLASS
+            it.inputFiles =
+                listOf(
+                    this.javaClass.getResource("/input/entities.json")!!.path,
+                )
+        }
 
     @Test
     fun entities() {

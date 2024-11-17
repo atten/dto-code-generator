@@ -6,13 +6,25 @@ import java.io.File
 class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiClientGenerator(proxy) {
     override val baseClassName = "BaseJsonApiClientAsync"
 
-    override fun buildMethodDefinition(name: String, arguments: List<String>, returnStatement: String, singleLine: Boolean?): String {
-        val newReturnStatement = if (returnStatement.contains("AsyncIterator")) returnStatement else returnStatement.replace("Iterator", "AsyncIterator")
-        val ret = super.buildMethodDefinition(name, arguments, newReturnStatement, singleLine)
-            .let { if (it.startsWith("async")) it else "async $it" }
+    override fun buildMethodDefinition(
+        name: String,
+        arguments: List<String>,
+        returnStatement: String,
+        singleLine: Boolean?,
+    ): String {
+        val newReturnStatement =
+            if (returnStatement.contains("AsyncIterator")) {
+                returnStatement
+            } else {
+                returnStatement.replace("Iterator", "AsyncIterator")
+            }
+        val ret =
+            super.buildMethodDefinition(name, arguments, newReturnStatement, singleLine)
+                .let { if (it.startsWith("async")) it else "async $it" }
 
-        if (singleLine == null && ret.length > 120)
+        if (singleLine == null && ret.length > 120) {
             return buildMethodDefinition(name, arguments, returnStatement, singleLine = false)
+        }
         return ret
     }
 

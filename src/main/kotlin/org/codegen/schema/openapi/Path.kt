@@ -9,5 +9,5 @@ data class Path(
     val put: Method? = null,
     val patch: Method? = null,
     val delete: Method? = null,
-    val parameters: List<Parameter>
+    val parameters: List<Parameter>,
 )

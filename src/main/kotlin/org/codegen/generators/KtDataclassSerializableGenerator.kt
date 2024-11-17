@@ -8,7 +8,9 @@ import org.codegen.utils.EnvironmentUtils.Companion.getEnvFlag
 /**
  * Supports kotlin serializer and jackson annotations
  */
-class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : KtDataclassGenerator(AllGeneratorsEnum.KT_SERIALIZABLE_DATACLASS, proxy) {
+class KtDataclassSerializableGenerator(
+    proxy: AbstractCodeGenerator? = null,
+) : KtDataclassGenerator(AllGeneratorsEnum.KT_SERIALIZABLE_DATACLASS, proxy) {
     private val builtinSerializableTypes = listOf("String", "Int", "Float", "Double", "Boolean")
     private val useJackson = getEnvFlag("USE_JACKSON")
     private val useKotlinX = true
@@ -37,11 +39,12 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
         if (useKotlinX && !builtinSerializableTypes.contains(getDtype(field.dtype).definition)) {
             headers.add("import kotlinx.serialization.Contextual")
 
-            definition = if (field.many) {
-                definition.replace("List<", "List<@Contextual ")
-            } else {
-                "@Contextual\n$definition"
-            }
+            definition =
+                if (field.many) {
+                    definition.replace("List<", "List<@Contextual ")
+                } else {
+                    "@Contextual\n$definition"
+                }
         }
 
         return definition
@@ -49,9 +52,9 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
 
     override fun buildEnumItem(key: String): String {
         return super.buildEnumItem(key).let {
-            if (buildEnumLiteral(key) == key)
+            if (buildEnumLiteral(key) == key) {
                 it
-            else {
+            } else {
                 var annotated = it
                 if (useKotlinX) {
                     headers.add("import kotlinx.serialization.SerialName")
@@ -62,7 +65,10 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
         }
     }
 
-    override fun buildEntity(entity: Entity, annotations: Set<String>): String {
+    override fun buildEntity(
+        entity: Entity,
+        annotations: Set<String>,
+    ): String {
         val updatedAnnotations = annotations.toMutableSet()
         if (useKotlinX) {
             headers.add("import kotlinx.serialization.Serializable")
@@ -71,7 +77,10 @@ class KtDataclassSerializableGenerator(proxy: AbstractCodeGenerator? = null) : K
         return super.buildEntity(entity, annotations = updatedAnnotations)
     }
 
-    override fun addDefinition(body: String, vararg names: String) {
+    override fun addDefinition(
+        body: String,
+        vararg names: String,
+    ) {
         if ("enum class" in body && "@SerialName" in body && useKotlinX && !body.contains("@Serializable")) {
             // detect enum with serializable items and wrap it with annotation
             headers.add("import kotlinx.serialization.Serializable")

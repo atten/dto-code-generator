@@ -7,5 +7,5 @@ data class Property(
     val name: String,
     val dtype: String,
     val expression: List<String>,
-    val description: String = ""
+    val description: String = "",
 )
