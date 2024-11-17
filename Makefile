@@ -4,6 +4,10 @@ build:
 	./gradlew build
 
 
+build_image:
+	./gradlew jibDockerBuild --image=dto-codegen:local
+
+
 # ===================== LOCAL ENV =================
 
 run_sidecars_for_local_tests_of_generated_code:

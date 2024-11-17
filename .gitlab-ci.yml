@@ -14,7 +14,9 @@ gradle:
   stage: build
   image: openjdk:17
   only:
-    - master
+    variables:
+      # run for protected branches only
+      - $CI_COMMIT_REF_PROTECTED == 'true'
   cache:
     - key: $CI_COMMIT_REF_SLUG
       paths:
@@ -122,7 +124,9 @@ publish-distro:
   stage: publish
   image: openjdk:17
   only:
-    - master
+    variables:
+      # run for protected branches only
+      - $CI_COMMIT_REF_PROTECTED == 'true'
   cache:
     key: $CI_PIPELINE_ID
     policy: pull
@@ -140,7 +144,9 @@ docker-push:
   stage: publish
   image: docker:stable
   only:
-    - master
+    variables:
+      # run for protected branches only
+      - $CI_COMMIT_REF_PROTECTED == 'true'
   cache:
     key: $CI_PIPELINE_ID
     policy: pull
