@@ -1,0 +1,30 @@
+{
+  "entities": [
+    {
+      "name": "basic DTO",
+      "fields": [
+        {
+          "name": "timestamp",
+          "dtype": "datetime"
+        },
+        {
+          "name": "value",
+          "dtype": "float"
+        }
+      ]
+    },
+    {
+      "name": "basic DTO",
+      "fields": [
+        {
+          "name": "a",
+          "dtype": "int"
+        },
+        {
+          "name": "b",
+          "dtype": "int"
+        }
+      ]
+    }
+  ]
+}

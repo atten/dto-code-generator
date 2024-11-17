@@ -81,8 +81,15 @@ abstract class AbstractCodeGenerator(
 
     fun addEntity(entity: Entity, output: Boolean = true) {
         val destination = if (output) entities else includedEntities
-        if (!destination.contains(entity))
-            destination.add(entity)
+        if (destination.contains(entity)) {
+            // found exact match
+            return
+        }
+        if (findEntity(entity.name) != null) {
+            // found entity with same name
+            throw IllegalArgumentException("Found different entities with same name: ${entity.name}")
+        }
+        destination.add(entity)
     }
 
     protected fun findEntity(name: String): Entity? {

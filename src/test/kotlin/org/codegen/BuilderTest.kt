@@ -8,7 +8,7 @@ import java.text.ParseException
 class BuilderTest {
 
     @Test
-    fun parseSchemaWithUnknownFields() {
+    fun shouldFailOnSchemaWithUnknownFields() {
         val args = Args().also {
             it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
             it.inputFiles = listOf(
@@ -18,5 +18,17 @@ class BuilderTest {
         }
         val builder = Builder(args)
         assertThrows(ParseException::class.java) { builder.build() }
+    }
+
+    @Test
+    fun shouldFailOnSchemaWithDuplicatedEntityNames() {
+        val args = Args().also {
+            it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
+            it.inputFiles = listOf(
+                this.javaClass.getResource("/input/entitiesWithSameName.json")!!.path,
+            )
+        }
+        val builder = Builder(args)
+        assertThrows(IllegalArgumentException::class.java) { builder.build() }
     }
 }
