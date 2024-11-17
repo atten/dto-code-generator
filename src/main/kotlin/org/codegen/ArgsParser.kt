@@ -24,6 +24,10 @@ class ArgsParser(
             parser.usage()
             return Optional.empty()
         }
+        if (params.version) {
+            parser.console.println(AppConfiguration.version)
+            return Optional.empty()
+        }
 
         params.includeFiles = extractFiles(params.includeFiles)
         params.inputFiles = extractFiles(params.inputFiles)

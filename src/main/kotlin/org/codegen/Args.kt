@@ -23,4 +23,7 @@ class Args {
 
     @Parameter(names = ["--help"], help = true)
     var help: Boolean = false
+
+    @Parameter(names = ["--version", "-v"], description = "Display version and exit", help = true)
+    var version: Boolean = false
 }
