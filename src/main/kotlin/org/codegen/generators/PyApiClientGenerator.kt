@@ -147,6 +147,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         val queryParams = mutableListOf<Triple<String, String, String?>>()
         var payloadVariableName = ""
         val lines = mutableListOf<String>()
+        var endpointPath = endpoint.path
 
         for (argument in endpoint.argumentsSortedByDefaults) {
             val argName = argument.name.snakeCase()
@@ -154,8 +155,8 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             val argBaseType = dtypeProps.definition
 
             val isAtomicType = argBaseType in atomicJsonTypes
-            val pathName = "{" + argument.name + "}"
-            val isPathVariable = pathName in endpoint.path
+            val pathName = "{%s}".format(argument.name)
+            val isPathVariable = pathName in endpointPath
             val isQueryVariable = !isPathVariable && (endpoint.verb == EndpointVerb.GET || isAtomicType)
             val isPayload = !isPathVariable && !isQueryVariable
 
@@ -174,6 +175,10 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             } else if (isPayload) {
                 require(payloadVariableName.isEmpty()) { "Having multiple payload variables is unsupported yet" }
                 payloadVariableName = argName
+            }
+
+            if (isPathVariable) {
+                endpointPath = endpointPath.replace(pathName, "{%s}".format(argName))
             }
         }
 
@@ -209,7 +214,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             lines.add("raw_data = self._fetch(")
         }
 
-        lines.add("    url=f'${endpoint.path}',")
+        lines.add("    url=f'$endpointPath',")
 
         if (endpoint.verb != EndpointVerb.GET) {
             lines.add("    method='${endpoint.verb}',")

@@ -8,21 +8,34 @@ Console tool which generates language-specific data classes, validators and API 
 ## Avaliable generators
 
 
-| Name                    | Coverage                                                                                                                                                                                                                                                                                                                      |
-|-------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| PyApiClient             | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyApiClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyApiClientGenerator/htmlcov?job=run-tests-PyApiClientGenerator)                                     |
-| PyApiClientAsync        | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyApiAsyncClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyApiAsyncClientGenerator/htmlcov?job=run-tests-PyApiAsyncClientGenerator)                      |
-| PyAmqpBlockingClient    | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyAmqpBlockingClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyAmqpBlockingClientGenerator/htmlcov?job=run-tests-PyAmqpBlockingClientGenerator)          |
-| PyAmqpGeventClient      | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyAmqpGeventClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyAmqpGeventClientGenerator/htmlcov?job=run-tests-PyAmqpGeventClientGenerator)                |
-| PyDataclass             | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyDataclassGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyDataclassGenerator/htmlcov?job=run-tests-PyDataclassGenerator)                                     |
-| PyMarshmallowDataclass  | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyMarshmallowDataclassGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyMarshmallowDataclassGenerator/htmlcov?job=run-tests-PyMarshmallowDataclassGenerator)    |
-| PyDjangoModel           | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyDjangoModelGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyDjangoModelGenerator/app/migrations?job=run-tests-PyDjangoModelGenerator)                        |
-| KtSerializableDataclass | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-KtSerializableDataclassGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/KtSerializableDataclassGenerator/htmlcov?job=run-tests-KtSerializableDataclassGenerator) |
+| Type | Language/Framework | Serialization         | Dependencies                                                                            | Name                    | Example                                                                                                                                       | Coverage                                                                                                                                                                                                                                                                                                                      |
+|------|--------------------|-----------------------|-----------------------------------------------------------------------------------------|-------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| DAO  | Kotlin             | kotlinx.serialization |                                                                                         | KtSerializableDataclass | [entitiesOutput.kt](src/test/resources/org/codegen/generators/KtSerializableDataclassGenerator/entitiesOutput.kt)                             | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-KtSerializableDataclassGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/KtSerializableDataclassGenerator/htmlcov?job=run-tests-KtSerializableDataclassGenerator) |
+| DAO  | Kotlin             | Jackson               |                                                                                         | KtSerializableDataclass | [entitiesOutputJacksonEnabled.kt](src/test/resources/org/codegen/generators/KtSerializableDataclassGenerator/entitiesOutputJacksonEnabled.kt) | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-KtSerializableDataclassGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/KtSerializableDataclassGenerator/htmlcov?job=run-tests-KtSerializableDataclassGenerator) |
+| HTTP | Python3            | Marshmallow           | [requirements.txt](generatedCodeTests/PyApiClientGenerator/requirements.txt)            | PyApiClient             | [endpointsOutput.py](src/test/resources/org/codegen/generators/PyApiClientGenerator/endpointsOutput.py)                                       | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyApiClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyApiClientGenerator/htmlcov?job=run-tests-PyApiClientGenerator)                                     |
+| HTTP | Python3 (async)    | Marshmallow           | [requirements.txt](generatedCodeTests/PyApiAsyncClientGenerator/requirements.txt)       | PyApiClientAsync        | [endpointsOutput.py](src/test/resources/org/codegen/generators/PyApiAsyncClientGenerator/endpointsOutput.py)                                  | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyApiAsyncClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyApiAsyncClientGenerator/htmlcov?job=run-tests-PyApiAsyncClientGenerator)                      |
+| DAO  | Python3            | Dataclass             | -                                                                                       | PyDataclass             | [entitiesOutput.py](src/test/resources/org/codegen/generators/PyDataclassGenerator/entitiesOutput.py)                                         | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyDataclassGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyDataclassGenerator/htmlcov?job=run-tests-PyDataclassGenerator)                                     |
+| DAO  | Python3            | Marshmallow           | [requirements.txt](generatedCodeTests/PyMarshmallowDataclassGenerator/requirements.txt) | PyMarshmallowDataclass  | [entitiesOutput.py](src/test/resources/org/codegen/generators/PyMarshmallowDataclassGenerator/entitiesOutput.py)                              | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyMarshmallowDataclassGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyMarshmallowDataclassGenerator/htmlcov?job=run-tests-PyMarshmallowDataclassGenerator)    |
+| ORM  | Python3 + Django   | -                     | [requirements.txt](generatedCodeTests/PyDjangoModelGenerator/requirements.txt)          | PyDjangoModel           | [entitiesOutput.py](src/test/resources/org/codegen/generators/PyDjangoModelGenerator/entitiesOutput.py)                                       | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyDjangoModelGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyDjangoModelGenerator/app/migrations?job=run-tests-PyDjangoModelGenerator)                        |
+| AMQP | Python3            | Marshmallow           |                                                                                         | PyAmqpBlockingClient    | [endpointsOutput.py](src/test/resources/org/codegen/generators/PyAmqpBlockingClientGenerator/endpointsOutput.py)                              | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyAmqpBlockingClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyAmqpBlockingClientGenerator/htmlcov?job=run-tests-PyAmqpBlockingClientGenerator)          |
+| AMQP | Python3 + Gevent   | Marshmallow           |                                                                                         | PyAmqpGeventClient      | [endpointsOutput.py](src/test/resources/org/codegen/generators/PyAmqpGeventClientGenerator/endpointsOutput.py)                                | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyAmqpGeventClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyAmqpGeventClientGenerator/htmlcov?job=run-tests-PyAmqpGeventClientGenerator)                |
 
 
 ## Install
 
-### Binary format (zip, tar.gz)
+### Docker image
+
+#### Stable version
+
+```
+docker image pull registry.gitlab.com/atten0/dto-code-generator:release_1-1-0
+```
+
+#### Other versions
+
+https://gitlab.com/atten0/dto-code-generator/container_registry
+
+### Binary format (linux/x86)
 
 #### Stable version
 
@@ -37,16 +50,3 @@ wget -qO- https://github.com/atten/dto-code-generator/releases/download/v1.1.0/d
 - https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/build/distributions/?job=publish-distro
 
 - https://github.com/atten/dto-code-generator/releases
-
-
-### Docker image
-
-#### Stable version
-
-```
-docker image pull registry.gitlab.com/atten0/dto-code-generator:release_1.1.0
-```
-
-#### Other versions
-
-https://gitlab.com/atten0/dto-code-generator/container_registry

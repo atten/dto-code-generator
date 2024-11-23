@@ -380,23 +380,6 @@ class TestApiClient(BaseJsonApiClient):
         gen = self._deserialize(raw_data, BasicDto)
         return next(gen)
 
-    def get_basic_dto(self, entity_id: str) -> BasicDto:
-        raw_data = self._fetch(
-            url=f'/api/v1/basic/{entity_id}/',
-        )
-        gen = self._deserialize(raw_data, BasicDto)
-        return next(gen)
-
-    def update_basic_dto(self, entity_id: str, value: BasicDto) -> BasicDto:
-        value = self._serialize(value, is_payload=True)
-        raw_data = self._fetch(
-            url=f'/api/v1/basic/{entity_id}/',
-            method='PUT',
-            payload=value,
-        )
-        gen = self._deserialize(raw_data, BasicDto)
-        return next(gen)
-
 
 __all__ = [
     "AdvancedDTO",

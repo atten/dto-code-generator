@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Property(
+internal data class Property(
     val title: String? = null,
     val description: String? = null,
     val type: String? = null,
@@ -13,10 +13,11 @@ data class Property(
     @SerialName("\$ref")
     val ref: String? = null,
     val items: Property? = null,
+    val oneOf: List<Property> = listOf(),
 ) {
     fun definitionName(): String {
         if (ref != null) {
-            return ref.replace("#/definitions/", "")
+            return Definition.simplifyName(ref)
         }
 
         if (type == "array") {
@@ -29,6 +30,10 @@ data class Property(
 
         if (type != null) {
             return type
+        }
+
+        if (oneOf.isNotEmpty()) {
+            return oneOf.joinToString(separator = "Or") { it.definitionName() }
         }
 
         TODO()

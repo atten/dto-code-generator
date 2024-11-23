@@ -1,14 +1,13 @@
 package org.codegen
 
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import org.codegen.converters.OpenApiConverter
+import org.codegen.format.containsWildcard
 import org.codegen.schema.Document
-import org.codegen.schema.openapi.Root
+import org.codegen.schema.SchemaParser
+import org.codegen.schema.openapi.OpenApiParser
 import java.io.File
 import java.text.ParseException
-import java.util.StringJoiner
+import java.util.*
 import kotlin.reflect.full.createInstance
 
 class Builder(
@@ -18,59 +17,38 @@ class Builder(
         val generatorClass = params.target.generatorClass
         val generator = generatorClass.createInstance()
         val defaultInputFile = generatorClass.java.getResource("/builtinExtensions.json")!!.path
-        val includedFiles =
-            params.includeFiles.toMutableList()
-                .also {
-                    // prepend default extensions (might be overridden by custom extensions)
-                    it.add(0, defaultInputFile)
+
+        params.inputFiles
+            .toMutableList()
+            .also {
+                // prepend default extensions (might be overridden by custom extensions)
+                it.add(0, defaultInputFile)
+            }.forEach { filePath ->
+                parseAnyFormatFromFile(filePath).let { document ->
+                    // add dtype extensions to specified generator
+                    document.extensions
+                        .forEach { extension ->
+                            extension.getForGenerator(params.target)
+                                ?.let {
+                                    generator.addDataType(extension.dtype, it.copy(sourcePath = filePath))
+                                }
+                        }
+
+                    // include entities to specified generator (do not add them to output)
+                    document.entities
+                        .map { if (params.usePrefixed) it.prefixedFields() else it }
+                        .forEach { generator.addEntity(it, output = false) }
+
+                    // add root-level methods to default entity
+                    document.methods
+                        .forEach { generator.defaultEntity.methods.add(it) }
+
+                    // add root-level endpoints to default entity
+                    document.endpoints
+                        .filter { endpoint -> params.excludeNames.none { endpoint.path.containsWildcard(it) } }
+                        .forEach { generator.defaultEntity.endpoints.add(it) }
                 }
-        generator.excludeDefinitionNames.addAll(params.excludedEntities)
-
-        includedFiles.forEach { filePath ->
-            parseAnyFormatFromFile(filePath).let { document ->
-                // add dtype extensions to specified generator
-                document.extensions
-                    .forEach { extension ->
-                        extension.getForGenerator(params.target)
-                            ?.let {
-                                generator.addDataType(extension.dtype, it.copy(sourcePath = filePath))
-                            }
-                    }
-
-                // include entities to specified generator (do not add them to output)
-                document.entities
-                    .forEach { generator.addEntity(it, output = false) }
             }
-        }
-
-        params.inputFiles.forEach { filePath ->
-            parseAnyFormatFromFile(filePath).let { document ->
-                // add dtype extensions to specified generator
-                document.extensions
-                    .forEach { extension ->
-                        extension.getForGenerator(params.target)
-                            ?.let { generator.addDataType(extension.dtype, it.copy(sourcePath = filePath)) }
-                    }
-
-                // add entities to specified generator (with 'output' flag if not excluded)
-                document.entities
-                    .map { if (params.usePrefixed) it.prefixedFields() else it }
-                    .forEach {
-                        generator.addEntity(
-                            it,
-                            output = it.name !in params.excludedEntities && generator.buildEntityName(it.name) !in params.excludedEntities,
-                        )
-                    }
-
-                // add root-level methods to default entity
-                document.methods
-                    .forEach { generator.defaultEntity.methods.add(it) }
-
-                // add root-level endpoints to default entity
-                document.endpoints
-                    .forEach { generator.defaultEntity.endpoints.add(it) }
-            }
-        }
 
         return generator.build()
     }
@@ -80,14 +58,13 @@ class Builder(
         val content = File(path).readText()
 
         try {
-            return parseDocumentFromFile(content)
+            return SchemaParser().parse(content)
         } catch (e: SerializationException) {
             exceptions["CodegenDoc"] = e
         }
 
         try {
-            val spec = parseOpenApiSpecFromFile(content)
-            return OpenApiConverter(spec).convertToDocument()
+            return OpenApiParser().parse(content)
         } catch (e: SerializationException) {
             exceptions["OpenApi"] = e
         }
@@ -98,19 +75,5 @@ class Builder(
         errorText.add("Parsers tried: $parserNames. Corresponding exceptions below:")
         exceptions.forEach { (name, exception) -> errorText.add("$name: $exception") }
         throw ParseException(errorText.toString(), 0)
-    }
-
-    private fun parseDocumentFromFile(content: String): Document {
-        val format =
-            Json {
-                ignoreUnknownKeys = false
-                isLenient = true
-            }
-        return format.decodeFromString<Document>(content)
-    }
-
-    private fun parseOpenApiSpecFromFile(content: String): Root {
-        val format = Json { ignoreUnknownKeys = true }
-        return format.decodeFromString<Root>(content)
     }
 }

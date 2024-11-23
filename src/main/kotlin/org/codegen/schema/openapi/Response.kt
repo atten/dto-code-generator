@@ -3,7 +3,9 @@ package org.codegen.schema.openapi
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Response(
+internal data class Response(
     val description: String? = null,
+    // key is content-encoding, e.g. application/json
+    val content: Map<String, Response> = mapOf(),
     val schema: Schema? = null,
 )

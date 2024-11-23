@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Schema(
+internal data class Schema(
     @SerialName("\$ref")
     val ref: String? = null,
     val type: String? = null,
@@ -12,7 +12,7 @@ data class Schema(
 ) {
     fun definitionName(): String {
         if (ref != null) {
-            return ref.replace("#/definitions/", "")
+            return Definition.simplifyName(ref)
         }
 
         if (type == "array") {

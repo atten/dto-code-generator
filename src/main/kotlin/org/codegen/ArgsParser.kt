@@ -29,7 +29,6 @@ class ArgsParser(
             return Optional.empty()
         }
 
-        params.includeFiles = extractFiles(params.includeFiles)
         params.inputFiles = extractFiles(params.inputFiles)
 
         return Optional.of(params)

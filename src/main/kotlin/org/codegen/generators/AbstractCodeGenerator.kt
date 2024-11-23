@@ -29,9 +29,6 @@ abstract class AbstractCodeGenerator(
     private val includedDefinitions = mutableListOf<String>()
         get() = parent?.includedDefinitions ?: field
 
-    // do not build entities with following names
-    val excludeDefinitionNames = mutableListOf<String>()
-
     /**
      * construct implied entity with name from env
      */
@@ -125,9 +122,6 @@ abstract class AbstractCodeGenerator(
 
         // add missing entities (if required)
         type.requiredEntities
-            // filter both representations of entity names
-            .filter { it !in excludeDefinitionNames }
-            .filter { buildEntityName(it) !in excludeDefinitionNames }
             .forEach { name ->
                 val entity = findEntity(name)
                 requireNotNull(entity) {
@@ -173,10 +167,17 @@ abstract class AbstractCodeGenerator(
 
     fun build(): String {
         val prefix = buildBodyPrefix()
+
+        if (entities.isEmpty()) {
+            // if document contains no explicitly added entities, then build all included entities
+            entities.addAll(includedEntities)
+        }
+
         for (entity in entities) {
             val body = buildEntity(entity)
             addDefinition(body, buildEntityName(entity.name))
         }
+
         val postfix = buildBodyPostfix()
         return buildHeaders() +
             prefix +

@@ -26,7 +26,7 @@
     }
   ],
   "paths": {
-    "/api/v1/basic/": {
+    "/basic": {
       "get": {
         "operationId": "get_basic_dto_list",
         "description": "endpoint description",
@@ -42,8 +42,9 @@
             "name": "page_size",
             "in": "query",
             "description": "Number of results to return per page.",
-            "required": false,
-            "type": "integer"
+            "schema" : {
+              "type" : "integer"
+            }
           }
         ],
         "responses": {
@@ -79,29 +80,76 @@
             }
           }
         }
-      },
-      "parameters": []
+      }
     },
-    "/api/v1/basic/{timestamp}/": {
+    "/basic/{entityId}/": {
       "get": {
-        "operationId": "get-basic-dto-by-timestamp",
+        "operationId": "get-basic-dto",
         "description": "",
         "parameters": [],
         "responses": {
           "200": {
             "description": "",
-            "schema": {
-              "$ref": "#/definitions/BasicDto"
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/definitions/BasicDto"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Неизвестная ошибка",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId" : "update-basic-dto",
+        "description": "",
+        "parameters": [],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/definitions/BasicDto"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/definitions/BasicDto"
+                }
+              }
             }
           }
         }
       },
       "parameters": [
         {
-          "name": "timestamp",
+          "name": "entityId",
           "in": "path",
           "required": true,
           "type": "string"
+        },
+        {
+          "name" : "x-jwt-token",
+          "in" : "header",
+          "description" : "JWT Auth token",
+          "style" : "simple",
+          "example" : "a.b.c"
         }
       ]
     }
@@ -152,18 +200,36 @@
           ]
         },
         "nested_object": {
-          "$ref": "#/definitions/AdvancedDTO"
+          "$ref": "#/components/schemas/AdvancedDTO"
         }
       }
-    },
-    "AdvancedDTO": {
-      "type": "object",
-      "properties": {
-        "json": {
-          "title": "Some object",
-          "description": "Example: [{\"foo\": \"bar\"}]",
-          "type": "object"
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdvancedDTO": {
+        "type": "object",
+        "properties": {
+          "json": {
+            "title": "Some object",
+            "description": "Example: [{\"foo\": \"bar\"}]",
+            "type": "object"
+          }
         }
+      },
+      "ErrorResponse" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string"
+          },
+          "proxiedError" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          }
+        }
+      },
+      "JsonNode" : {
+        "type" : "object"
       }
     }
   }

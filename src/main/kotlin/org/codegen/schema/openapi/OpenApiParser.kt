@@ -1,0 +1,13 @@
+package org.codegen.schema.openapi
+
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import org.codegen.schema.Document
+
+class OpenApiParser {
+    fun parse(content: String): Document {
+        val format = Json { ignoreUnknownKeys = true }
+        val root = format.decodeFromString<Root>(content)
+        return OpenApiConverter(root).convertToDocument()
+    }
+}

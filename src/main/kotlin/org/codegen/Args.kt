@@ -12,14 +12,15 @@ class Args {
     @Parameter(names = ["-t", "--target"], required = true, description = "Target implementation. Available choices are:")
     lateinit var target: AllGeneratorsEnum
 
-    @Parameter(names = ["-i", "--include"], description = "files/directories to include as dependencies", variableArity = true)
-    var includeFiles: List<String> = listOf()
-
     @Parameter(names = ["-p", "--prefixed"], description = "If enabled, add prefix to all fields")
     var usePrefixed = false
 
-    @Parameter(names = ["--exclude"], description = "Do not include specified entity names", variableArity = true)
-    var excludedEntities: List<String> = listOf()
+    @Parameter(
+        names = ["--exclude"],
+        description = "Do not include specified entity names and paths (wildcard)",
+        variableArity = true,
+    )
+    var excludeNames: List<String> = listOf()
 
     @Parameter(names = ["--help"], help = true)
     var help: Boolean = false

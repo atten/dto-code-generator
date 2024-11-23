@@ -11,12 +11,9 @@ class PyApiClientGeneratorTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_API_CLIENT
-                it.includeFiles =
-                    listOf(
-                        this.javaClass.getResource("/input/entities.json")!!.path,
-                    )
                 it.inputFiles =
                     listOf(
+                        this.javaClass.getResource("/input/entities.json")!!.path,
                         this.javaClass.getResource("/input/endpoints.json")!!.path,
                     )
             }
@@ -39,6 +36,23 @@ class PyApiClientGeneratorTest {
 
         val output = Builder(args).build()
         val expectedOutput = File(this.javaClass.getResource("PyApiClientGenerator/openApiOutput.py")!!.path).readText()
+        Assertions.assertEquals(expectedOutput, output)
+    }
+
+    @Test
+    fun openApiPartial() {
+        val args =
+            Args().also {
+                it.target = AllGeneratorsEnum.PY_API_CLIENT
+                it.inputFiles =
+                    listOf(
+                        this.javaClass.getResource("/input/openApi.json")!!.path,
+                    )
+                it.excludeNames = listOf("*basic/{entityId}/*")
+            }
+
+        val output = Builder(args).build()
+        val expectedOutput = File(this.javaClass.getResource("PyApiClientGenerator/openApiOutputPartial.py")!!.path).readText()
         Assertions.assertEquals(expectedOutput, output)
     }
 
