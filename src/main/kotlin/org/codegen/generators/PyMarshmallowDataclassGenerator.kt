@@ -125,11 +125,15 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 var body = ""
 
                 // pick another name if previous one is occupied by different definition
-                for (choicesNameVariant in listOf(choicesPrefix.pluralize(), entity.name.snakeCase().uppercase() + "_" + choicesPrefix.pluralize())) {
+                for (choicesNameVariant in listOf(
+                    choicesPrefix.pluralize(),
+                    entity.name.snakeCase().uppercase() + "_" + choicesPrefix.pluralize(),
+                )) {
                     choicesName = choicesNameVariant
                     body = bodyWithPlaceholder.replace(choicesNamePlaceholder, choicesNameVariant)
-                    if (definedNames.contains(choicesName) == containsDefinition(body))
+                    if (definedNames.contains(choicesName) == containsDefinition(body)) {
                         break
+                    }
                 }
 
                 addDefinition(
