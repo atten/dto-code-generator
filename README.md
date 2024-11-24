@@ -5,6 +5,40 @@
 
 Console tool which generates language-specific data classes, validators and API clients from JSON-like schema
 
+
+## Install
+
+### Docker image
+
+```
+docker image pull registry.gitlab.com/atten0/dto-code-generator:release_1-1-0
+```
+
+Other image versions:
+
+https://gitlab.com/atten0/dto-code-generator/container_registry
+
+### Binary format (linux/x86)
+
+Download and extract archive into current dir:
+
+```
+wget -qO- https://github.com/atten/dto-code-generator/releases/download/v1.1.0/dto-codegen-1.1.0.zip | busybox unzip -
+```
+
+Other versions lists:
+
+- https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/build/distributions/?job=publish-distro
+
+- https://github.com/atten/dto-code-generator/releases
+
+
+
+## Usage
+
+TODO
+
+
 ## Avaliable generators
 
 
@@ -19,34 +53,3 @@ Console tool which generates language-specific data classes, validators and API 
 | ORM  | Python3 + Django   | -                     | [requirements.txt](generatedCodeTests/PyDjangoModelGenerator/requirements.txt)          | PyDjangoModel           | [entitiesOutput.py](src/test/resources/org/codegen/generators/PyDjangoModelGenerator/entitiesOutput.py)                                       | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyDjangoModelGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyDjangoModelGenerator/app/migrations?job=run-tests-PyDjangoModelGenerator)                        |
 | AMQP | Python3            | Marshmallow           |                                                                                         | PyAmqpBlockingClient    | [endpointsOutput.py](src/test/resources/org/codegen/generators/PyAmqpBlockingClientGenerator/endpointsOutput.py)                              | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyAmqpBlockingClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyAmqpBlockingClientGenerator/htmlcov?job=run-tests-PyAmqpBlockingClientGenerator)          |
 | AMQP | Python3 + Gevent   | Marshmallow           |                                                                                         | PyAmqpGeventClient      | [endpointsOutput.py](src/test/resources/org/codegen/generators/PyAmqpGeventClientGenerator/endpointsOutput.py)                                | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyAmqpGeventClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyAmqpGeventClientGenerator/htmlcov?job=run-tests-PyAmqpGeventClientGenerator)                |
-
-
-## Install
-
-### Docker image
-
-#### Stable version
-
-```
-docker image pull registry.gitlab.com/atten0/dto-code-generator:release_1-1-0
-```
-
-#### Other versions
-
-https://gitlab.com/atten0/dto-code-generator/container_registry
-
-### Binary format (linux/x86)
-
-#### Stable version
-
-Download and extract archive into current dir:
-
-```
-wget -qO- https://github.com/atten/dto-code-generator/releases/download/v1.1.0/dto-codegen-1.1.0.zip | busybox unzip -
-```
-
-#### Other versions
-
-- https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/build/distributions/?job=publish-distro
-
-- https://github.com/atten/dto-code-generator/releases
