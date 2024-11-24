@@ -334,10 +334,18 @@ SOME_ENUM_VARIANT3 = "variant3"
 SOME_ENUMS = [SOME_ENUM_VARIANT1, SOME_ENUM_VARIANT2, SOME_ENUM_VARIANT3]
 
 
+SOME_ENUM_ROCK = "ROCK"
+SOME_ENUM_SCISSORS = "SCISSORS"
+SOME_ENUM_PAPER = "PAPER"
+ADVANCED_DTO_SOME_ENUMS = [SOME_ENUM_ROCK, SOME_ENUM_SCISSORS, SOME_ENUM_PAPER]
+
+
 @dataclass
 class AdvancedDTO:
     # Example: [{"foo": "bar"}]
     json: t.Optional[dict] = None
+    # Enum field with the same name as of different entity
+    some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(ADVANCED_DTO_SOME_ENUMS)])), default=None)
 
 
 @dataclass
@@ -347,7 +355,7 @@ class BasicDto:
     # Field description
     some_number: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()))
     some_string: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True)), default=None)
-    some_boolean: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
+    some_boolean: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True, data_key="someBoolean")), default=None)
     timestamp: t.Optional[datetime] = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime(allow_none=True)), default=None)
     some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(SOME_ENUMS)])), default=None)
     nested_object: t.Optional[AdvancedDTO] = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(AdvancedDTO, base_schema=BaseSchema), allow_none=True)), default=None)
@@ -364,7 +372,7 @@ class TestApiClient(BaseJsonApiClient):
         if page_size is not None:
             query_params['pageSize'] = page_size
         raw_data = self._fetch(
-            url=f'/api/v1/basic',
+            url='/api/v1/basic',
             query_params=query_params,
         )
         gen = self._deserialize(raw_data, BasicDto)
@@ -373,7 +381,7 @@ class TestApiClient(BaseJsonApiClient):
     def create_basic_dto(self, item: BasicDto) -> BasicDto:
         item = self._serialize(item, is_payload=True)
         raw_data = self._fetch(
-            url=f'/api/v1/basic',
+            url='/api/v1/basic',
             method='POST',
             payload=item,
         )
@@ -399,9 +407,13 @@ class TestApiClient(BaseJsonApiClient):
 
 
 __all__ = [
+    "ADVANCED_DTO_SOME_ENUMS",
     "AdvancedDTO",
     "BasicDto",
     "SOME_ENUMS",
+    "SOME_ENUM_PAPER",
+    "SOME_ENUM_ROCK",
+    "SOME_ENUM_SCISSORS",
     "SOME_ENUM_VARIANT1",
     "SOME_ENUM_VARIANT2",
     "SOME_ENUM_VARIANT3",

@@ -613,21 +613,12 @@ class BasicDTO:
 
 
 class TestApiClient(AmqpApiWithLazyListener):
-    def ping(self):
-        self._mk_request(f'api/v1/ping', 'ping').get()
-
     def get_basic_dto_list(self) -> t.List[BasicDTO]:
         """
         endpoint description
         """
         raw_data = self._mk_request(f'api/v1/basic', 'get_basic_dto_list').get()
         return list(self._deserialize(raw_data, BasicDTO, many=True))
-
-    def get_basic_dto_by_timestamp(self, timestamp: datetime) -> BasicDTO:
-        timestamp = self._serialize(timestamp)
-        raw_data = self._mk_request(f'api/v1/basic/{timestamp}', 'get_basic_dto_by_timestamp').get()
-        gen = self._deserialize(raw_data, BasicDTO)
-        return next(gen)
 
     def create_basic_dto(self, item: BasicDTO) -> BasicDTO:
         item = self._serialize(item, is_payload=True)
@@ -641,6 +632,15 @@ class TestApiClient(AmqpApiWithLazyListener):
         args = (items,)
         raw_data = self._mk_request(f'api/v1/basic/bulk', 'create_basic_dto_bulk', *args).get()
         return list(self._deserialize(raw_data, BasicDTO, many=True))
+
+    def get_basic_dto_by_timestamp(self, timestamp: datetime) -> BasicDTO:
+        timestamp = self._serialize(timestamp)
+        raw_data = self._mk_request(f'api/v1/basic/{timestamp}', 'get_basic_dto_by_timestamp').get()
+        gen = self._deserialize(raw_data, BasicDTO)
+        return next(gen)
+
+    def ping(self):
+        self._mk_request(f'api/v1/ping', 'ping').get()
 
 
 __all__ = [

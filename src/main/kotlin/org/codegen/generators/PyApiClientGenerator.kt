@@ -214,7 +214,11 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             lines.add("raw_data = self._fetch(")
         }
 
-        lines.add("    url=f'$endpointPath',")
+        if (endpointPath.contains('{')) {
+            lines.add("    url=f'$endpointPath',")
+        } else {
+            lines.add("    url='$endpointPath',")
+        }
 
         if (endpoint.verb != EndpointVerb.GET) {
             lines.add("    method='${endpoint.verb}',")

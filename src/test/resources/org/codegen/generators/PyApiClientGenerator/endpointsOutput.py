@@ -400,17 +400,31 @@ class BasicDTO:
 
 
 class TestApiClient(BaseJsonApiClient):
-    def ping(self):
-        self._fetch(
-            url=f'api/v1/ping',
-        )
-
     def get_basic_dto_list(self) -> t.Iterator[BasicDTO]:
         """
         endpoint description
         """
         raw_data = self._fetch(
-            url=f'api/v1/basic',
+            url='api/v1/basic',
+        )
+        yield from self._deserialize(raw_data, BasicDTO, many=True)
+
+    def create_basic_dto(self, item: BasicDTO) -> BasicDTO:
+        item = self._serialize(item, is_payload=True)
+        raw_data = self._fetch(
+            url='api/v1/basic',
+            method='POST',
+            payload=item,
+        )
+        gen = self._deserialize(raw_data, BasicDTO)
+        return next(gen)
+
+    def create_basic_dto_bulk(self, items: t.Sequence[BasicDTO]) -> t.Iterator[BasicDTO]:
+        items = self._serialize(items, is_payload=True)
+        raw_data = self._fetch(
+            url='api/v1/basic/bulk',
+            method='POST',
+            payload=items,
         )
         yield from self._deserialize(raw_data, BasicDTO, many=True)
 
@@ -422,24 +436,10 @@ class TestApiClient(BaseJsonApiClient):
         gen = self._deserialize(raw_data, BasicDTO)
         return next(gen)
 
-    def create_basic_dto(self, item: BasicDTO) -> BasicDTO:
-        item = self._serialize(item, is_payload=True)
-        raw_data = self._fetch(
-            url=f'api/v1/basic',
-            method='POST',
-            payload=item,
+    def ping(self):
+        self._fetch(
+            url='api/v1/ping',
         )
-        gen = self._deserialize(raw_data, BasicDTO)
-        return next(gen)
-
-    def create_basic_dto_bulk(self, items: t.Sequence[BasicDTO]) -> t.Iterator[BasicDTO]:
-        items = self._serialize(items, is_payload=True)
-        raw_data = self._fetch(
-            url=f'api/v1/basic/bulk',
-            method='POST',
-            payload=items,
-        )
-        yield from self._deserialize(raw_data, BasicDTO, many=True)
 
 
 __all__ = [

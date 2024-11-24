@@ -15,7 +15,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
     proxy,
 ) {
     // list of __all__ items
-    private val definedNames = mutableListOf<String>()
+    protected val definedNames = mutableListOf<String>()
 
     override fun addDefinition(
         body: String,

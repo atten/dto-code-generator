@@ -134,10 +134,12 @@ abstract class AbstractCodeGenerator(
             }
     }
 
+    protected fun containsDefinition(definition: String) = definition in includedDefinitions
+
     /**
-     * whether function/method/variable/class name is presented in code
+     * whether function/method/variable/class with specified name is presented in code
      */
-    private fun containsEntity(name: String): Boolean = includedDefinitions.find { it.contains(name) } != null
+    private fun containsDefinitionName(name: String): Boolean = includedDefinitions.find { it.contains(name) } != null
 
     abstract fun buildEntityName(name: String): String
 
@@ -147,7 +149,7 @@ abstract class AbstractCodeGenerator(
         // sort alphabetically, exclude unused headers (keep ones with wildcard import)
         return headers
             .filter { header ->
-                '*' in header || getEntityNamesFromHeader(header).map { containsEntity(it) }.any { it }
+                '*' in header || getEntityNamesFromHeader(header).map { containsDefinitionName(it) }.any { it }
             }
             .sorted()
             .joinToString(

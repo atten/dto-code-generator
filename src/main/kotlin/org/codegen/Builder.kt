@@ -46,6 +46,7 @@ class Builder(
                     // add root-level endpoints to default entity
                     document.endpoints
                         .filter { endpoint -> params.excludeNames.none { endpoint.path.containsWildcard(it) } }
+                        .sortedBy { it.path }
                         .forEach { generator.defaultEntity.endpoints.add(it) }
                 }
             }

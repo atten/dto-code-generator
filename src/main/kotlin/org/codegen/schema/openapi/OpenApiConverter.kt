@@ -62,8 +62,11 @@ internal class OpenApiConverter(
         val successResponseSchema =
             if (successResponse?.schema != null) {
                 successResponse.schema
-            } else if (successResponse?.content?.keys?.contains("application/json") == true) {
-                successResponse.content["application/json"]?.schema
+            } else if (successResponse?.content?.isNotEmpty() == true) {
+                successResponse.content.filterKeys {
+                        encoding ->
+                    encoding in listOf("application/json", "*/*")
+                }.values.map { it.schema }.first()
             } else {
                 null
             }
@@ -131,6 +134,7 @@ internal class OpenApiConverter(
         val required = definition.required.contains(name)
         return Field(
             name = name,
+            serializedName = name,
             description = property.description,
             dtype = property.definitionName().let { dtypeMapping.getOrDefault(it, it) },
             many = property.type == "array",

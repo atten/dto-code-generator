@@ -26,62 +26,6 @@
     }
   ],
   "paths": {
-    "/basic": {
-      "get": {
-        "operationId": "get_basic_dto_list",
-        "description": "endpoint description",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "A page number within the paginated result set.",
-            "required": false,
-            "type": "integer"
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "description": "Number of results to return per page.",
-            "schema" : {
-              "type" : "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/BasicDto"
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "operationId": "create_basic_dto",
-        "description": "",
-        "parameters": [
-          {
-            "name": "item",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/BasicDto"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/BasicDto"
-            }
-          }
-        }
-      }
-    },
     "/basic/{entityId}/": {
       "get": {
         "operationId": "get-basic-dto",
@@ -91,7 +35,7 @@
           "200": {
             "description": "",
             "content" : {
-              "application/json" : {
+              "*/*" : {
                 "schema" : {
                   "$ref" : "#/definitions/BasicDto"
                 }
@@ -152,6 +96,62 @@
           "example" : "a.b.c"
         }
       ]
+    },
+    "/basic": {
+      "get": {
+        "operationId": "get_basic_dto_list",
+        "description": "endpoint description",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "A page number within the paginated result set.",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "schema" : {
+              "type" : "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BasicDto"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "create_basic_dto",
+        "description": "",
+        "parameters": [
+          {
+            "name": "item",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BasicDto"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/BasicDto"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -180,7 +180,7 @@
           "description": "Field description",
           "type": "number"
         },
-        "some_boolean": {
+        "someBoolean": {
           "title": "Some boolean",
           "type": "boolean"
         },
@@ -214,6 +214,15 @@
             "title": "Some object",
             "description": "Example: [{\"foo\": \"bar\"}]",
             "type": "object"
+          },
+          "some_enum": {
+            "description": "Enum field with the same name as of different entity",
+            "type": "string",
+            "enum": [
+              "ROCK",
+              "SCISSORS",
+              "PAPER"
+            ]
           }
         }
       },

@@ -52,7 +52,7 @@ class PyApiClientGeneratorTest {
             }
 
         val output = Builder(args).build()
-        val expectedOutput = File(this.javaClass.getResource("PyApiClientGenerator/openApiOutputPartial.py")!!.path).readText()
+        val expectedOutput = File(this.javaClass.getResource("PyApiClientGenerator/openApiPartialOutput.py")!!.path).readText()
         Assertions.assertEquals(expectedOutput, output)
     }
 

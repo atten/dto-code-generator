@@ -106,7 +106,9 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             }
 
             field.serializedName?.let {
-                fieldMetadata["data_key"] = "\"$it\""
+                if (it != fieldName) {
+                    fieldMetadata["data_key"] = "\"$it\""
+                }
             }
 
             if (field.excludeFromSerialization) {
@@ -114,13 +116,24 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             }
 
             field.enum?.let { enum ->
-                val choicesPrefix = (field.enumPrefix ?: fieldName).snakeCase().uppercase()
-                val choicesName = choicesPrefix.pluralize()
                 val choices = enum.keys.associate { key -> buildChoiceVariableName(field, key) to dtypeProps.toGeneratedValue(key) }
-
+                val choicesPrefix = (field.enumPrefix ?: fieldName).snakeCase().uppercase()
                 val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
+                val choicesNamePlaceholder = "<CHOICES_NAME>"
+                val bodyWithPlaceholder = "$choicesDefinition\n$choicesNamePlaceholder = [${choices.keys.joinToString()}]"
+                var choicesName = ""
+                var body = ""
+
+                // pick another name if previous one is occupied by different definition
+                for (choicesNameVariant in listOf(choicesPrefix.pluralize(), entity.name.snakeCase().uppercase() + "_" + choicesPrefix.pluralize())) {
+                    choicesName = choicesNameVariant
+                    body = bodyWithPlaceholder.replace(choicesNamePlaceholder, choicesNameVariant)
+                    if (definedNames.contains(choicesName) == containsDefinition(body))
+                        break
+                }
+
                 addDefinition(
-                    "$choicesDefinition\n$choicesName = [${choices.keys.joinToString()}]",
+                    body,
                     choicesName,
                     *choices.keys.toTypedArray(),
                 )
