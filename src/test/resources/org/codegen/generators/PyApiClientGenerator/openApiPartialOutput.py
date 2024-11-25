@@ -362,7 +362,7 @@ class BasicDto:
 
 
 class TestApiClient(BaseJsonApiClient):
-    def get_basic_dto_list(self, page: t.Optional[int] = None, page_size: t.Optional[int] = None) -> BasicDto:
+    def get_basic(self, page: t.Optional[int] = None, page_size: t.Optional[int] = None) -> t.Iterator[BasicDto]:
         """
         endpoint description
         """
@@ -375,10 +375,9 @@ class TestApiClient(BaseJsonApiClient):
             url='/api/v1/basic',
             query_params=query_params,
         )
-        gen = self._deserialize(raw_data, BasicDto)
-        return next(gen)
+        yield from self._deserialize(raw_data, BasicDto, many=True)
 
-    def create_basic_dto(self, item: BasicDto) -> BasicDto:
+    def post_basic(self, item: BasicDto) -> BasicDto:
         item = self._serialize(item, is_payload=True)
         raw_data = self._fetch(
             url='/api/v1/basic',

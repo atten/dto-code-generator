@@ -2,6 +2,7 @@ package org.codegen.schema.openapi
 
 import org.codegen.schema.*
 import org.codegen.schema.Constants.Companion.UNSET
+import java.util.StringJoiner
 
 internal class OpenApiConverter(
     private val spec: Root,
@@ -46,7 +47,7 @@ internal class OpenApiConverter(
 
     private fun addMethodToDocument(
         method: Method,
-        methodName: String,
+        verb: String,
         path: String,
         document: Document,
     ) {
@@ -56,6 +57,19 @@ internal class OpenApiConverter(
             listOf(method.summary.orEmpty(), method.description)
                 .filter { it.isNotEmpty() }
                 .joinToString("\n")
+
+        val endpointParameters = (pathBody.parameters + method.parameters).filter { it.source != "header" }
+        val endpointArguments = endpointParameters.map { convertParameter(it) }.toMutableList()
+
+        // if requestBody is defined, then add it as method argument
+        method.requestBody?.content?.get("application/json")?.schema?.let {
+            MethodArgument(
+                name = "value",
+                dtype = it.definitionName(),
+            )
+        }?.let {
+            endpointArguments.add(it)
+        }
 
         val successResponseCode = method.responses.keys.first { it in 200..299 }
         val successResponse = method.responses[successResponseCode]
@@ -70,31 +84,30 @@ internal class OpenApiConverter(
             } else {
                 null
             }
-        val successResponseDefinitionName = successResponseSchema?.definitionName() ?: "void"
-        val endpointParameters = (pathBody.parameters + method.parameters).filter { it.source != "header" }
-        val endpointArguments = endpointParameters.map { convertParameter(it) }.toMutableList()
-
-        // if requestBody is defined, then add it as method argument
-        method.requestBody?.content?.get("application/json")?.schema?.let {
-            MethodArgument(
-                name = "value",
-                dtype = it.definitionName(),
-            )
-        }?.let {
-            endpointArguments.add(it)
-        }
+        val successResponseDefinitionName = (successResponseSchema?.definitionName() ?: "void").let { dtypeMapping.getOrDefault(it, it) }
 
         val endpoint =
             Endpoint(
-                name = method.operationId,
+                name = getEndpointName(path, verb),
                 description = description.ifEmpty { null },
-                dtype = dtypeMapping.getOrDefault(successResponseDefinitionName, successResponseDefinitionName),
+                dtype = successResponseDefinitionName,
                 path = fullPath,
-                verb = EndpointVerb.valueOf(methodName.uppercase()),
+                verb = EndpointVerb.valueOf(verb.uppercase()),
                 arguments = endpointArguments,
+                many = successResponseSchema?.type == "array",
             )
 
         document.endpoints.add(endpoint)
+    }
+
+    private fun getEndpointName(
+        path: String,
+        verb: String,
+    ): String {
+        val builder = StringJoiner(" ")
+        builder.add(verb.lowercase())
+        path.split("/").map { it.replace("{", "by ").replace("}", "") }.map { builder.add(it) }
+        return builder.toString()
     }
 
     private fun convertParameter(parameter: Parameter): MethodArgument {
