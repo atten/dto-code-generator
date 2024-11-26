@@ -586,6 +586,9 @@ class BasicDTO:
 
 
 class TestApiClient(AmqpApiWithBlockingListener):
+    def some_action(self, enum: str):
+        self._mk_request(f'api/v1/action/{enum}', 'some_action').get()
+
     def get_basic_dto_list(self) -> t.List[BasicDTO]:
         """
         endpoint description

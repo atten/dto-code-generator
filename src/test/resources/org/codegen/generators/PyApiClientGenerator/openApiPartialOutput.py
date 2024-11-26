@@ -362,6 +362,12 @@ class BasicDto:
 
 
 class TestApiClient(BaseJsonApiClient):
+    def post_action_by_enum(self, enum: str):
+        self._fetch(
+            url=f'/api/v1/action/{enum}',
+            method='POST',
+        )
+
     def get_basic(self, page: t.Optional[int] = None, page_size: t.Optional[int] = None) -> t.Iterator[BasicDto]:
         """
         endpoint description

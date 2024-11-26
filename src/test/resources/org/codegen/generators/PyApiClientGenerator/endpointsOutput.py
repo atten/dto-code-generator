@@ -400,6 +400,12 @@ class BasicDTO:
 
 
 class TestApiClient(BaseJsonApiClient):
+    def some_action(self, enum: str):
+        self._fetch(
+            url=f'api/v1/action/{enum}',
+            method='POST',
+        )
+
     def get_basic_dto_list(self) -> t.Iterator[BasicDTO]:
         """
         endpoint description

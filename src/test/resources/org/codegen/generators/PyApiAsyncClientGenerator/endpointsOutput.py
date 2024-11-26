@@ -390,6 +390,12 @@ class BasicDTO:
 
 
 class TestApiClient(BaseJsonApiClientAsync):
+    async def some_action(self, enum: str):
+        await self._fetch(
+            url=f'api/v1/action/{enum}',
+            method='POST',
+        )
+
     async def get_basic_dto_list(self) -> t.AsyncIterator[BasicDTO]:
         """
         endpoint description

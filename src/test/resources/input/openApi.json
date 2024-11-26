@@ -152,7 +152,29 @@
           }
         }
       }
-    }
+    },
+    "/action/{enum}": {
+      "post": {
+        "operationId": "action-with-complex-path",
+        "description": "",
+        "parameters": [
+          {
+            "name" : "enum",
+            "in" : "path",
+            "required" : true,
+            "schema" : {
+              "type" : "string",
+              "enum" : [ "variant1", "variant2", "variant3" ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+            }
+          }
+        }
+      }
   },
   "definitions": {
     "BasicDto": {

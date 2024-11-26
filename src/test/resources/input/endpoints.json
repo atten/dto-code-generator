@@ -48,6 +48,23 @@
           "many": true
         }
       ]
+    },
+    {
+      "name": "some action",
+      "dtype": "void",
+      "verb": "POST",
+      "path": "api/v1/action/{enum}",
+      "arguments": [
+        {
+          "name": "enum",
+          "dtype": "str",
+          "enum": {
+            "value 1": "name 1",
+            "value 2": "name 2",
+            "value 3": "name 3"
+          }
+        }
+      ]
     }
   ]
 }
