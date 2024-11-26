@@ -1,7 +1,5 @@
 package org.codegen.format
 
-import java.util.regex.Pattern
-
 internal fun String.normalize(): String {
     require(this.isNotEmpty()) { "String can't be empty" }
     require(this[0].isLetter() or this[0].isWhitespace()) { "String must start with letter: '$this'" }
@@ -68,10 +66,3 @@ fun String.pluralize() =
         this.last().isUpperCase() -> "${this}S"
         else -> "${this}s"
     }
-
-fun String.containsWildcard(pattern: String): Boolean {
-    return Pattern.compile(
-        "^" + pattern.replace("*", "[\\s\\S]*").replace("/", "\\/").replace("{", "\\{") + "$",
-        Pattern.CASE_INSENSITIVE,
-    ).matcher(this).find()
-}

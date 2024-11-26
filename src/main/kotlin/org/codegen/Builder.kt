@@ -1,7 +1,6 @@
 package org.codegen
 
 import kotlinx.serialization.SerializationException
-import org.codegen.format.containsWildcard
 import org.codegen.schema.Document
 import org.codegen.schema.SchemaParser
 import org.codegen.schema.openapi.OpenApiParser
@@ -45,7 +44,8 @@ class Builder(
 
                     // add root-level endpoints to default entity
                     document.endpoints
-                        .filter { endpoint -> params.excludeNames.none { endpoint.path.containsWildcard(it) } }
+                        .filter { endpoint -> params.excludePaths.none { it in endpoint.path } }
+                        .filter { endpoint -> params.indludePaths.isEmpty() || params.indludePaths.any { it in endpoint.path } }
                         .sortedBy { it.path }
                         .forEach { generator.defaultEntity.endpoints.add(it) }
                 }

@@ -48,7 +48,7 @@ class PyApiClientGeneratorTest {
                     listOf(
                         this.javaClass.getResource("/input/openApi.json")!!.path,
                     )
-                it.excludeNames = listOf("*basic/{entityId}/*")
+                it.excludePaths = listOf("basic/{entityId}/")
             }
 
         val output = Builder(args).build()

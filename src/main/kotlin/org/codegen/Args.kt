@@ -16,11 +16,18 @@ class Args {
     var usePrefixed = false
 
     @Parameter(
-        names = ["--exclude"],
-        description = "Do not include specified entity names and paths (wildcard)",
+        names = ["--include-path"],
+        description = "Include only paths containing given strings",
         variableArity = true,
     )
-    var excludeNames: List<String> = listOf()
+    var indludePaths: List<String> = listOf()
+
+    @Parameter(
+        names = ["--exclude-path"],
+        description = "Do not include paths containing given strings",
+        variableArity = true,
+    )
+    var excludePaths: List<String> = listOf()
 
     @Parameter(names = ["--help"], help = true)
     var help: Boolean = false
