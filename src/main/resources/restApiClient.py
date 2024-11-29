@@ -62,7 +62,7 @@ class BaseJsonApiClient:
         """
         full_url = self._get_full_url(url, query_params)
         headers = self.headers.copy() if self.headers else dict()
-        if payload:
+        if payload is not None:
             payload = json.dumps(payload).encode('utf8')
             headers['content-type'] = 'application/json'
         if self.user_agent:

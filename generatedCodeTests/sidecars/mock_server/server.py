@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 
 from utils import item_factory, auth_required
 
@@ -34,4 +34,7 @@ def create_basic_dto():
 @app.post("/api/v1/basic/bulk")
 @auth_required
 def create_basic_dto_bulk():
-    return [item_factory(), item_factory(), item_factory()]
+    response = []
+    for item in request.json:
+        response.append(item_factory())
+    return response

@@ -57,6 +57,16 @@ def test_post_list_required_fields_only():
     assert isinstance(next(result), BasicDTO)
 
 
+def test_post_empty_list():
+    api = TestApiClient(base_url=BASE_URL)
+    payload = []
+    result = api.create_basic_dto_bulk(payload)
+
+    assert isinstance(result, types.GeneratorType)
+    with pytest.raises(StopIteration):
+        next(result)
+
+
 def test_post_request_wrong_enum_value():
     api = TestApiClient('http://none')
     item = BasicDTO(

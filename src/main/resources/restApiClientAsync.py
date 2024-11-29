@@ -64,7 +64,7 @@ class BaseJsonApiClientAsync:
         full_url = self._get_full_url(url, query_params)
         if not headers:
             headers = self.headers.copy() if self.headers else dict()
-        if payload:
+        if payload is not None:
             headers['content-type'] = 'application/json'
         if self.user_agent:
             headers['user-agent'] = self.user_agent
@@ -87,7 +87,7 @@ class BaseJsonApiClientAsync:
             raise RuntimeError(f'Failed to {method} {full_url}: {e}') from e
 
     @classmethod
-    async def _mk_request(cls, full_url: str, method: str, payload: t.Optional[dict], headers: t.Optional[dict]) -> JSON_PAYLOAD:
+    async def _mk_request(cls, full_url: str, method: str, payload: t.Optional[JSON_PAYLOAD], headers: t.Optional[dict]) -> JSON_PAYLOAD:
         async with aiohttp.request(
             url=full_url,
             method=method,
