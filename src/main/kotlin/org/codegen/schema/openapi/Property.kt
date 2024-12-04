@@ -14,6 +14,7 @@ internal data class Property(
     val ref: String? = null,
     val items: Property? = null,
     val oneOf: List<Property> = listOf(),
+    val properties: Map<String, Property> = mapOf(),
 ) {
     fun definitionName(): String {
         if (ref != null) {
@@ -26,6 +27,10 @@ internal data class Property(
 
         if (type == "string" && format == "date-time") {
             return "datetime"
+        }
+
+        if (type == "object" && properties.keys.containsAll(listOf("seconds", "nano", "units"))) {
+            return "java duration"
         }
 
         if (type != null) {

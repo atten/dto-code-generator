@@ -271,6 +271,61 @@
               "SCISSORS",
               "PAPER"
             ]
+          },
+          "javaDuration" : {
+            "type" : "object",
+            "properties" : {
+              "seconds" : {
+                "type" : "integer",
+                "format" : "int64"
+              },
+              "zero" : {
+                "type" : "boolean"
+              },
+              "nano" : {
+                "type" : "integer",
+                "format" : "int32"
+              },
+              "negative" : {
+                "type" : "boolean"
+              },
+              "units" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "object",
+                  "properties" : {
+                    "durationEstimated" : {
+                      "type" : "boolean"
+                    },
+                    "duration" : {
+                      "type" : "object",
+                      "properties" : {
+                        "seconds" : {
+                          "type" : "integer",
+                          "format" : "int64"
+                        },
+                        "zero" : {
+                          "type" : "boolean"
+                        },
+                        "nano" : {
+                          "type" : "integer",
+                          "format" : "int32"
+                        },
+                        "negative" : {
+                          "type" : "boolean"
+                        }
+                      }
+                    },
+                    "timeBased" : {
+                      "type" : "boolean"
+                    },
+                    "dateBased" : {
+                      "type" : "boolean"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       },

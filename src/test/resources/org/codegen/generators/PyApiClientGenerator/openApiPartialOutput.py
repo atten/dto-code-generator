@@ -17,6 +17,7 @@ import logging
 import marshmallow
 import marshmallow_dataclass
 import os
+import re
 import typing as t
 import urllib3
 
@@ -340,12 +341,63 @@ SOME_ENUM_PAPER = "PAPER"
 ADVANCED_DTO_SOME_ENUMS = [SOME_ENUM_ROCK, SOME_ENUM_SCISSORS, SOME_ENUM_PAPER]
 
 
+def str_java_duration_to_timedelta(duration: str) -> timedelta:
+    """
+    :param duration: string duration:'PT5S', 'PT10H59S' etc
+    :return: timedelta()
+    """
+    groups = re.findall(r'PT(\d+H)?(\d+M)?([\d.]+S)?', duration)[0]
+    if not groups:
+        raise ValueError('Invalid duration: %s' % duration)
+
+    hours, minutes, seconds = groups
+
+    hours = int((hours or '0H').rstrip('H'))
+    minutes = int((minutes or '0M').rstrip('M'))
+    seconds = float((seconds or '0S').rstrip('S'))
+
+    return timedelta(hours=hours, minutes=minutes, seconds=seconds)
+
+
+def timedelta_to_java_duration(delta: timedelta) -> str:
+    """
+    Converts a timedelta to java duration string format
+    Milliseconds are discarded
+
+    >>> timedelta_to_java_duration(timedelta(minutes=15))
+    'PT900S'
+
+    >>> timedelta_to_java_duration(timedelta(days=1, minutes=21, seconds=35))
+    'PT87695S'
+
+    >>> timedelta_to_java_duration(timedelta(microseconds=123456))
+    'PT0S'
+    """
+    seconds = delta.total_seconds()
+    return 'PT{}S'.format(int(seconds))
+
+
+class JavaDurationField(marshmallow.fields.Field):
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        try:
+            return str_java_duration_to_timedelta(value)
+        except ValueError as error:
+            raise marshmallow.ValidationError(str(error)) from error
+
+    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
+        if value is None:
+            return None
+        return timedelta_to_java_duration(value) if value else "PT0S"
+
+
 @dataclass
 class AdvancedDTO:
     # Example: [{"foo": "bar"}]
     json: t.Optional[dict] = None
     # Enum field with the same name as of different entity
     some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(ADVANCED_DTO_SOME_ENUMS)])), default=None)
+    java_duration: t.Optional[timedelta] = field(metadata=dict(marshmallow_field=JavaDurationField(allow_none=True, data_key="javaDuration")), default=None)
 
 
 @dataclass
