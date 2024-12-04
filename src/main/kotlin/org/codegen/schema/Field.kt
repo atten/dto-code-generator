@@ -21,4 +21,16 @@ data class Field(
     val excludeFromSerialization: Boolean = false,
 ) {
     val isEnum: Boolean = !enum.isNullOrEmpty()
+
+    fun toMethodArgument() =
+        MethodArgument(
+            name = name,
+            dtype = dtype,
+            description = description,
+            enum = enum,
+            enumPrefix = enumPrefix,
+            nullable = nullable,
+            many = many,
+            default = default,
+        )
 }

@@ -29,11 +29,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             ""
         } else if (argument.many) {
             // use immutable tuple for default value
-            if (argument.default == EMPTY) {
-                "()"
-            } else {
-                "(${dtypeProps.toGeneratedValue(argument.default ?: "None")})"
-            }
+            "()"
         } else {
             when (argument.default) {
                 EMPTY -> "${dtypeProps.definition}()".replace("str()", "''")
@@ -194,7 +190,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
                 val expression =
                     when (defaultValue) {
                         "None" -> "$variable is not None"
-                        "()" -> "len($variable)"
+                        "()" -> "$variable and len($variable)"
                         "False" -> variable
                         "True" -> "not $variable"
                         else -> "$variable != $defaultValue"

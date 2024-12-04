@@ -153,6 +153,32 @@
         }
       }
     },
+    "/basic-pageable": {
+      "get": {
+        "operationId": "get2",
+        "description": "Pageable DTO as query object",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in" : "query",
+            "required" : true,
+            "schema" : {
+              "$ref" : "#/components/schemas/Pageable"
+            }}
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BasicDto"
+              }
+            }
+          }
+        }
+      }
+    },
     "/action/{enum}": {
       "post": {
         "operationId": "action-with-complex-path",
@@ -261,6 +287,25 @@
       },
       "JsonNode" : {
         "type" : "object"
+      },
+      "Pageable" : {
+        "type" : "object",
+        "properties" : {
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "sort" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
       }
     }
   }

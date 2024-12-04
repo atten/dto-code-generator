@@ -393,6 +393,28 @@ class TestApiClient(BaseJsonApiClient):
         gen = self._deserialize(raw_data, BasicDto)
         return next(gen)
 
+    def get_basic_pageable(
+        self,
+        page: t.Optional[int] = None,
+        size: t.Optional[int] = None,
+        sort: t.Optional[t.Sequence[str]] = (),
+    ) -> t.Iterator[BasicDto]:
+        """
+        Pageable DTO as query object
+        """
+        query_params = dict()
+        if page is not None:
+            query_params['page'] = page
+        if size is not None:
+            query_params['size'] = size
+        if sort and len(sort):
+            query_params['sort'] = sort
+        raw_data = self._fetch(
+            url='/api/v1/basic-pageable',
+            query_params=query_params,
+        )
+        yield from self._deserialize(raw_data, BasicDto, many=True)
+
 
 __all__ = [
     "ADVANCED_DTO_SOME_ENUMS",

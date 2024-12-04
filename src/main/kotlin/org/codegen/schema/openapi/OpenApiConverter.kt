@@ -54,12 +54,15 @@ internal class OpenApiConverter(
         val fullPath = spec.basePath + path
         val pathBody = spec.paths[path]!!
         val description =
-            listOf(method.summary.orEmpty(), method.description)
+            listOf(
+                method.summary.orEmpty(),
+                method.description
+            )
                 .filter { it.isNotEmpty() }
                 .joinToString("\n")
 
         val endpointParameters = (pathBody.parameters + method.parameters).filter { it.source != "header" }
-        val endpointArguments = endpointParameters.map { convertParameter(it) }.toMutableList()
+        val endpointArguments = endpointParameters.flatMap { convertAnyParameter(it, document) }.toMutableList()
 
         // if requestBody is defined, then add it as method argument
         method.requestBody?.content?.get("application/json")?.schema?.let {
@@ -110,7 +113,23 @@ internal class OpenApiConverter(
         return builder.toString()
     }
 
-    private fun convertParameter(parameter: Parameter): MethodArgument {
+    private fun convertAnyParameter(parameter: Parameter, document: Document): List<MethodArgument> {
+        val definitionName = parameter.schema?.definitionName()
+        return if (parameter.source == "query" && definitionName != null && definitionName !in dtypeMapping) {
+            // replace complex query parameter with nested fields
+            convertComplexQueryParameter(parameter, document)
+        } else {
+            listOf(convertGenericParameter(parameter))
+        }
+    }
+
+    private fun convertComplexQueryParameter(parameter: Parameter, document: Document): List<MethodArgument> {
+        val entityName = parameter.schema?.definitionName()
+        val entity = document.entities.first { it.name == entityName }
+        return entity.fields.map { it.toMethodArgument() }
+    }
+
+    private fun convertGenericParameter(parameter: Parameter): MethodArgument {
         return MethodArgument(
             name = parameter.name,
             description = parameter.description,
