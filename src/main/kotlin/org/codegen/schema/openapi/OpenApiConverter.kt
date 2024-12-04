@@ -56,7 +56,7 @@ internal class OpenApiConverter(
         val description =
             listOf(
                 method.summary.orEmpty(),
-                method.description
+                method.description,
             )
                 .filter { it.isNotEmpty() }
                 .joinToString("\n")
@@ -113,7 +113,10 @@ internal class OpenApiConverter(
         return builder.toString()
     }
 
-    private fun convertAnyParameter(parameter: Parameter, document: Document): List<MethodArgument> {
+    private fun convertAnyParameter(
+        parameter: Parameter,
+        document: Document,
+    ): List<MethodArgument> {
         val definitionName = parameter.schema?.definitionName()
         return if (parameter.source == "query" && definitionName != null && definitionName !in dtypeMapping) {
             // replace complex query parameter with nested fields
@@ -123,7 +126,10 @@ internal class OpenApiConverter(
         }
     }
 
-    private fun convertComplexQueryParameter(parameter: Parameter, document: Document): List<MethodArgument> {
+    private fun convertComplexQueryParameter(
+        parameter: Parameter,
+        document: Document,
+    ): List<MethodArgument> {
         val entityName = parameter.schema?.definitionName()
         val entity = document.entities.first { it.name == entityName }
         return entity.fields.map { it.toMethodArgument() }
