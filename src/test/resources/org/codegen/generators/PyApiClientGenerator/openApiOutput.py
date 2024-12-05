@@ -445,7 +445,7 @@ class TestApiClient(BaseJsonApiClient):
         gen = self._deserialize(raw_data, BasicDto)
         return next(gen)
 
-    def get_basic_pageable(
+    def get_basic_bulk(
         self,
         page: t.Optional[int] = None,
         size: t.Optional[int] = None,
@@ -462,10 +462,21 @@ class TestApiClient(BaseJsonApiClient):
         if sort and len(sort):
             query_params['sort'] = sort
         raw_data = self._fetch(
-            url='/api/v1/basic-pageable',
+            url='/api/v1/basic-bulk',
             query_params=query_params,
         )
         yield from self._deserialize(raw_data, BasicDto, many=True)
+
+    def post_basic_bulk(self, values: t.Sequence[BasicDto]):
+        """
+        Array of elements in request body
+        """
+        values = self._serialize(values, is_payload=True)
+        self._fetch(
+            url='/api/v1/basic-bulk',
+            method='POST',
+            payload=values,
+        )
 
     def get_basic_by_entity_id(self, entity_id: str) -> BasicDto:
         raw_data = self._fetch(

@@ -66,9 +66,11 @@ internal class OpenApiConverter(
 
         // if requestBody is defined, then add it as method argument
         method.requestBody?.content?.get("application/json")?.schema?.let {
+            val many = it.type == "array"
             MethodArgument(
-                name = "value",
+                name = if (many) "values" else "value",
                 dtype = it.definitionName(),
+                many = many
             )
         }?.let {
             endpointArguments.add(it)
