@@ -9,6 +9,7 @@ internal data class Schema(
     val ref: String? = null,
     val type: String? = null,
     val items: Schema? = null,
+    val enum: List<String> = listOf(),
 ) {
     fun definitionName(): String {
         if (ref != null) {

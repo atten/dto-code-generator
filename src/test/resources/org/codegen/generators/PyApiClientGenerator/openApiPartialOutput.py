@@ -414,13 +414,23 @@ class BasicDto:
 
 
 class TestApiClient(BaseJsonApiClient):
-    def post_action_by_enum(self, enum: str):
+    def post_action_by_enum(
+        self,
+        # variant1 | variant2 | variant3
+        enum: str,
+    ):
         self._fetch(
             url=f'/api/v1/action/{enum}',
             method='POST',
         )
 
-    def get_basic(self, page: t.Optional[int] = None, page_size: t.Optional[int] = None) -> t.Iterator[BasicDto]:
+    def get_basic(
+        self,
+        # A page number within the paginated result set.
+        page: t.Optional[int] = None,
+        # Number of results to return per page.
+        page_size: t.Optional[int] = None,
+    ) -> t.Iterator[BasicDto]:
         """
         endpoint description
         """

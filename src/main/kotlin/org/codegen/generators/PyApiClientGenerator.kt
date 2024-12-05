@@ -54,7 +54,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         name: String,
         arguments: List<String>,
         returnStatement: String,
-        singleLine: Boolean?,
+        singleLine: Boolean? = null,
     ): String {
         when (singleLine) {
             true -> {
@@ -62,7 +62,10 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
                 return "def $name($argumentsString)$returnStatement"
             }
             false -> {
-                val argumentsString = arguments.joinToString(separator = ",\n    ", prefix = "\n    ", postfix = ",\n")
+                val argumentsString =
+                    arguments.joinToString(separator = ",\n    ", prefix = "\n    ", postfix = ",\n") {
+                        it.replace("\n", "\n    ")
+                    }
                 return "def $name($argumentsString)$returnStatement"
             }
             else -> {
@@ -114,7 +117,14 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
                 buildArgumentDefaultValue(argument)
                     .let { if (it.isEmpty()) "" else "= $it" }
 
-            val argumentString = "$argName: $argTypeName $argDefaultValue".trim()
+            val argDescription =
+                if (!argument.description.isNullOrEmpty()) {
+                    "# ${argument.description}".trim()
+                } else {
+                    ""
+                }
+
+            val argumentString = "$argDescription\n$argName: $argTypeName $argDefaultValue".trim()
             arguments.add(argumentString)
         }
 
@@ -125,7 +135,14 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             lines.add("@memoize")
         }
 
-        lines.add(buildMethodDefinition(name, arguments, returnStatement, singleLine = null))
+        val singleLine =
+            if (arguments.any { "\n" in it }) {
+                false
+            } else {
+                null // auto-choice
+            }
+
+        lines.add(buildMethodDefinition(name, arguments, returnStatement, singleLine = singleLine))
         endpoint.description
             ?.replace("\n", "\n    ")
             ?.let {

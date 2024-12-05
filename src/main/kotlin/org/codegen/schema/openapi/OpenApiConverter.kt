@@ -70,7 +70,7 @@ internal class OpenApiConverter(
             MethodArgument(
                 name = if (many) "values" else "value",
                 dtype = it.definitionName(),
-                many = many
+                many = many,
             )
         }?.let {
             endpointArguments.add(it)
@@ -138,9 +138,13 @@ internal class OpenApiConverter(
     }
 
     private fun convertGenericParameter(parameter: Parameter): MethodArgument {
+        val description = StringJoiner("\n")
+        parameter.description?.let { description.add(it) }
+        parameter.schema?.enum?.let { description.add(it.joinToString(separator = " | ")) }
+
         return MethodArgument(
             name = parameter.name,
-            description = parameter.description,
+            description = description.toString(),
             dtype =
                 if (!parameter.type.isNullOrEmpty()) {
                     dtypeMapping[parameter.type]!!
