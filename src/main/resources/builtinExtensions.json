@@ -208,7 +208,7 @@
             "metadata": "dict(marshmallow_field=JavaDurationField({metadata}))"
           },
           "includeFiles": [
-            "javaDurationField.py"
+            "templates/python/javaDurationField.py"
           ]
         },
         "PY_DJANGO_MODEL": {

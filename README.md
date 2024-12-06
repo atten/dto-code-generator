@@ -11,7 +11,7 @@ Console tool which generates language-specific data classes, validators and API 
 ### Docker image
 
 ```
-docker image pull registry.gitlab.com/atten0/dto-code-generator:release-1-2-0
+docker image pull registry.gitlab.com/atten0/dto-code-generator:master
 ```
 
 Other image versions:

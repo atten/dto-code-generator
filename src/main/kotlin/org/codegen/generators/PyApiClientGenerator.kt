@@ -308,10 +308,10 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         headers.add("from typeguard import typechecked")
 
         listOf(
-            "/baseSchema.py",
-            "/restApiClient.py",
-            "/serializationMethods.py",
-            "/failsafeCall.py",
+            "/templates/python/baseSchema.py",
+            "/templates/python/restApiClient.py",
+            "/templates/python/serializationMethods.py",
+            "/templates/python/failsafeCall.py",
         ).map { path ->
             this.javaClass.getResource(path)!!.path
                 .let { File(it).readText() }

@@ -57,10 +57,10 @@ class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiCli
         headers.add("from typeguard import typechecked")
 
         listOf(
-            "/baseSchema.py",
-            "/restApiClientAsync.py",
-            "/serializationMethods.py",
-            "/failsafeCallAsync.py",
+            "/templates/python/baseSchema.py",
+            "/templates/python/restApiClientAsync.py",
+            "/templates/python/serializationMethods.py",
+            "/templates/python/failsafeCallAsync.py",
         ).map { path ->
             this.javaClass.getResource(path)!!.path
                 .let { File(it).readText() }

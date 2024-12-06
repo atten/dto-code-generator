@@ -20,7 +20,7 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
         headers.add("import typing as t")
 
         listOf(
-            "/baseSchema.py",
+            "/templates/python/baseSchema.py",
         ).joinToString(separator = "\n\n") { path ->
             this.javaClass.getResource(path)!!.path
                 .let { File(it).readText() }
