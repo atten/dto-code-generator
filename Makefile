@@ -11,10 +11,10 @@ build_image:
 # ===================== LOCAL ENV =================
 
 run_sidecars_for_local_tests_of_generated_code:
-	cd generatedCodeTests/sidecars && docker-compose up -d --build
+	cd generatedCodeTests/sidecars && docker compose up -d --build
 
 logs_sidecars:
-	cd generatedCodeTests/sidecars && docker-compose logs -f --tail=100
+	cd generatedCodeTests/sidecars && docker compose logs -f --tail=100
 
 
 # ===================== LINT ======================
