@@ -9,6 +9,7 @@ class BaseJsonApiClient:
     default_user_agent = os.environ.get('API_CLIENT_USER_AGENT')
     use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1)))
     use_request_payload_validation = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1)))
+    use_debug_curl = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0)))
 
     @typechecked
     def __init__(
@@ -87,6 +88,15 @@ class BaseJsonApiClient:
             if ' at 0x' in error_verbose:
                 # reduce noise in error description, e.g. in case of NewConnectionError
                 error_verbose = error_verbose.split(':', maxsplit=1)[-1].strip()
+            if self.use_debug_curl:
+                curl_cmd = build_curl_command(
+                    url=full_url,
+                    method=method,
+                    headers=headers,
+                    body=payload,
+                )
+                raise RuntimeError(f'Failed to {curl_cmd}: {error_verbose}') from e
+
             raise RuntimeError(f'Failed to {method} {full_url}: {error_verbose}') from e
 
     def _mk_request(self, *args, **kwargs) -> RESPONSE_BODY:

@@ -61,6 +61,7 @@ class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiCli
             "/templates/python/restApiClientAsync.py",
             "/templates/python/serializationMethods.py",
             "/templates/python/failsafeCallAsync.py",
+            "/templates/python/buildCurlCommand.py",
         ).map { path ->
             this.javaClass.getResource(path)!!.path
                 .let { File(it).readText() }

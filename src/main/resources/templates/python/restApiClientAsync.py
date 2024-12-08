@@ -9,6 +9,7 @@ class BaseJsonApiClientAsync:
     default_user_agent = os.environ.get('API_CLIENT_USER_AGENT')
     use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 0)))   # disabled for async client (not implemented yet)
     use_request_payload_validation = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1)))
+    use_debug_curl = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0)))
 
     @typechecked
     def __init__(
@@ -84,6 +85,14 @@ class BaseJsonApiClientAsync:
                 on_transitional_fail=lambda exc, info: asyncio.sleep(self.retry_timeout)
             )
         except Exception as e:
+            if self.use_debug_curl:
+                curl_cmd = build_curl_command(
+                    url=full_url,
+                    method=method,
+                    headers=headers,
+                    body=payload,
+                )
+                raise RuntimeError(f'Failed to {curl_cmd}: {e}') from e
             raise RuntimeError(f'Failed to {method} {full_url}: {e}') from e
 
     @classmethod

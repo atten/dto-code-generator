@@ -36,6 +36,7 @@ class BaseJsonApiClientAsync:
     default_user_agent = os.environ.get('API_CLIENT_USER_AGENT')
     use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 0)))   # disabled for async client (not implemented yet)
     use_request_payload_validation = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1)))
+    use_debug_curl = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0)))
 
     @typechecked
     def __init__(
@@ -111,6 +112,14 @@ class BaseJsonApiClientAsync:
                 on_transitional_fail=lambda exc, info: asyncio.sleep(self.retry_timeout)
             )
         except Exception as e:
+            if self.use_debug_curl:
+                curl_cmd = build_curl_command(
+                    url=full_url,
+                    method=method,
+                    headers=headers,
+                    body=payload,
+                )
+                raise RuntimeError(f'Failed to {curl_cmd}: {e}') from e
             raise RuntimeError(f'Failed to {method} {full_url}: {e}') from e
 
     @classmethod
@@ -319,6 +328,32 @@ async def failsafe_call_async(
         )
 
 
+def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: str) -> str:
+    """
+    >>> build_curl_command('https://example.com', 'get', {}, '')
+    'curl "https://example.com"'
+
+    >>> build_curl_command('https://example.com?param1=value1&param2=value2', 'post', {'content-type': 'application/json'}, '{"foo": "bar"}')
+    'curl "https://example.com?param1=value1&param2=value2" -X POST -H "content-type: application/json" -d "{\"foo\": \"bar\"}"'
+    """
+    method = method.upper()
+
+    if method != 'GET':
+        method = f' -X {method}'
+    else:
+        method = ''
+
+    headers = ''.join(f' -H "{k}: {v}"' for k, v in headers.items())
+
+    if body:
+        body = body.replace('"', '\"')
+        body = f' -d "{body}"'
+    else:
+        body = ''
+
+    return f'curl "{url}"{method}{headers}{body}'
+
+
 def str_java_duration_to_timedelta(duration: str) -> timedelta:
     """
     :param duration: string duration:'PT5S', 'PT10H59S' etc
@@ -389,7 +424,7 @@ class BasicDTO:
     optional_list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())), default_factory=list)
 
 
-class TestApiClient(BaseJsonApiClientAsync):
+class ApiClient(BaseJsonApiClientAsync):
     async def some_action(self, enum: str):
         await self._fetch(
             url=f'api/v1/action/{enum}',
@@ -441,10 +476,10 @@ class TestApiClient(BaseJsonApiClientAsync):
 
 
 __all__ = [
+    "ApiClient",
     "BasicDTO",
     "ENUM_VALUES",
     "ENUM_VALUE_VALUE_1",
     "ENUM_VALUE_VALUE_2",
     "ENUM_VALUE_VALUE_3",
-    "TestApiClient",
 ]

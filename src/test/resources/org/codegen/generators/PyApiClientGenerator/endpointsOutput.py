@@ -39,6 +39,7 @@ class BaseJsonApiClient:
     default_user_agent = os.environ.get('API_CLIENT_USER_AGENT')
     use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1)))
     use_request_payload_validation = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1)))
+    use_debug_curl = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0)))
 
     @typechecked
     def __init__(
@@ -117,6 +118,15 @@ class BaseJsonApiClient:
             if ' at 0x' in error_verbose:
                 # reduce noise in error description, e.g. in case of NewConnectionError
                 error_verbose = error_verbose.split(':', maxsplit=1)[-1].strip()
+            if self.use_debug_curl:
+                curl_cmd = build_curl_command(
+                    url=full_url,
+                    method=method,
+                    headers=headers,
+                    body=payload,
+                )
+                raise RuntimeError(f'Failed to {curl_cmd}: {error_verbose}') from e
+
             raise RuntimeError(f'Failed to {method} {full_url}: {error_verbose}') from e
 
     def _mk_request(self, *args, **kwargs) -> RESPONSE_BODY:
@@ -329,6 +339,32 @@ def failsafe_call(
         )
 
 
+def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: str) -> str:
+    """
+    >>> build_curl_command('https://example.com', 'get', {}, '')
+    'curl "https://example.com"'
+
+    >>> build_curl_command('https://example.com?param1=value1&param2=value2', 'post', {'content-type': 'application/json'}, '{"foo": "bar"}')
+    'curl "https://example.com?param1=value1&param2=value2" -X POST -H "content-type: application/json" -d "{\"foo\": \"bar\"}"'
+    """
+    method = method.upper()
+
+    if method != 'GET':
+        method = f' -X {method}'
+    else:
+        method = ''
+
+    headers = ''.join(f' -H "{k}: {v}"' for k, v in headers.items())
+
+    if body:
+        body = body.replace('"', '\"')
+        body = f' -d "{body}"'
+    else:
+        body = ''
+
+    return f'curl "{url}"{method}{headers}{body}'
+
+
 def str_java_duration_to_timedelta(duration: str) -> timedelta:
     """
     :param duration: string duration:'PT5S', 'PT10H59S' etc
@@ -399,7 +435,7 @@ class BasicDTO:
     optional_list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())), default_factory=list)
 
 
-class TestApiClient(BaseJsonApiClient):
+class ApiClient(BaseJsonApiClient):
     def some_action(self, enum: str):
         self._fetch(
             url=f'api/v1/action/{enum}',
@@ -449,10 +485,10 @@ class TestApiClient(BaseJsonApiClient):
 
 
 __all__ = [
+    "ApiClient",
     "BasicDTO",
     "ENUM_VALUES",
     "ENUM_VALUE_VALUE_1",
     "ENUM_VALUE_VALUE_2",
     "ENUM_VALUE_VALUE_3",
-    "TestApiClient",
 ]

@@ -612,7 +612,7 @@ class BasicDTO:
     optional_list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())), default_factory=list)
 
 
-class TestApiClient(AmqpApiWithLazyListener):
+class ApiClient(AmqpApiWithLazyListener):
     def some_action(self, enum: str):
         self._mk_request(f'api/v1/action/{enum}', 'some_action').get()
 
@@ -648,11 +648,11 @@ class TestApiClient(AmqpApiWithLazyListener):
 
 __all__ = [
     "AmqpApiWithLazyListener",
+    "ApiClient",
     "BasicDTO",
     "ENUM_VALUES",
     "ENUM_VALUE_VALUE_1",
     "ENUM_VALUE_VALUE_2",
     "ENUM_VALUE_VALUE_3",
     "FailedAmqpRequestError",
-    "TestApiClient",
 ]

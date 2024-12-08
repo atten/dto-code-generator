@@ -312,6 +312,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             "/templates/python/restApiClient.py",
             "/templates/python/serializationMethods.py",
             "/templates/python/failsafeCall.py",
+            "/templates/python/buildCurlCommand.py",
         ).map { path ->
             this.javaClass.getResource(path)!!.path
                 .let { File(it).readText() }

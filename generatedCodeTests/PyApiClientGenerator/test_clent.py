@@ -1,5 +1,5 @@
 import os
-from generated.api import TestApiClient, BasicDTO, ENUM_VALUE_VALUE_1
+from generated.api import ApiClient, BasicDTO, ENUM_VALUE_VALUE_1
 
 import pytest
 import types
@@ -12,7 +12,7 @@ SECURED_BASE_URL = os.environ['SECURED_BASE_URL']
 
 
 def test_get():
-    api = TestApiClient(base_url=BASE_URL)
+    api = ApiClient(base_url=BASE_URL)
     timestamp = datetime.now(tz=timezone.utc)
     result = api.get_basic_dto_by_timestamp(timestamp)
 
@@ -20,7 +20,7 @@ def test_get():
 
 
 def test_get_list():
-    api = TestApiClient(base_url=BASE_URL)
+    api = ApiClient(base_url=BASE_URL)
     result = api.get_basic_dto_list()
 
     assert isinstance(result, types.GeneratorType)
@@ -28,7 +28,7 @@ def test_get_list():
 
 
 def test_post():
-    api = TestApiClient(base_url=BASE_URL)
+    api = ApiClient(base_url=BASE_URL)
     item = BasicDTO(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
@@ -42,7 +42,7 @@ def test_post():
 
 
 def test_post_list_required_fields_only():
-    api = TestApiClient(base_url=BASE_URL)
+    api = ApiClient(base_url=BASE_URL)
     item = BasicDTO(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
@@ -58,7 +58,7 @@ def test_post_list_required_fields_only():
 
 
 def test_post_empty_list():
-    api = TestApiClient(base_url=BASE_URL)
+    api = ApiClient(base_url=BASE_URL)
     payload = []
     result = api.create_basic_dto_bulk(payload)
 
@@ -68,7 +68,7 @@ def test_post_empty_list():
 
 
 def test_post_request_wrong_enum_value():
-    api = TestApiClient('http://none')
+    api = ApiClient('http://none')
     item = BasicDTO(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
@@ -84,13 +84,13 @@ def test_post_request_wrong_enum_value():
 
 
 def test_403():
-    api = TestApiClient(base_url=SECURED_BASE_URL, max_retries=1)
+    api = ApiClient(base_url=SECURED_BASE_URL, max_retries=1)
     with pytest.raises(RuntimeError):
         api.ping()
 
 
 def test_user_agent_and_headers():
-    api = TestApiClient(
+    api = ApiClient(
         base_url=SECURED_BASE_URL,
         user_agent=os.environ['SECURED_USER_AGENT'],
         headers={
@@ -98,3 +98,12 @@ def test_user_agent_and_headers():
         }
     )
     api.ping()
+
+
+def test_use_debug_curl():
+    api = ApiClient(base_url='http://none', max_retries=1)
+    api.use_debug_curl = True
+    with pytest.raises(RuntimeError) as e:
+        api.ping()
+
+    assert 'curl "http://none/api/v1/ping"' in str(e)

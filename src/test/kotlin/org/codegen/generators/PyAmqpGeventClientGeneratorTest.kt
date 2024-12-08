@@ -29,7 +29,7 @@ class PyAmqpGeventClientGeneratorTest {
         @BeforeAll
         fun setup() {
             System.setProperty("DECORATOR_ARGS", "")
-            System.setProperty("ENTITY_NAME", "TestApiClient")
+            System.setProperty("ENTITY_NAME", "ApiClient")
         }
 
         @JvmStatic

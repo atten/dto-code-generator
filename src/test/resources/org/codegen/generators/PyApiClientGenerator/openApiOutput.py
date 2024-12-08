@@ -39,6 +39,7 @@ class BaseJsonApiClient:
     default_user_agent = os.environ.get('API_CLIENT_USER_AGENT')
     use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1)))
     use_request_payload_validation = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1)))
+    use_debug_curl = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0)))
 
     @typechecked
     def __init__(
@@ -117,6 +118,15 @@ class BaseJsonApiClient:
             if ' at 0x' in error_verbose:
                 # reduce noise in error description, e.g. in case of NewConnectionError
                 error_verbose = error_verbose.split(':', maxsplit=1)[-1].strip()
+            if self.use_debug_curl:
+                curl_cmd = build_curl_command(
+                    url=full_url,
+                    method=method,
+                    headers=headers,
+                    body=payload,
+                )
+                raise RuntimeError(f'Failed to {curl_cmd}: {error_verbose}') from e
+
             raise RuntimeError(f'Failed to {method} {full_url}: {error_verbose}') from e
 
     def _mk_request(self, *args, **kwargs) -> RESPONSE_BODY:
@@ -329,6 +339,32 @@ def failsafe_call(
         )
 
 
+def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: str) -> str:
+    """
+    >>> build_curl_command('https://example.com', 'get', {}, '')
+    'curl "https://example.com"'
+
+    >>> build_curl_command('https://example.com?param1=value1&param2=value2', 'post', {'content-type': 'application/json'}, '{"foo": "bar"}')
+    'curl "https://example.com?param1=value1&param2=value2" -X POST -H "content-type: application/json" -d "{\"foo\": \"bar\"}"'
+    """
+    method = method.upper()
+
+    if method != 'GET':
+        method = f' -X {method}'
+    else:
+        method = ''
+
+    headers = ''.join(f' -H "{k}: {v}"' for k, v in headers.items())
+
+    if body:
+        body = body.replace('"', '\"')
+        body = f' -d "{body}"'
+    else:
+        body = ''
+
+    return f'curl "{url}"{method}{headers}{body}'
+
+
 SOME_ENUM_VARIANT1 = "variant1"
 SOME_ENUM_VARIANT2 = "variant2"
 SOME_ENUM_VARIANT3 = "variant3"
@@ -413,7 +449,7 @@ class BasicDto:
     nested_object: t.Optional[AdvancedDTO] = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(AdvancedDTO, base_schema=BaseSchema), allow_none=True)), default=None)
 
 
-class TestApiClient(BaseJsonApiClient):
+class ApiClient(BaseJsonApiClient):
     def post_action_by_enum(
         self,
         # variant1 | variant2 | variant3
@@ -509,6 +545,7 @@ class TestApiClient(BaseJsonApiClient):
 __all__ = [
     "ADVANCED_DTO_SOME_ENUMS",
     "AdvancedDTO",
+    "ApiClient",
     "BasicDto",
     "SOME_ENUMS",
     "SOME_ENUM_PAPER",
@@ -517,5 +554,4 @@ __all__ = [
     "SOME_ENUM_VARIANT1",
     "SOME_ENUM_VARIANT2",
     "SOME_ENUM_VARIANT3",
-    "TestApiClient",
 ]
