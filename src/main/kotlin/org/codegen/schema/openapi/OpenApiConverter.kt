@@ -37,20 +37,23 @@ internal class OpenApiConverter(
         path: String,
         pathBody: Path,
         document: Document,
-    ) {
-        pathBody.get?.also { addMethodToDocument(it, "get", path, document) }
-        pathBody.post?.also { addMethodToDocument(it, "post", path, document) }
-        pathBody.put?.also { addMethodToDocument(it, "put", path, document) }
-        pathBody.patch?.also { addMethodToDocument(it, "patch", path, document) }
-        pathBody.delete?.also { addMethodToDocument(it, "delete", path, document) }
-    }
+    ) = mapOf(
+        "get" to pathBody.get,
+        "post" to pathBody.post,
+        "put" to pathBody.put,
+        "patch" to pathBody.patch,
+        "delete" to pathBody.delete,
+    )
+        .filterValues { it != null }
+        .map { getEndpoint(it.value!!, it.key, path, document) }
+        .map { document.endpoints.add(it) }
 
-    private fun addMethodToDocument(
+    private fun getEndpoint(
         method: Method,
         verb: String,
         path: String,
         document: Document,
-    ) {
+    ): Endpoint {
         val fullPath = spec.basePath + path
         val pathBody = spec.paths[path]!!
         val description =
@@ -61,8 +64,12 @@ internal class OpenApiConverter(
                 .filter { it.isNotEmpty() }
                 .joinToString("\n")
 
-        val endpointParameters = (pathBody.parameters + method.parameters).filter { it.source != "header" }
-        val endpointArguments = endpointParameters.flatMap { convertAnyParameter(it, document) }.toMutableList()
+        val endpointArguments =
+            (pathBody.parameters + method.parameters)
+                .filter { it.source != "header" }
+                .flatMap { convertAnyParameter(it, document) }
+                .sortedBy { it.name }
+                .toMutableList()
 
         // if requestBody is defined, then add it as method argument
         method.requestBody?.content?.get("application/json")?.schema?.let {
@@ -91,18 +98,15 @@ internal class OpenApiConverter(
             }
         val successResponseDefinitionName = (successResponseSchema?.definitionName() ?: "void").let { dtypeMapping.getOrDefault(it, it) }
 
-        val endpoint =
-            Endpoint(
-                name = getEndpointName(path, verb),
-                description = description.ifEmpty { null },
-                dtype = successResponseDefinitionName,
-                path = fullPath,
-                verb = EndpointVerb.valueOf(verb.uppercase()),
-                arguments = endpointArguments,
-                many = successResponseSchema?.type == "array",
-            )
-
-        document.endpoints.add(endpoint)
+        return Endpoint(
+            name = getEndpointName(path, verb),
+            description = description.ifEmpty { null },
+            dtype = successResponseDefinitionName,
+            path = fullPath,
+            verb = EndpointVerb.valueOf(verb.uppercase()),
+            arguments = endpointArguments,
+            many = successResponseSchema?.type == "array",
+        )
     }
 
     private fun getEndpointName(
