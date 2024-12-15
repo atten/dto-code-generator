@@ -22,58 +22,205 @@ import typing as t
 import urllib3
 
 
+class ApiClient:
+    @typechecked
+    def __init__(
+        self,
+        base_url: str = '',
+        headers: t.Optional[t.Dict[str, str]] = None,
+        logger: t.Union[logging.Logger, t.Callable[[str], None], None] = None,
+        max_retries: int = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5)),
+        retry_timeout: float = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3)),
+        user_agent: t.Optional[str] = os.environ.get('API_CLIENT_USER_AGENT'),
+        use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1))),
+        use_request_payload_validation: bool = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1))),
+        use_debug_curl: bool = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0))),
+    ):
+        """
+        API client constructor and configuration method.
+
+        :param base_url: protocol://url[:port]
+        :param headers: dict of HTTP headers (e.g. tokens)
+        :param logger: logger instance (or callable like print()) for requests diagnostics
+        :param max_retries: number of connection attempts before RuntimeException raise
+        :param retry_timeout: seconds between attempts
+        :param user_agent: request header
+        :param use_response_streaming: enable alternative JSON library for deserialization (lower latency and memory footprint)
+        :param use_request_payload_validation: enable client-side validation of serialized data before send
+        :param use_debug_curl: include curl-formatted data for requests diagnostics
+        """
+        self._client = BaseJsonHttpClient(
+            base_url=base_url,
+            logger=logger,
+            max_retries=max_retries,
+            retry_timeout=retry_timeout,
+            user_agent=user_agent,
+            headers=headers,
+            use_response_streaming=use_response_streaming,
+            use_debug_curl=use_debug_curl
+        )
+
+        self._deserializer = BaseDeserializer(
+            use_response_streaming=use_response_streaming
+        )
+
+        self._serializer = BaseSerializer(
+            self._deserializer,
+            use_request_payload_validation=use_request_payload_validation
+        )
+
+
+    def some_action(self, enum: str):
+        self._client.fetch(
+            url=f'api/v1/action/{enum}',
+            method='POST',
+        )
+
+    def get_basic_dto_list(self) -> t.Iterator['BasicDTO']:
+        """
+        endpoint description
+        """
+        raw_data = self._client.fetch(
+            url='api/v1/basic',
+        )
+        yield from self._deserializer.deserialize(raw_data, BasicDTO, many=True)
+
+    def create_basic_dto(self, item: 'BasicDTO') -> 'BasicDTO':
+        item = self._serializer.serialize(item, is_payload=True)
+        raw_data = self._client.fetch(
+            url='api/v1/basic',
+            method='POST',
+            payload=item,
+        )
+        gen = self._deserializer.deserialize(raw_data, BasicDTO)
+        return next(gen)
+
+    def create_basic_dto_bulk(self, items: t.Sequence['BasicDTO']) -> t.Iterator['BasicDTO']:
+        items = self._serializer.serialize(items, is_payload=True)
+        raw_data = self._client.fetch(
+            url='api/v1/basic/bulk',
+            method='POST',
+            payload=items,
+        )
+        yield from self._deserializer.deserialize(raw_data, BasicDTO, many=True)
+
+    def get_basic_dto_by_timestamp(self, timestamp: datetime) -> 'BasicDTO':
+        timestamp = self._serializer.serialize(timestamp)
+        raw_data = self._client.fetch(
+            url=f'api/v1/basic/{timestamp}',
+        )
+        gen = self._deserializer.deserialize(raw_data, BasicDTO)
+        return next(gen)
+
+    def ping(self):
+        self._client.fetch(
+            url='api/v1/ping',
+        )
+
+
 class BaseSchema(marshmallow.Schema):
     class Meta:
         # allow backward-compatible changes when new fields have added (simply ignore them)
         unknown = marshmallow.EXCLUDE
 
 
+class JavaDurationField(marshmallow.fields.Field):
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        try:
+            return str_java_duration_to_timedelta(value)
+        except ValueError as error:
+            raise marshmallow.ValidationError(str(error)) from error
+
+    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
+        if value is None:
+            return None
+        return timedelta_to_java_duration(value) if value else "PT0S"
+
+
+def str_java_duration_to_timedelta(duration: str) -> timedelta:
+    """
+    :param duration: string duration:'PT5S', 'PT10H59S' etc
+    :return: timedelta()
+    """
+    groups = re.findall(r'PT(\d+H)?(\d+M)?([\d.]+S)?', duration)[0]
+    if not groups:
+        raise ValueError('Invalid duration: %s' % duration)
+
+    hours, minutes, seconds = groups
+
+    hours = int((hours or '0H').rstrip('H'))
+    minutes = int((minutes or '0M').rstrip('M'))
+    seconds = float((seconds or '0S').rstrip('S'))
+
+    return timedelta(hours=hours, minutes=minutes, seconds=seconds)
+
+
+def timedelta_to_java_duration(delta: timedelta) -> str:
+    """
+    Converts a timedelta to java duration string format
+    Milliseconds are discarded
+
+    >>> timedelta_to_java_duration(timedelta(minutes=15))
+    'PT900S'
+
+    >>> timedelta_to_java_duration(timedelta(days=1, minutes=21, seconds=35))
+    'PT87695S'
+
+    >>> timedelta_to_java_duration(timedelta(microseconds=123456))
+    'PT0S'
+    """
+    seconds = delta.total_seconds()
+    return 'PT{}S'.format(int(seconds))
+
+
+ENUM_VALUE_VALUE_1 = "value 1"
+ENUM_VALUE_VALUE_2 = "value 2"
+ENUM_VALUE_VALUE_3 = "value 3"
+ENUM_VALUES = [ENUM_VALUE_VALUE_1, ENUM_VALUE_VALUE_2, ENUM_VALUE_VALUE_3]
+
+
+@dataclass
+class BasicDTO:
+    timestamp: datetime = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime()))
+    duration: timedelta = field(metadata=dict(marshmallow_field=JavaDurationField()))
+    enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
+    # short description
+    # very long description lol
+    documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="customName")))
+    list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())))
+    optional_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()), default=0)
+    nullable_value: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
+    optional_list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())), default_factory=list)
+
+
 JSON_PAYLOAD = t.Union[dict, str, int, float, list]
 RESPONSE_BODY = [str, io.IOBase]
 
 
-class BaseJsonApiClient:
-    base_url = ''
-    default_max_retries = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5))
-    default_retry_timeout = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3))
-    default_user_agent = os.environ.get('API_CLIENT_USER_AGENT')
-    use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1)))
-    use_request_payload_validation = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1)))
-    use_debug_curl = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0)))
-
-    @typechecked
+class BaseJsonHttpClient:
     def __init__(
         self,
-        base_url: str = '',
-        logger: t.Union[logging.Logger, t.Callable[[str], None], None] = None,
-        max_retries: int = default_max_retries,
-        retry_timeout: float = default_retry_timeout,
-        user_agent: t.Optional[str] = default_user_agent,
-        headers: t.Optional[t.Dict[str, str]] = None,
+        base_url: str,
+        logger: t.Union[logging.Logger, t.Callable[[str], None], None],
+        max_retries: int,
+        retry_timeout: float,
+        user_agent: t.Optional[str],
+        headers: t.Optional[t.Dict[str, str]],
+        use_response_streaming: bool,
+        use_debug_curl: bool,
     ):
-        """
-        Remote API client constructor.
+        self._pool = urllib3.PoolManager(retries=False)
+        self._base_url = base_url
+        self._logger = logger
+        self._max_retries = max_retries
+        self._retry_timeout = retry_timeout
+        self._user_agent = user_agent
+        self._headers = headers
+        self._use_response_streaming = use_response_streaming
+        self._use_debug_curl = use_debug_curl
 
-        :param base_url: protocol://url[:port]
-        :param logger: logger instance (or callable like print()) for requests diagnostics
-        :param max_retries: number of connection attempts before RuntimeException raise
-        :param retry_timeout: seconds between attempts
-        :param user_agent: request header
-        :param headers: dict of HTTP headers (e.g. tokens)
-        """
-        if base_url:
-            self.base_url = base_url
-        self.logger = logger
-        self.pool = urllib3.PoolManager(retries=False)
-        self.max_retries = max_retries
-        self.retry_timeout = retry_timeout
-        self.user_agent = user_agent
-        self.headers = headers
-
-    def get_base_url(self) -> str:
-        return self.base_url
-
-    def _fetch(
+    def fetch(
         self,
         url: str,
         method: str = 'get',
@@ -92,12 +239,12 @@ class BaseJsonApiClient:
         :return: decoded JSON from server
         """
         full_url = self._get_full_url(url, query_params)
-        headers = self.headers.copy() if self.headers else dict()
+        headers = self._headers.copy() if self._headers else dict()
         if payload is not None:
             payload = json.dumps(payload).encode('utf8')
             headers['content-type'] = 'application/json'
-        if self.user_agent:
-            headers['user-agent'] = self.user_agent
+        if self._user_agent:
+            headers['user-agent'] = self._user_agent
 
         try:
             return failsafe_call(
@@ -109,16 +256,16 @@ class BaseJsonApiClient:
                     body=payload,
                 ),
                 exceptions=(urllib3.exceptions.HTTPError,),  # include connection errors, HTTP >= 400
-                logger=self.logger,
-                max_attempts=self.max_retries,
-                on_transitional_fail=lambda exc, info: sleep(self.retry_timeout)
+                logger=self._logger,
+                max_attempts=self._max_retries,
+                on_transitional_fail=lambda exc, info: sleep(self._retry_timeout)
             )
         except Exception as e:
             error_verbose = str(e)
             if ' at 0x' in error_verbose:
                 # reduce noise in error description, e.g. in case of NewConnectionError
                 error_verbose = error_verbose.split(':', maxsplit=1)[-1].strip()
-            if self.use_debug_curl:
+            if self._use_debug_curl:
                 curl_cmd = build_curl_command(
                     url=full_url,
                     method=method,
@@ -130,7 +277,7 @@ class BaseJsonApiClient:
             raise RuntimeError(f'Failed to {method} {full_url}: {error_verbose}') from e
 
     def _mk_request(self, *args, **kwargs) -> RESPONSE_BODY:
-        response = self.pool.request(*args, **kwargs, preload_content=False)
+        response = self._pool.request(*args, **kwargs, preload_content=False)
         if response.status >= 400:
             raise urllib3.exceptions.HTTPError('Server respond with status code {status}: {data}'.format(
                 status=response.status,
@@ -145,8 +292,8 @@ class BaseJsonApiClient:
         return response.data.decode()
 
     def _get_full_url(self, url: str, query_params: t.Optional[dict] = None) -> str:
-        if self.get_base_url():
-            url = urljoin(self.get_base_url(), url)
+        if self._base_url:
+            url = urljoin(self._base_url, url)
 
         if query_params:
             query_tuples = []
@@ -164,7 +311,13 @@ class BaseJsonApiClient:
 
         return url
 
-    def _serialize(self, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
+
+class BaseSerializer:
+    def __init__(self, deserializer: 'BaseDeserializer', use_request_payload_validation: bool):
+        self._use_request_payload_validation = use_request_payload_validation
+        self._deserializer = deserializer
+
+    def serialize(self, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
         # auto-detect collections
         many = False
         _type = type(value)
@@ -187,8 +340,8 @@ class BaseJsonApiClient:
             func = schema.dump if is_payload else schema.dumps
             serialized_data = func(value, many=many)
 
-            if self.use_request_payload_validation:
-                gen = self._deserialize(serialized_data, _type, many=many)
+            if self._use_request_payload_validation:
+                gen = self._deserializer.deserialize(serialized_data, _type, many=many)
                 for _ in gen:
                     pass
 
@@ -226,10 +379,15 @@ class BaseJsonApiClient:
     def _serialize_decimal(cls, value: Decimal) -> str:
         return str(value)
 
-    def _deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Optional[t.Type] = None, many: bool = False) -> t.Iterator[t.Any]:
+
+class BaseDeserializer:
+    def __init__(self, use_response_streaming: bool):
+        self._use_response_streaming = use_response_streaming
+
+    def deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Optional[t.Type] = None, many: bool = False) -> t.Iterator[t.Any]:
         if hasattr(raw_data, 'read'):
             # read singular JSON objects at once and multiple objects in stream to reduce memory footprint
-            if many and self.use_response_streaming:
+            if many and self._use_response_streaming:
                 raw_data = ijson.items(raw_data, 'item', use_float=True)
             else:
                 raw_data = json.loads(raw_data.read())
@@ -363,125 +521,6 @@ def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: s
         body = ''
 
     return f'curl "{url}"{method}{headers}{body}'
-
-
-def str_java_duration_to_timedelta(duration: str) -> timedelta:
-    """
-    :param duration: string duration:'PT5S', 'PT10H59S' etc
-    :return: timedelta()
-    """
-    groups = re.findall(r'PT(\d+H)?(\d+M)?([\d.]+S)?', duration)[0]
-    if not groups:
-        raise ValueError('Invalid duration: %s' % duration)
-
-    hours, minutes, seconds = groups
-
-    hours = int((hours or '0H').rstrip('H'))
-    minutes = int((minutes or '0M').rstrip('M'))
-    seconds = float((seconds or '0S').rstrip('S'))
-
-    return timedelta(hours=hours, minutes=minutes, seconds=seconds)
-
-
-def timedelta_to_java_duration(delta: timedelta) -> str:
-    """
-    Converts a timedelta to java duration string format
-    Milliseconds are discarded
-
-    >>> timedelta_to_java_duration(timedelta(minutes=15))
-    'PT900S'
-
-    >>> timedelta_to_java_duration(timedelta(days=1, minutes=21, seconds=35))
-    'PT87695S'
-
-    >>> timedelta_to_java_duration(timedelta(microseconds=123456))
-    'PT0S'
-    """
-    seconds = delta.total_seconds()
-    return 'PT{}S'.format(int(seconds))
-
-
-class JavaDurationField(marshmallow.fields.Field):
-
-    def _deserialize(self, value, attr, data, **kwargs):
-        try:
-            return str_java_duration_to_timedelta(value)
-        except ValueError as error:
-            raise marshmallow.ValidationError(str(error)) from error
-
-    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
-        if value is None:
-            return None
-        return timedelta_to_java_duration(value) if value else "PT0S"
-
-
-ENUM_VALUE_VALUE_1 = "value 1"
-ENUM_VALUE_VALUE_2 = "value 2"
-ENUM_VALUE_VALUE_3 = "value 3"
-ENUM_VALUES = [ENUM_VALUE_VALUE_1, ENUM_VALUE_VALUE_2, ENUM_VALUE_VALUE_3]
-
-
-@dataclass
-class BasicDTO:
-    timestamp: datetime = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime()))
-    duration: timedelta = field(metadata=dict(marshmallow_field=JavaDurationField()))
-    enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
-    # short description
-    # very long description lol
-    documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="customName")))
-    list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())))
-    optional_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()), default=0)
-    nullable_value: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
-    optional_list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())), default_factory=list)
-
-
-class ApiClient(BaseJsonApiClient):
-    def some_action(self, enum: str):
-        self._fetch(
-            url=f'api/v1/action/{enum}',
-            method='POST',
-        )
-
-    def get_basic_dto_list(self) -> t.Iterator[BasicDTO]:
-        """
-        endpoint description
-        """
-        raw_data = self._fetch(
-            url='api/v1/basic',
-        )
-        yield from self._deserialize(raw_data, BasicDTO, many=True)
-
-    def create_basic_dto(self, item: BasicDTO) -> BasicDTO:
-        item = self._serialize(item, is_payload=True)
-        raw_data = self._fetch(
-            url='api/v1/basic',
-            method='POST',
-            payload=item,
-        )
-        gen = self._deserialize(raw_data, BasicDTO)
-        return next(gen)
-
-    def create_basic_dto_bulk(self, items: t.Sequence[BasicDTO]) -> t.Iterator[BasicDTO]:
-        items = self._serialize(items, is_payload=True)
-        raw_data = self._fetch(
-            url='api/v1/basic/bulk',
-            method='POST',
-            payload=items,
-        )
-        yield from self._deserialize(raw_data, BasicDTO, many=True)
-
-    def get_basic_dto_by_timestamp(self, timestamp: datetime) -> BasicDTO:
-        timestamp = self._serialize(timestamp)
-        raw_data = self._fetch(
-            url=f'api/v1/basic/{timestamp}',
-        )
-        gen = self._deserialize(raw_data, BasicDTO)
-        return next(gen)
-
-    def ping(self):
-        self._fetch(
-            url='api/v1/ping',
-        )
 
 
 __all__ = [

@@ -1,0 +1,45 @@
+    @typechecked
+    def __init__(
+        self,
+        base_url: str = '',
+        headers: t.Optional[t.Dict[str, str]] = None,
+        logger: t.Union[logging.Logger, t.Callable[[str], None], None] = None,
+        max_retries: int = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5)),
+        retry_timeout: float = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3)),
+        user_agent: t.Optional[str] = os.environ.get('API_CLIENT_USER_AGENT'),
+        use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1))),
+        use_request_payload_validation: bool = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1))),
+        use_debug_curl: bool = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0))),
+    ):
+        """
+        API client constructor and configuration method.
+
+        :param base_url: protocol://url[:port]
+        :param headers: dict of HTTP headers (e.g. tokens)
+        :param logger: logger instance (or callable like print()) for requests diagnostics
+        :param max_retries: number of connection attempts before RuntimeException raise
+        :param retry_timeout: seconds between attempts
+        :param user_agent: request header
+        :param use_response_streaming: enable alternative JSON library for deserialization (lower latency and memory footprint)
+        :param use_request_payload_validation: enable client-side validation of serialized data before send
+        :param use_debug_curl: include curl-formatted data for requests diagnostics
+        """
+        self._client = BaseJsonHttpClient(
+            base_url=base_url,
+            logger=logger,
+            max_retries=max_retries,
+            retry_timeout=retry_timeout,
+            user_agent=user_agent,
+            headers=headers,
+            use_response_streaming=use_response_streaming,
+            use_debug_curl=use_debug_curl
+        )
+
+        self._deserializer = BaseDeserializer(
+            use_response_streaming=use_response_streaming
+        )
+
+        self._serializer = BaseSerializer(
+            self._deserializer,
+            use_request_payload_validation=use_request_payload_validation
+        )

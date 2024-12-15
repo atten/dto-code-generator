@@ -17,7 +17,6 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS,
     proxy,
 ) {
-    protected open val baseClassName = "BaseJsonApiClient"
     protected val atomicJsonTypes = listOf("str", "float", "int", "None", "bool")
 
     // list if __all__ items
@@ -85,6 +84,14 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         val returnStatement =
             returnDtypeProps.definition
                 .let {
+                    if (!returnDtypeProps.isNative) {
+                        // wrap into quotes if definition is listed below
+                        "'$it'"
+                    } else {
+                        it
+                    }
+                }
+                .let {
                     if (endpoint.many) {
                         headers.add("import typing as t")
                         if (endpoint.cacheable) "list[$it]" else "t.Iterator[$it]"
@@ -103,6 +110,14 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             val dtypeProps = getDtype(argument.dtype)
             val argTypeName =
                 dtypeProps.definition
+                    .let {
+                        if (!dtypeProps.isNative) {
+                            // wrap into quotes if definition is listed below
+                            "'$it'"
+                        } else {
+                            it
+                        }
+                    }
                     .let {
                         if (argument.many) {
                             headers.add("import typing as t")
@@ -175,9 +190,9 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
 
             if (!isAtomicType) {
                 if (isPayload) {
-                    lines.add("$argName = self._serialize($argName, is_payload=True)")
+                    lines.add("$argName = self._serializer.serialize($argName, is_payload=True)")
                 } else {
-                    lines.add("$argName = self._serialize($argName)")
+                    lines.add("$argName = self._serializer.serialize($argName)")
                 }
             }
 
@@ -222,9 +237,9 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
 
         // prepare 'fetch' method call
         if (returnType == "None") {
-            lines.add("self._fetch(")
+            lines.add("self._client.fetch(")
         } else {
-            lines.add("raw_data = self._fetch(")
+            lines.add("raw_data = self._client.fetch(")
         }
 
         if (endpointPath.contains('{')) {
@@ -250,15 +265,15 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         // prepare return statement
         if (endpoint.many) {
             if (endpoint.cacheable) {
-                lines.add("return list(self._deserialize(raw_data, $returnType, many=True))")
+                lines.add("return list(self._deserializer.deserialize(raw_data, $returnType, many=True))")
             } else {
-                lines.add("yield from self._deserialize(raw_data, $returnType, many=True)")
+                lines.add("yield from self._deserializer.deserialize(raw_data, $returnType, many=True)")
             }
         } else if (returnType != "None") {
             if (atomicJsonTypes.contains(returnType)) {
-                lines.add("gen = self._deserialize(raw_data)")
+                lines.add("gen = self._deserializer.deserialize(raw_data)")
             } else {
-                lines.add("gen = self._deserialize(raw_data, $returnType)")
+                lines.add("gen = self._deserializer.deserialize(raw_data, $returnType)")
             }
             lines.add("return next(gen)")
         }
@@ -274,60 +289,83 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
     override fun buildEntityName(name: String) = name.camelCase()
 
     override fun buildEntity(entity: Entity): String {
-        // either build an interface or regular DTO
         if (entity.fields.isEmpty()) {
-            return buildClass(entity)
+            return ""
         }
         return PyMarshmallowDataclassGenerator(this).buildEntity(entity)
     }
 
-    private fun buildClass(entity: Entity): String {
-        val className = buildEntityName(entity.name)
-        val classDefinition = "class $className($baseClassName):"
-        val builtMethods = entity.endpoints.map { buildEndpoint(it) }
-        return builtMethods.joinToString(separator = "\n\n", prefix = "${classDefinition}\n") { "    ${it.replace("\n", "\n    ")}" }
-    }
-
     override fun buildBodyPrefix(): String {
-        headers.add("import os")
-        headers.add("import io")
-        headers.add("import typing as t")
-        headers.add("import logging")
-        headers.add("import json")
-        headers.add("import ijson")
-        headers.add("import urllib3")
-        headers.add("from urllib.parse import urljoin, urlencode")
-        headers.add("from time import sleep")
-        headers.add("import marshmallow")
-        headers.add("import marshmallow_dataclass")
-        headers.add("from dataclasses import is_dataclass")
-        headers.add("from datetime import datetime")
-        headers.add("from datetime import timedelta")
-        headers.add("from datetime import timezone")
-        headers.add("from decimal import Decimal")
-        headers.add("from typeguard import typechecked")
+        requiredHeaders().forEach { headers.add(it) }
 
         listOf(
             "/templates/python/baseSchema.py",
-            "/templates/python/restApiClient.py",
-            "/templates/python/serializationMethods.py",
-            "/templates/python/failsafeCall.py",
-            "/templates/python/buildCurlCommand.py",
-        ).map { path ->
-            this.javaClass.getResource(path)!!.path
-                .let { File(it).readText() }
-        }
-            .joinToString(separator = "\n\n")
-            .let { addDefinition(it) }
+        )
+            .map { this.javaClass.getResource(it)!!.path }
+            .map { File(it).readText() }
+            .map { addDefinition(it) }
 
-        return ""
+        return buildMainApiClass()
+    }
+
+    protected open fun requiredHeaders() =
+        listOf(
+            "import os",
+            "import io",
+            "import typing as t",
+            "import logging",
+            "import json",
+            "import ijson",
+            "import urllib3",
+            "from urllib.parse import urljoin, urlencode",
+            "from time import sleep",
+            "import marshmallow",
+            "import marshmallow_dataclass",
+            "from dataclasses import is_dataclass",
+            "from datetime import datetime",
+            "from datetime import timedelta",
+            "from datetime import timezone",
+            "from decimal import Decimal",
+            "from typeguard import typechecked",
+        )
+
+    protected open fun getMainApiClassBody() =
+        this.javaClass.getResource("/templates/python/apiClientBody.py")!!.path.let {
+            File(it).readText()
+        }
+
+    private fun buildMainApiClass(): String {
+        val entity = defaultEntity
+        val className = buildEntityName(entity.name)
+        val classDefinition = "class $className:"
+        val classBody = getMainApiClassBody()
+        val classMethods = entity.endpoints.map { buildEndpoint(it) }
+        return classMethods.joinToString(
+            separator = "\n\n",
+            prefix = "${classDefinition}\n${classBody}\n\n",
+            postfix = CodeFormatRules.PYTHON.entitiesSeparator,
+        ) { "    ${it.replace("\n", "\n    ")}" }
     }
 
     override fun buildBodyPostfix(): String {
+        getIncludedIntoFooterPaths()
+            .map { this.javaClass.getResource(it)!!.path }
+            .map { File(it).readText() }
+            .map { addDefinition(it) }
+
         definedNames
             .sorted()
             .joinToString("\n", "__all__ = [\n", "\n]") { "    \"${it}\"," }
             .also { addDefinition(it, "__all__") }
         return "\n"
     }
+
+    protected open fun getIncludedIntoFooterPaths() =
+        listOf(
+            "/templates/python/baseJsonHttpClient.py",
+            "/templates/python/baseSerializer.py",
+            "/templates/python/baseDeserializer.py",
+            "/templates/python/failsafeCall.py",
+            "/templates/python/buildCurlCommand.py",
+        )
 }

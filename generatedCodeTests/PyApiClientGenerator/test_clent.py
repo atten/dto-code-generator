@@ -68,7 +68,7 @@ def test_post_empty_list():
 
 
 def test_post_request_wrong_enum_value():
-    api = ApiClient('http://none')
+    api = ApiClient()
     item = BasicDTO(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
@@ -84,7 +84,7 @@ def test_post_request_wrong_enum_value():
 
 
 def test_403():
-    api = ApiClient(base_url=SECURED_BASE_URL, max_retries=1)
+    api = ApiClient(base_url=SECURED_BASE_URL, max_retries=0)
     with pytest.raises(RuntimeError):
         api.ping()
 
@@ -101,8 +101,7 @@ def test_user_agent_and_headers():
 
 
 def test_use_debug_curl():
-    api = ApiClient(base_url='http://none', max_retries=1)
-    api.use_debug_curl = True
+    api = ApiClient(base_url="http://none", use_debug_curl=True, max_retries=0)
     with pytest.raises(RuntimeError) as e:
         api.ping()
 

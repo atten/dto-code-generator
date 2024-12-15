@@ -63,7 +63,7 @@ abstract class AbstractCodeGenerator(
     ) {
         if (parent != null) {
             parent.addDefinition(body, *names)
-        } else {
+        } else if (body.isNotEmpty()) {
             body.trim().let { trimmed ->
                 if (!includedDefinitions.contains(trimmed)) {
                     includedDefinitions.add(trimmed)
@@ -146,11 +146,8 @@ abstract class AbstractCodeGenerator(
     abstract fun buildEntity(entity: Entity): String
 
     private fun buildHeaders(): String {
-        // sort alphabetically, exclude unused headers (keep ones with wildcard import)
+        // sort alphabetically
         return headers
-            .filter { header ->
-                '*' in header || getEntityNamesFromHeader(header).map { containsDefinitionName(it) }.any { it }
-            }
             .sorted()
             .joinToString(
                 "\n",

@@ -16,6 +16,8 @@ data class DataType(
     // Original file path. Should be filled during initialization
     val sourcePath: String = "",
 ) {
+    val isNative = includeFiles.isEmpty() && requiredEntities.isEmpty()
+
     fun toGeneratedValue(value: String): String {
         var result = valuesMapping.getOrDefault(value, value)
         valueWrapper?.also {

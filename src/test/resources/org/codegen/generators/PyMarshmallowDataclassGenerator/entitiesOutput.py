@@ -16,6 +16,20 @@ class BaseSchema(marshmallow.Schema):
         unknown = marshmallow.EXCLUDE
 
 
+class JavaDurationField(marshmallow.fields.Field):
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        try:
+            return str_java_duration_to_timedelta(value)
+        except ValueError as error:
+            raise marshmallow.ValidationError(str(error)) from error
+
+    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
+        if value is None:
+            return None
+        return timedelta_to_java_duration(value) if value else "PT0S"
+
+
 def str_java_duration_to_timedelta(duration: str) -> timedelta:
     """
     :param duration: string duration:'PT5S', 'PT10H59S' etc
@@ -50,20 +64,6 @@ def timedelta_to_java_duration(delta: timedelta) -> str:
     """
     seconds = delta.total_seconds()
     return 'PT{}S'.format(int(seconds))
-
-
-class JavaDurationField(marshmallow.fields.Field):
-
-    def _deserialize(self, value, attr, data, **kwargs):
-        try:
-            return str_java_duration_to_timedelta(value)
-        except ValueError as error:
-            raise marshmallow.ValidationError(str(error)) from error
-
-    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
-        if value is None:
-            return None
-        return timedelta_to_java_duration(value) if value else "PT0S"
 
 
 ENUM_VALUE_VALUE_1 = "value 1"

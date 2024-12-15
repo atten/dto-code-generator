@@ -2,54 +2,33 @@ JSON_PAYLOAD = t.Union[dict, str, int, float, list]
 RESPONSE_BODY = JSON_PAYLOAD
 
 
-class BaseJsonApiClientAsync:
-    base_url = ''
-    default_max_retries = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5))
-    default_retry_timeout = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3))
-    default_user_agent = os.environ.get('API_CLIENT_USER_AGENT')
-    use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 0)))   # disabled for async client (not implemented yet)
-    use_request_payload_validation = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1)))
-    use_debug_curl = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0)))
-
-    @typechecked
+class BaseJsonHttpAsyncClient:
     def __init__(
         self,
-        base_url: str = '',
-        logger: t.Union[logging.Logger, t.Callable[[str], None], None] = None,
-        max_retries: int = default_max_retries,
-        retry_timeout: float = default_retry_timeout,
-        user_agent: t.Optional[str] = default_user_agent,
-        headers: t.Optional[t.Dict[str, str]] = None,
+        base_url: str,
+        logger: t.Union[logging.Logger, t.Callable[[str], None], None],
+        max_retries: int,
+        retry_timeout: float,
+        user_agent: t.Optional[str],
+        headers: t.Optional[t.Dict[str, str]],
+        use_debug_curl: bool,
+        use_response_streaming: bool,
     ):
-        """
-        Remote API client constructor.
+        self._base_url = base_url
+        self._logger = logger
+        self._max_retries = max_retries
+        self._retry_timeout = retry_timeout
+        self._user_agent = user_agent
+        self._headers = headers
+        self._use_debug_curl = use_debug_curl
 
-        :param base_url: protocol://url[:port]
-        :param logger: logger instance (or callable like print()) for requests diagnostics
-        :param max_retries: number of connection attempts before RuntimeException raise
-        :param retry_timeout: seconds between attempts
-        :param user_agent: request header
-        :param headers: dict of HTTP headers (e.g. tokens)
-        """
-        if base_url:
-            self.base_url = base_url
-        self.logger = logger
-        self.max_retries = max_retries
-        self.retry_timeout = retry_timeout
-        self.user_agent = user_agent
-        self.headers = headers
-
-    def get_base_url(self) -> str:
-        return self.base_url
-
-    async def _fetch(
+    async def fetch(
         self,
         url: str,
         method: str = 'get',
         query_params: t.Optional[dict] = None,
-        headers: t.Optional[dict] = None,
         payload: t.Optional[JSON_PAYLOAD] = None,
-    ) -> JSON_PAYLOAD:
+    ) -> RESPONSE_BODY:
         """
         Retrieve JSON response from remote API request.
 
@@ -58,17 +37,15 @@ class BaseJsonApiClientAsync:
         :param url: target url (relative to base url)
         :param method: HTTP verb, e.g. get/post
         :param query_params: key-value arguments like ?param1=11&param2=22
-        :param headers: dict of HTTP headers
         :param payload: JSON-like HTTP body
         :return: decoded JSON from server
         """
         full_url = self._get_full_url(url, query_params)
-        if not headers:
-            headers = self.headers.copy() if self.headers else dict()
+        headers = self._headers.copy() if self._headers else dict()
         if payload is not None:
             headers['content-type'] = 'application/json'
-        if self.user_agent:
-            headers['user-agent'] = self.user_agent
+        if self._user_agent:
+            headers['user-agent'] = self._user_agent
 
         try:
             return await failsafe_call_async(
@@ -80,12 +57,12 @@ class BaseJsonApiClientAsync:
                     payload=payload,
                 ),
                 exceptions=(aiohttp.ClientConnectorError, ConnectionRefusedError),
-                logger=self.logger,
-                max_attempts=self.max_retries,
-                on_transitional_fail=lambda exc, info: asyncio.sleep(self.retry_timeout)
+                logger=self._logger,
+                max_attempts=self._max_retries,
+                on_transitional_fail=lambda exc, info: asyncio.sleep(self._retry_timeout)
             )
         except Exception as e:
-            if self.use_debug_curl:
+            if self._use_debug_curl:
                 curl_cmd = build_curl_command(
                     url=full_url,
                     method=method,
@@ -96,7 +73,7 @@ class BaseJsonApiClientAsync:
             raise RuntimeError(f'Failed to {method} {full_url}: {e}') from e
 
     @classmethod
-    async def _mk_request(cls, full_url: str, method: str, payload: t.Optional[JSON_PAYLOAD], headers: t.Optional[dict]) -> JSON_PAYLOAD:
+    async def _mk_request(cls, full_url: str, method: str, payload: t.Optional[JSON_PAYLOAD], headers: t.Optional[dict]) -> RESPONSE_BODY:
         async with aiohttp.request(
             url=full_url,
             method=method,
@@ -107,8 +84,8 @@ class BaseJsonApiClientAsync:
             return await response.json()
 
     def _get_full_url(self, url: str, query_params: t.Optional[dict] = None) -> str:
-        if self.get_base_url():
-            url = urljoin(self.get_base_url(), url)
+        if self._base_url:
+            url = urljoin(self._base_url, url)
 
         if query_params:
             query_tuples = []

@@ -15,6 +15,7 @@ from gevent._semaphore import Semaphore
 from gevent.event import AsyncResult
 from kombu import Connection, Exchange, Queue, Message
 from socket import timeout as SocketTimeout
+from typeguard import typechecked
 from urllib.parse import urlparse
 from uuid import uuid4
 import gevent
@@ -24,15 +25,159 @@ import json
 import logging
 import marshmallow
 import marshmallow_dataclass
+import os
 import re
 import time
 import typing as t
+
+
+class ApiClient:
+    @typechecked
+    def __init__(
+        self,
+        amqp_url: str,
+        read_exchange_name: str,
+        read_queue_name: str,
+        write_exchange_name: str = None,
+        prefetch_count: int = 30,
+        logger: logging.Logger = None,
+        api_keys: dict = None,
+        high_priority: bool = False,
+        request_timeout: int = 3600,
+        use_request_payload_validation: bool = bool(int(os.environ.get('AMQP_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1))),
+    ):
+        """
+        AMQP client constructor and configuration method.
+        """
+        self._client = AmqpApiWithLazyListener(
+            amqp_url=amqp_url,
+            read_exchange_name=read_exchange_name,
+            read_queue_name=read_queue_name,
+            write_exchange_name=write_exchange_name,
+            prefetch_count=prefetch_count,
+            logger=logger,
+            api_keys=api_keys,
+            high_priority=high_priority,
+            request_timeout=request_timeout
+        )
+
+        self._deserializer = BaseDeserializer(
+            use_response_streaming=False
+        )
+
+        self._serializer = BaseSerializer(
+            self._deserializer,
+            use_request_payload_validation=use_request_payload_validation
+        )
+
+
+    def some_action(self, enum: str):
+        self._client.mk_request(f'api/v1/action/{enum}', 'some_action').get()
+
+    def get_basic_dto_list(self) -> t.List['BasicDTO']:
+        """
+        endpoint description
+        """
+        raw_data = self._client.mk_request(f'api/v1/basic', 'get_basic_dto_list').get()
+        return list(self._deserializer.deserialize(raw_data, BasicDTO, many=True))
+
+    def create_basic_dto(self, item: 'BasicDTO') -> 'BasicDTO':
+        item = self._serializer.serialize(item, is_payload=True)
+        args = (item,)
+        raw_data = self._client.mk_request(f'api/v1/basic', 'create_basic_dto', *args).get()
+        gen = self._deserializer.deserialize(raw_data, BasicDTO)
+        return next(gen)
+
+    def create_basic_dto_bulk(self, items: t.Sequence['BasicDTO']) -> t.List['BasicDTO']:
+        items = self._serializer.serialize(items, is_payload=True)
+        args = (items,)
+        raw_data = self._client.mk_request(f'api/v1/basic/bulk', 'create_basic_dto_bulk', *args).get()
+        return list(self._deserializer.deserialize(raw_data, BasicDTO, many=True))
+
+    def get_basic_dto_by_timestamp(self, timestamp: datetime) -> 'BasicDTO':
+        timestamp = self._serializer.serialize(timestamp)
+        raw_data = self._client.mk_request(f'api/v1/basic/{timestamp}', 'get_basic_dto_by_timestamp').get()
+        gen = self._deserializer.deserialize(raw_data, BasicDTO)
+        return next(gen)
+
+    def ping(self):
+        self._client.mk_request(f'api/v1/ping', 'ping').get()
 
 
 class BaseSchema(marshmallow.Schema):
     class Meta:
         # allow backward-compatible changes when new fields have added (simply ignore them)
         unknown = marshmallow.EXCLUDE
+
+
+class JavaDurationField(marshmallow.fields.Field):
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        try:
+            return str_java_duration_to_timedelta(value)
+        except ValueError as error:
+            raise marshmallow.ValidationError(str(error)) from error
+
+    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
+        if value is None:
+            return None
+        return timedelta_to_java_duration(value) if value else "PT0S"
+
+
+def str_java_duration_to_timedelta(duration: str) -> timedelta:
+    """
+    :param duration: string duration:'PT5S', 'PT10H59S' etc
+    :return: timedelta()
+    """
+    groups = re.findall(r'PT(\d+H)?(\d+M)?([\d.]+S)?', duration)[0]
+    if not groups:
+        raise ValueError('Invalid duration: %s' % duration)
+
+    hours, minutes, seconds = groups
+
+    hours = int((hours or '0H').rstrip('H'))
+    minutes = int((minutes or '0M').rstrip('M'))
+    seconds = float((seconds or '0S').rstrip('S'))
+
+    return timedelta(hours=hours, minutes=minutes, seconds=seconds)
+
+
+def timedelta_to_java_duration(delta: timedelta) -> str:
+    """
+    Converts a timedelta to java duration string format
+    Milliseconds are discarded
+
+    >>> timedelta_to_java_duration(timedelta(minutes=15))
+    'PT900S'
+
+    >>> timedelta_to_java_duration(timedelta(days=1, minutes=21, seconds=35))
+    'PT87695S'
+
+    >>> timedelta_to_java_duration(timedelta(microseconds=123456))
+    'PT0S'
+    """
+    seconds = delta.total_seconds()
+    return 'PT{}S'.format(int(seconds))
+
+
+ENUM_VALUE_VALUE_1 = "value 1"
+ENUM_VALUE_VALUE_2 = "value 2"
+ENUM_VALUE_VALUE_3 = "value 3"
+ENUM_VALUES = [ENUM_VALUE_VALUE_1, ENUM_VALUE_VALUE_2, ENUM_VALUE_VALUE_3]
+
+
+@dataclass
+class BasicDTO:
+    timestamp: datetime = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime()))
+    duration: timedelta = field(metadata=dict(marshmallow_field=JavaDurationField()))
+    enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
+    # short description
+    # very long description lol
+    documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="customName")))
+    list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())))
+    optional_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()), default=0)
+    nullable_value: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
+    optional_list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())), default_factory=list)
 
 
 RECOVERABLE_EXCEPTIONS = (ConnectionError, ConnectionResetError, IOError, ConnectionForced, RecoverableConnectionError)
@@ -296,7 +441,7 @@ class BaseAmqpApiClient(AmqpWrapper):
             auto_delete=True,  # incoming queue is one-off (only for this client)
         )
 
-    def _mk_request(self, routing_key: str, func: str, *args) -> AsyncAmqpResult:
+    def mk_request(self, routing_key: str, func: str, *args) -> AsyncAmqpResult:
         request = AmqpRequest(
             id=str(uuid4()),
             api_keys=self.api_keys or {},
@@ -363,11 +508,17 @@ class AmqpApiWithLazyListener(BaseAmqpApiClient):
             self._listener_greenlet.kill()
         super().stop()
 
-    def _mk_request(self, routing_key: str, func: str, *args) -> AsyncAmqpResult:
+    def mk_request(self, routing_key: str, func: str, *args) -> AsyncAmqpResult:
         self.ensure_listen()
-        return super()._mk_request(routing_key, func, *args)
+        return super().mk_request(routing_key, func, *args)
 
-    def _serialize(self, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
+
+class BaseSerializer:
+    def __init__(self, deserializer: 'BaseDeserializer', use_request_payload_validation: bool):
+        self._use_request_payload_validation = use_request_payload_validation
+        self._deserializer = deserializer
+
+    def serialize(self, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
         # auto-detect collections
         many = False
         _type = type(value)
@@ -390,8 +541,8 @@ class AmqpApiWithLazyListener(BaseAmqpApiClient):
             func = schema.dump if is_payload else schema.dumps
             serialized_data = func(value, many=many)
 
-            if self.use_request_payload_validation:
-                gen = self._deserialize(serialized_data, _type, many=many)
+            if self._use_request_payload_validation:
+                gen = self._deserializer.deserialize(serialized_data, _type, many=many)
                 for _ in gen:
                     pass
 
@@ -429,10 +580,15 @@ class AmqpApiWithLazyListener(BaseAmqpApiClient):
     def _serialize_decimal(cls, value: Decimal) -> str:
         return str(value)
 
-    def _deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Optional[t.Type] = None, many: bool = False) -> t.Iterator[t.Any]:
+
+class BaseDeserializer:
+    def __init__(self, use_response_streaming: bool):
+        self._use_response_streaming = use_response_streaming
+
+    def deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Optional[t.Type] = None, many: bool = False) -> t.Iterator[t.Any]:
         if hasattr(raw_data, 'read'):
             # read singular JSON objects at once and multiple objects in stream to reduce memory footprint
-            if many and self.use_response_streaming:
+            if many and self._use_response_streaming:
                 raw_data = ijson.items(raw_data, 'item', use_float=True)
             else:
                 raw_data = json.loads(raw_data.read())
@@ -540,110 +696,6 @@ def failsafe_call(
             max_attempts,
             on_transitional_fail
         )
-
-
-def str_java_duration_to_timedelta(duration: str) -> timedelta:
-    """
-    :param duration: string duration:'PT5S', 'PT10H59S' etc
-    :return: timedelta()
-    """
-    groups = re.findall(r'PT(\d+H)?(\d+M)?([\d.]+S)?', duration)[0]
-    if not groups:
-        raise ValueError('Invalid duration: %s' % duration)
-
-    hours, minutes, seconds = groups
-
-    hours = int((hours or '0H').rstrip('H'))
-    minutes = int((minutes or '0M').rstrip('M'))
-    seconds = float((seconds or '0S').rstrip('S'))
-
-    return timedelta(hours=hours, minutes=minutes, seconds=seconds)
-
-
-def timedelta_to_java_duration(delta: timedelta) -> str:
-    """
-    Converts a timedelta to java duration string format
-    Milliseconds are discarded
-
-    >>> timedelta_to_java_duration(timedelta(minutes=15))
-    'PT900S'
-
-    >>> timedelta_to_java_duration(timedelta(days=1, minutes=21, seconds=35))
-    'PT87695S'
-
-    >>> timedelta_to_java_duration(timedelta(microseconds=123456))
-    'PT0S'
-    """
-    seconds = delta.total_seconds()
-    return 'PT{}S'.format(int(seconds))
-
-
-class JavaDurationField(marshmallow.fields.Field):
-
-    def _deserialize(self, value, attr, data, **kwargs):
-        try:
-            return str_java_duration_to_timedelta(value)
-        except ValueError as error:
-            raise marshmallow.ValidationError(str(error)) from error
-
-    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
-        if value is None:
-            return None
-        return timedelta_to_java_duration(value) if value else "PT0S"
-
-
-ENUM_VALUE_VALUE_1 = "value 1"
-ENUM_VALUE_VALUE_2 = "value 2"
-ENUM_VALUE_VALUE_3 = "value 3"
-ENUM_VALUES = [ENUM_VALUE_VALUE_1, ENUM_VALUE_VALUE_2, ENUM_VALUE_VALUE_3]
-
-
-@dataclass
-class BasicDTO:
-    timestamp: datetime = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime()))
-    duration: timedelta = field(metadata=dict(marshmallow_field=JavaDurationField()))
-    enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
-    # short description
-    # very long description lol
-    documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="customName")))
-    list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())))
-    optional_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()), default=0)
-    nullable_value: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
-    optional_list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())), default_factory=list)
-
-
-class ApiClient(AmqpApiWithLazyListener):
-    def some_action(self, enum: str):
-        self._mk_request(f'api/v1/action/{enum}', 'some_action').get()
-
-    def get_basic_dto_list(self) -> t.List[BasicDTO]:
-        """
-        endpoint description
-        """
-        raw_data = self._mk_request(f'api/v1/basic', 'get_basic_dto_list').get()
-        return list(self._deserialize(raw_data, BasicDTO, many=True))
-
-    def create_basic_dto(self, item: BasicDTO) -> BasicDTO:
-        item = self._serialize(item, is_payload=True)
-        args = (item,)
-        raw_data = self._mk_request(f'api/v1/basic', 'create_basic_dto', *args).get()
-        gen = self._deserialize(raw_data, BasicDTO)
-        return next(gen)
-
-    def create_basic_dto_bulk(self, items: t.Sequence[BasicDTO]) -> t.List[BasicDTO]:
-        items = self._serialize(items, is_payload=True)
-        args = (items,)
-        raw_data = self._mk_request(f'api/v1/basic/bulk', 'create_basic_dto_bulk', *args).get()
-        return list(self._deserialize(raw_data, BasicDTO, many=True))
-
-    def get_basic_dto_by_timestamp(self, timestamp: datetime) -> BasicDTO:
-        timestamp = self._serialize(timestamp)
-        raw_data = self._mk_request(f'api/v1/basic/{timestamp}', 'get_basic_dto_by_timestamp').get()
-        gen = self._deserialize(raw_data, BasicDTO)
-        return next(gen)
-
-    def ping(self):
-        self._mk_request(f'api/v1/ping', 'ping').get()
 
 
 __all__ = [

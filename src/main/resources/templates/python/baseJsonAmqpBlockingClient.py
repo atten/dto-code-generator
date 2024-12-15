@@ -187,34 +187,26 @@ class FailedAmqpRequestError(Exception):
     pass
 
 
-class AsyncAmqpResult:
-    """Uses gevent.AsyncResult with pre-defined timeout."""
-
+class SyncAmqpResult:
+    """Simple, single-threaded implementation without gevent."""
     def __init__(self, request: AmqpRequest, timeout: int):
-        self.timeout = timeout
         self.request = request
-        self.event = AsyncResult()
+        self._val = None
+        self._exc = None
 
     def set_exception(self, exc: Exception):
         """Put error for failure request."""
-        self.event.set_exception(exc)
+        self._exc = exc
 
     def set(self, value: JSON_PAYLOAD):
         """Put result for successful request."""
-        self.event.set(value)
+        self._val = value
 
     def get(self) -> JSON_PAYLOAD:
         """Retrieve result or throw exception."""
-        try:
-            return self.event.get(block=True, timeout=self.timeout)
-        except gevent.Timeout as exc:
-            request_dict = asdict(self.request)
-            request_dict.pop('api_keys')
-            description = 'Timeout exceeded while waiting for AMQP result (timeout={timeout}s, request={request})'.format(
-                timeout=self.timeout,
-                request=request_dict,
-            )
-            raise RuntimeError(description) from exc
+        if self._exc:
+            raise self._exc
+        return self._val
 
 
 class BaseAmqpApiClient(AmqpWrapper):
@@ -259,7 +251,7 @@ class BaseAmqpApiClient(AmqpWrapper):
             auto_delete=True,  # incoming queue is one-off (only for this client)
         )
 
-    def _mk_request(self, routing_key: str, func: str, *args) -> AsyncAmqpResult:
+    def mk_request(self, routing_key: str, func: str, *args) -> SyncAmqpResult:
         request = AmqpRequest(
             id=str(uuid4()),
             api_keys=self.api_keys or {},
@@ -267,7 +259,7 @@ class BaseAmqpApiClient(AmqpWrapper):
             func=func,
             args=args
         )
-        result = AsyncAmqpResult(request=request, timeout=self.request_timeout)
+        result = SyncAmqpResult(request=request, timeout=self.request_timeout)
 
         kwargs = {
             'routing_key': routing_key,
@@ -282,50 +274,34 @@ class BaseAmqpApiClient(AmqpWrapper):
         return result
 
 
-class AmqpApiWithLazyListener(BaseAmqpApiClient):
-    """Composition of normal Gateway API + gevent background listener launched on demand"""
+class AmqpApiWithBlockingListener(BaseAmqpApiClient):
+    """
+    Synchronous (blocking), gevent-free version of GatewayApi. Listens messages in the same thread.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._listener_greenlet = None
-        self._lock = Semaphore()
+        self._lock = Lock()
 
-    def ensure_listen(self):
-        another_try = False
+    def _process_async_result(self, body: list, message: Message):
+        """
+        Compares length of pending requests list before and after response processing.
+        Stops queue listening if it was 1 and became 0 (that means desired response has been received)
+        """
+        before = len(self.pending_async_results)
+        super()._process_async_result(body, message)
+        after = len(self.pending_async_results)
 
+        if before and not after:
+            raise StopIteration
+
+    def mk_request(self, routing_key: str, func: str, *args) -> SyncAmqpResult:
         with self._lock:
-            if self._listener_greenlet and not self.is_listening:
-                self._listener_greenlet.kill()
+            ret = super().mk_request(routing_key, func, *args)
 
-            if not self._listener_greenlet or self._listener_greenlet.dead:
-                total_waiting = 0
-                self.logger.debug('spawn %s' % self)
-                self._listener_greenlet = gevent.spawn(self.listen, **self._read_queue_kwargs)
-
-                while not self.is_listening:
-                    gevent.sleep(0.1)
-                    if self._listener_greenlet.exception:
-                        raise self._listener_greenlet.exception
-
-                    total_waiting += 0.1
-                    if self.is_connected and total_waiting > 5:
-                        # Sometimes AMQP client is freezing while making Consumer (with totally normal connection).
-                        # This is utterly strange, IDK better workaround than restarting it from scratch.
-                        self.logger.warning(
-                            '{}: timeout exceeded for awaiting of listener, respawn'.format(self.__class__.__name__)
-                        )
-                        another_try = True
-                        break
-
-        # do recursion outside of lock
-        if another_try:
-            self.ensure_listen()
-
-    def stop(self):
-        if self._listener_greenlet:
-            self._listener_greenlet.kill()
-        super().stop()
-
-    def _mk_request(self, routing_key: str, func: str, *args) -> AsyncAmqpResult:
-        self.ensure_listen()
-        return super()._mk_request(routing_key, func, *args)
+            # listen to queue and interrupt after first message
+            try:
+                self.listen(**self._read_queue_kwargs)
+            except StopIteration:
+                # desired answer should have been received
+                return ret

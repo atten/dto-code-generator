@@ -5,8 +5,6 @@ import org.codegen.schema.Endpoint
 import java.io.File
 
 open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiClientGenerator(proxy) {
-    override val baseClassName = "AmqpApiWithBlockingListener"
-
     override fun buildEndpointHeader(endpoint: Endpoint): String {
         // amqp client does not support streaming yet
         return super.buildEndpointHeader(endpoint).replace("Iterator", "List")
@@ -29,9 +27,9 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
 
             if (!isAtomicType) {
                 if (isPathVariable) {
-                    lines.add("$argName = self._serialize($argName)")
+                    lines.add("$argName = self._serializer.serialize($argName)")
                 } else {
-                    lines.add("$argName = self._serialize($argName, is_payload=True)")
+                    lines.add("$argName = self._serializer.serialize($argName, is_payload=True)")
                 }
             }
 
@@ -57,7 +55,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         }
 
         // prepare '_mk_request' method call
-        "raw_data = self._mk_request($routingKey, '${endpoint.name.snakeCase()}', *args).get()".let {
+        "raw_data = self._client.mk_request($routingKey, '${endpoint.name.snakeCase()}', *args).get()".let {
             if (payloadArgs.isEmpty()) {
                 // exclude empty args
                 it.replace(", *args", "")
@@ -76,12 +74,12 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
 
         // prepare return statement
         if (endpoint.many) {
-            lines.add("return list(self._deserialize(raw_data, $returnType, many=True))")
+            lines.add("return list(self._deserializer.deserialize(raw_data, $returnType, many=True))")
         } else if (returnType != "None") {
             if (atomicJsonTypes.contains(returnType)) {
-                lines.add("gen = self._deserialize(raw_data)")
+                lines.add("gen = self._deserializer.deserialize(raw_data)")
             } else {
-                lines.add("gen = self._deserialize(raw_data, $returnType)")
+                lines.add("gen = self._deserializer.deserialize(raw_data, $returnType)")
             }
             lines.add("return next(gen)")
         }
@@ -89,43 +87,49 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         return lines.joinToString(separator = "\n")
     }
 
-    override fun buildBodyPrefix(): String {
-        headers.add("import typing as t")
-        headers.add("import io")
-        headers.add("import json")
-        headers.add("from dataclasses import is_dataclass")
-        headers.add("from dataclasses import astuple")
-        headers.add("from dataclasses import asdict")
-        headers.add("from dataclasses import dataclass")
-        headers.add("import marshmallow_dataclass")
-        headers.add("from datetime import datetime")
-        headers.add("from datetime import timedelta")
-        headers.add("from datetime import timezone")
-        headers.add("from decimal import Decimal")
-        headers.add("import marshmallow")
-        headers.add("import ijson")
-        headers.add("import logging")
-        headers.add("import time")
-        headers.add("from funcy import memoize")
-        headers.add("from uuid import uuid4")
-        headers.add("from threading import Lock")
-        headers.add("from urllib.parse import urlparse")
-        headers.add("from amqp.exceptions import RecoverableConnectionError, ConnectionForced")
-        headers.add("from kombu import Connection, Exchange, Queue, Message")
-        headers.add("from socket import timeout as SocketTimeout")
-
+    override fun requiredHeaders() =
         listOf(
-            "/templates/python/baseSchema.py",
-            "/templates/python/amqpBlockingClient.py",
-            "/templates/python/serializationMethods.py",
-            "/templates/python/failsafeCall.py",
-        ).map { path ->
-            this.javaClass.getResource(path)!!.path
-                .let { File(it).readText() }
-        }
-            .joinToString(separator = "\n\n")
-            .let { addDefinition(it, "FailedAmqpRequestError") }
+            "import typing as t",
+            "import io",
+            "import os",
+            "import json",
+            "from dataclasses import is_dataclass",
+            "from dataclasses import astuple",
+            "from dataclasses import dataclass",
+            "import marshmallow_dataclass",
+            "from datetime import datetime",
+            "from datetime import timedelta",
+            "from datetime import timezone",
+            "from decimal import Decimal",
+            "import marshmallow",
+            "import ijson",
+            "import logging",
+            "import time",
+            "from funcy import memoize",
+            "from uuid import uuid4",
+            "from threading import Lock",
+            "from urllib.parse import urlparse",
+            "from amqp.exceptions import RecoverableConnectionError, ConnectionForced",
+            "from kombu import Connection, Exchange, Queue, Message",
+            "from socket import timeout as SocketTimeout",
+            "from typeguard import typechecked",
+        )
 
-        return ""
+    override fun getMainApiClassBody() =
+        this.javaClass.getResource(
+            "/templates/python/amqpClientBody.py",
+        )!!.path.let { File(it).readText() }
+
+    override fun buildBodyPostfix(): String {
+        addDefinition("", "FailedAmqpRequestError") // make error class accessible from outside
+        return super.buildBodyPostfix()
     }
+
+    override fun getIncludedIntoFooterPaths() =
+        listOf(
+            "/templates/python/baseJsonAmqpBlockingClient.py",
+            "/templates/python/baseSerializer.py",
+            "/templates/python/baseDeserializer.py",
+            "/templates/python/failsafeCall.py",
+        )
 }
