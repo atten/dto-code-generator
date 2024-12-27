@@ -160,10 +160,6 @@ abstract class AbstractCodeGenerator(
 
     protected open fun buildBodyPostfix() = "\n" // newline at the end by default
 
-    protected open fun getEntityNamesFromHeader(header: String): List<String> {
-        return listOf(header.split(" ", ".").last())
-    }
-
     fun build(): String {
         val prefix = buildBodyPrefix()
 

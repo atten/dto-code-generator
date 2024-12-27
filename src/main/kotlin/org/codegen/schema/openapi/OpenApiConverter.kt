@@ -57,11 +57,12 @@ internal class OpenApiConverter(
         val fullPath = spec.basePath + path
         val pathBody = spec.paths[path]!!
         val description =
-            listOf(
-                method.summary.orEmpty(),
+            setOf(
+                method.summary,
                 method.description,
             )
                 .filter { it.isNotEmpty() }
+                .sortedBy { it.length }
                 .joinToString("\n")
 
         val endpointArguments =

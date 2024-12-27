@@ -29,7 +29,6 @@
     "/basic/{entityId}/": {
       "get": {
         "operationId": "get-basic-dto",
-        "description": "",
         "parameters": [],
         "responses": {
           "200": {
@@ -57,7 +56,6 @@
       "put": {
         "operationId" : "update-basic-dto",
         "description": "",
-        "parameters": [],
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -203,10 +201,29 @@
 
       }
     },
+    "/action": {
+      "get": {
+        "tags": [
+          "some_tag"
+        ],
+        "operationId": "empty-schema-response",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/action/{enum}": {
       "post": {
         "operationId": "action-with-complex-path",
-        "description": "",
+        "summary": "description",
+        "description": "description",
         "parameters": [
           {
             "name" : "enum",
@@ -221,10 +238,10 @@
         "responses": {
           "200": {
             "description": "Success"
-            }
           }
         }
       }
+    }
   },
   "definitions": {
     "BasicDto": {
@@ -273,6 +290,20 @@
         },
         "nested_object": {
           "$ref": "#/components/schemas/AdvancedDTO"
+        },
+        "combined_type": {
+          "title": "number_or_list",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            {
+              "type": "integer"
+            }
+          ]
         }
       }
     }

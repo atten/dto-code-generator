@@ -24,6 +24,7 @@ internal data class Schema(
             return type
         }
 
-        TODO()
+        // schema is empty, return most common type available
+        return "json"
     }
 }

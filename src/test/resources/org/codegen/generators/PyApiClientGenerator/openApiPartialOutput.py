@@ -70,16 +70,6 @@ class ApiClient:
         )
 
 
-    def post_action_by_enum(
-        self,
-        # variant1 | variant2 | variant3
-        enum: str,
-    ):
-        self._client.fetch(
-            url=f'/api/v1/action/{enum}',
-            method='POST',
-        )
-
     def get_basic(
         self,
         # A page number within the paginated result set.
@@ -233,6 +223,7 @@ class BasicDto:
     timestamp: t.Optional[datetime] = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime(allow_none=True)), default=None)
     some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(SOME_ENUMS)])), default=None)
     nested_object: t.Optional[AdvancedDTO] = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(AdvancedDTO, base_schema=BaseSchema), allow_none=True)), default=None)
+    combined_type: t.Optional[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.Integer(allow_none=True)), default=None)
 
 
 JSON_PAYLOAD = t.Union[dict, str, int, float, list]

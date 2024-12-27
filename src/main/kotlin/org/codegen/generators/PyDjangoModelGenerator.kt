@@ -125,6 +125,12 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
     override fun buildBodyPrefix(): String {
         headers.add("from django.db import models")
         headers.add("from django.utils.translation import gettext_lazy as _")
+
+        // remove root entity (contains only endpoints which are irrelevant to django models)
+        if (entities.size == 1 && entities[0].endpoints.isNotEmpty()) {
+            entities.clear()
+        }
+
         return ""
     }
 

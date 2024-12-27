@@ -227,6 +227,12 @@
       "implementations": {
         "PY_DATACLASS": {
           "definition": "dict"
+        },
+        "PY_DJANGO_MODEL": {
+          "definition": "models.JSONField",
+          "requiredHeaders": [
+            "from django.db import models"
+          ]
         }
       }
     }

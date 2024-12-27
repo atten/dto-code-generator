@@ -70,11 +70,21 @@ class ApiClient:
         )
 
 
+    def get_action(self) -> dict:
+        raw_data = self._client.fetch(
+            url='/api/v1/action',
+        )
+        gen = self._deserializer.deserialize(raw_data, dict)
+        return next(gen)
+
     def post_action_by_enum(
         self,
         # variant1 | variant2 | variant3
         enum: str,
     ):
+        """
+        description
+        """
         self._client.fetch(
             url=f'/api/v1/action/{enum}',
             method='POST',
@@ -250,6 +260,7 @@ class BasicDto:
     timestamp: t.Optional[datetime] = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime(allow_none=True)), default=None)
     some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(SOME_ENUMS)])), default=None)
     nested_object: t.Optional[AdvancedDTO] = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(AdvancedDTO, base_schema=BaseSchema), allow_none=True)), default=None)
+    combined_type: t.Optional[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.Integer(allow_none=True)), default=None)
 
 
 JSON_PAYLOAD = t.Union[dict, str, int, float, list]

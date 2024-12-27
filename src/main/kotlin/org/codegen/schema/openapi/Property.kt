@@ -14,6 +14,8 @@ internal data class Property(
     val ref: String? = null,
     val items: Property? = null,
     val oneOf: List<Property> = listOf(),
+    // same as oneOf
+    val anyOf: List<Property> = listOf(),
     val properties: Map<String, Property> = mapOf(),
 ) {
     fun definitionName(): String {
@@ -38,7 +40,11 @@ internal data class Property(
         }
 
         if (oneOf.isNotEmpty()) {
-            return oneOf.joinToString(separator = "Or") { it.definitionName() }
+            return oneOf.map { it.definitionName() }.toSet().joinToString(separator = "Or")
+        }
+
+        if (anyOf.isNotEmpty()) {
+            return anyOf.map { it.definitionName() }.toSet().joinToString(separator = "Or")
         }
 
         TODO()
