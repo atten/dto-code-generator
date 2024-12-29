@@ -11,8 +11,10 @@ class BaseJsonHttpAsyncClient:
         retry_timeout: float,
         user_agent: t.Optional[str],
         headers: t.Optional[t.Dict[str, str]],
-        use_debug_curl: bool,
         use_response_streaming: bool,
+        use_debug_curl: bool,
+        request_kwargs: dict,
+        connection_pool_kwargs: dict,
     ):
         self._base_url = base_url
         self._logger = logger
@@ -21,6 +23,7 @@ class BaseJsonHttpAsyncClient:
         self._user_agent = user_agent
         self._headers = headers
         self._use_debug_curl = use_debug_curl
+        self._request_kwargs = request_kwargs
 
     async def fetch(
         self,
@@ -47,15 +50,18 @@ class BaseJsonHttpAsyncClient:
         if self._user_agent:
             headers['user-agent'] = self._user_agent
 
+        request_kwargs = self._request_kwargs.copy()
+        request_kwargs.update(
+            full_url=full_url,
+            method=method,
+            headers=headers,
+            payload=payload,
+        )
+
         try:
             return await failsafe_call_async(
                 self._mk_request,
-                kwargs=dict(
-                    full_url=full_url,
-                    method=method,
-                    headers=headers,
-                    payload=payload,
-                ),
+                kwargs=request_kwargs,
                 exceptions=(aiohttp.ClientConnectorError, ConnectionRefusedError),
                 logger=self._logger,
                 max_attempts=self._max_retries,

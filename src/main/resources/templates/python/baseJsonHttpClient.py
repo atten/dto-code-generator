@@ -13,8 +13,12 @@ class BaseJsonHttpClient:
         headers: t.Optional[t.Dict[str, str]],
         use_response_streaming: bool,
         use_debug_curl: bool,
+        request_kwargs: dict,
+        connection_pool_kwargs: dict,
     ):
-        self._pool = urllib3.PoolManager(retries=False)
+        connection_pool_kwargs.update(retries=False)
+
+        self._pool = urllib3.PoolManager(**connection_pool_kwargs)
         self._base_url = base_url
         self._logger = logger
         self._max_retries = max_retries
@@ -23,6 +27,7 @@ class BaseJsonHttpClient:
         self._headers = headers
         self._use_response_streaming = use_response_streaming
         self._use_debug_curl = use_debug_curl
+        self._request_kwargs = request_kwargs
 
     def fetch(
         self,
@@ -50,15 +55,18 @@ class BaseJsonHttpClient:
         if self._user_agent:
             headers['user-agent'] = self._user_agent
 
+        request_kwargs = self._request_kwargs.copy()
+        request_kwargs.update(
+            url=full_url,
+            method=method,
+            headers=headers,
+            body=payload,
+        )
+
         try:
             return failsafe_call(
                 self._mk_request,
-                kwargs=dict(
-                    url=full_url,
-                    method=method,
-                    headers=headers,
-                    body=payload,
-                ),
+                kwargs=request_kwargs,
                 exceptions=(urllib3.exceptions.HTTPError,),  # include connection errors, HTTP >= 400
                 logger=self._logger,
                 max_attempts=self._max_retries,

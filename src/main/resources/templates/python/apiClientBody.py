@@ -10,6 +10,8 @@
         use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1))),
         use_request_payload_validation: bool = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1))),
         use_debug_curl: bool = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0))),
+        request_kwargs: t.Optional[t.Dict[str, t.Any]] = None,
+        connection_pool_kwargs: t.Optional[t.Dict[str, t.Any]] = None,
     ):
         """
         API client constructor and configuration method.
@@ -23,6 +25,8 @@
         :param use_response_streaming: enable alternative JSON library for deserialization (lower latency and memory footprint)
         :param use_request_payload_validation: enable client-side validation of serialized data before send
         :param use_debug_curl: include curl-formatted data for requests diagnostics
+        :param request_kwargs: optional request arguments
+        :param connection_pool_kwargs: optional arguments for internal connection pool
         """
         self._client = BaseJsonHttpClient(
             base_url=base_url,
@@ -32,7 +36,9 @@
             user_agent=user_agent,
             headers=headers,
             use_response_streaming=use_response_streaming,
-            use_debug_curl=use_debug_curl
+            use_debug_curl=use_debug_curl,
+            request_kwargs=request_kwargs or {},
+            connection_pool_kwargs=connection_pool_kwargs or {},
         )
 
         self._deserializer = BaseDeserializer(
