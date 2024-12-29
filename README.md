@@ -5,7 +5,6 @@
 
 Generate pretty API clients from OpenApi specs with ease.
 
-
 ## Install
 
 ### Docker image
@@ -32,12 +31,41 @@ Other versions lists:
 
 - https://github.com/atten/dto-code-generator/releases
 
-
-
 ## Usage
 
-TODO
+    ./dto-codegen [options] files/directories to parse
 
+Options:
+
+    -t, --target
+    Target implementation
+    Possible Values: [KT_DATACLASS, KT_SERIALIZABLE_DATACLASS, KT_INTERFACE, PY_DJANGO_MODEL, PY_API_CLIENT, PY_API_ASYNC_CLIENT, PY_AMQP_BLOCKING_CLIENT, PY_AMQP_GEVENT_CLIENT, PY_MARSHMALLOW_DATACLASS, PY_DATACLASS]
+    
+    -n, --name
+    Generated class name (inferred from input files if not specified)
+    Default: <empty string>
+    
+    --include-path
+    Include only paths containing given strings
+    Default: []
+    
+    --exclude-path
+    Do not include paths containing given strings
+    Default: []
+    
+    -p, --prefixed
+    If enabled, add prefix to all fields
+    Default: false
+    
+    --help
+    Show help usage and exit
+    
+    --version, -v
+    Display version and exit
+
+## Examples
+
+TODO
 
 ## Avaliable generators
 
