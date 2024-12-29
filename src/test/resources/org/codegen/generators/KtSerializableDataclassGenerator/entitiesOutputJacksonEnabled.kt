@@ -19,7 +19,7 @@ enum class EnumValue(val value: String) {
 }
 
 @Serializable
-data class BasicDTO(
+data class BasicDto(
     @Contextual
     val timestamp: Instant,
     @Contextual
@@ -50,7 +50,7 @@ data class BasicDTO(
  * entity with all-singing all-dancing properties
  */
 @Serializable
-data class AdvancedDTO(
+data class AdvancedDto(
     val a: Int,
     val b: Int,
 )
@@ -59,12 +59,12 @@ data class AdvancedDTO(
  * entity with containers
  */
 @Serializable
-data class ContainerDTO(
+data class ContainerDto(
     @Contextual
     @JsonProperty("basic")
     @SerialName("basic")
-    val basicSingle: BasicDTO,
+    val basicSingle: BasicDto,
     @JsonProperty("basics")
     @SerialName("basics")
-    val basicList: List<@Contextual BasicDTO?>,
+    val basicList: List<@Contextual BasicDto?>,
 )

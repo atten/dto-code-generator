@@ -1,6 +1,5 @@
 package org.codegen.generators
 
-import org.codegen.format.CodeFormatRules
 import org.codegen.format.camelCase
 import org.codegen.format.lowercaseFirst
 import org.codegen.format.snakeCase
@@ -8,20 +7,10 @@ import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.Endpoint
 import org.codegen.schema.EndpointVerb
-import org.codegen.schema.Entity
 import org.codegen.schema.MethodArgument
 import java.io.File
 
-open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
-    CodeFormatRules.PYTHON,
-    AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS,
-    proxy,
-) {
-    protected val atomicJsonTypes = listOf("str", "float", "int", "None", "bool")
-
-    // list if __all__ items
-    private val definedNames = mutableListOf<String>()
-
+open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseClientGenerator(proxy) {
     private fun buildArgumentDefaultValue(argument: MethodArgument): String {
         val dtypeProps = getDtype(argument.dtype)
         return if (argument.default == UNSET) {
@@ -38,137 +27,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         }
     }
 
-    override fun addDefinition(
-        body: String,
-        vararg names: String,
-    ) {
-        super.addDefinition(body, *names)
-        // add missing names into __all__
-        names
-            .filter { it.isNotEmpty() && it !in definedNames }
-            .forEach { definedNames.add(it) }
-    }
-
-    protected open fun buildMethodDefinition(
-        name: String,
-        arguments: List<String>,
-        returnStatement: String,
-        singleLine: Boolean? = null,
-    ): String {
-        when (singleLine) {
-            true -> {
-                val argumentsString = arguments.joinToString(separator = ", ")
-                return "def $name($argumentsString)$returnStatement"
-            }
-            false -> {
-                val argumentsString =
-                    arguments.joinToString(separator = ",\n    ", prefix = "\n    ", postfix = ",\n") {
-                        it.replace("\n", "\n    ")
-                    }
-                return "def $name($argumentsString)$returnStatement"
-            }
-            else -> {
-                // auto-choice
-                val oneLiner = buildMethodDefinition(name, arguments, returnStatement, singleLine = true)
-                if (oneLiner.length > 120) {
-                    return buildMethodDefinition(name, arguments, returnStatement, singleLine = false)
-                }
-                return oneLiner
-            }
-        }
-    }
-
-    protected open fun buildEndpointHeader(endpoint: Endpoint): String {
-        val name = endpoint.name.snakeCase()
-        val returnDtypeProps = getDtype(endpoint.dtype)
-        val returnStatement =
-            returnDtypeProps.definition
-                .let {
-                    if (!returnDtypeProps.isNative) {
-                        // wrap into quotes if definition is listed below
-                        "'$it'"
-                    } else {
-                        it
-                    }
-                }
-                .let {
-                    if (endpoint.many) {
-                        headers.add("import typing as t")
-                        if (endpoint.cacheable) "list[$it]" else "t.Iterator[$it]"
-                    } else if (endpoint.nullable) {
-                        headers.add("import typing as t")
-                        "t.Optional[$it]"
-                    } else {
-                        it
-                    }
-                }
-                .let { if (it == "None") ":" else " -> $it:" }
-        val arguments = mutableListOf("self")
-
-        for (argument in endpoint.argumentsSortedByDefaults) {
-            val argName = argument.name.snakeCase()
-            val dtypeProps = getDtype(argument.dtype)
-            val argTypeName =
-                dtypeProps.definition
-                    .let {
-                        if (!dtypeProps.isNative) {
-                            // wrap into quotes if definition is listed below
-                            "'$it'"
-                        } else {
-                            it
-                        }
-                    }
-                    .let {
-                        if (argument.many) {
-                            headers.add("import typing as t")
-                            "t.Sequence[$it]"
-                        } else {
-                            it
-                        }
-                    }
-                    .let { if (argument.nullable) "t.Optional[$it]" else it }
-
-            val argDefaultValue =
-                buildArgumentDefaultValue(argument)
-                    .let { if (it.isEmpty()) "" else "= $it" }
-
-            val argDescription =
-                if (!argument.description.isNullOrEmpty()) {
-                    "# ${argument.description}".trim()
-                } else {
-                    ""
-                }
-
-            val argumentString = "$argDescription\n$argName: $argTypeName $argDefaultValue".trim()
-            arguments.add(argumentString)
-        }
-
-        val lines = mutableListOf<String>()
-
-        if (endpoint.cacheable) {
-            headers.add("from funcy import memoize")
-            lines.add("@memoize")
-        }
-
-        val singleLine =
-            if (arguments.any { "\n" in it }) {
-                false
-            } else {
-                null // auto-choice
-            }
-
-        lines.add(buildMethodDefinition(name, arguments, returnStatement, singleLine = singleLine))
-        endpoint.description
-            ?.replace("\n", "\n    ")
-            ?.let {
-                lines.add("    \"\"\"")
-                lines.add("    $it")
-                lines.add("    \"\"\"")
-            }
-        return lines.joinToString(separator = "\n")
-    }
-
-    protected open fun buildEndpointBody(endpoint: Endpoint): String {
+    override fun renderEndpointBody(endpoint: Endpoint): String {
         val returnDtypeProps = getDtype(endpoint.dtype)
         val returnType = returnDtypeProps.definition
         // uri name, variable name, default value (if present and is atomic)
@@ -280,35 +139,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
         return lines.joinToString(separator = "\n")
     }
 
-    private fun buildEndpoint(endpoint: Endpoint) =
-        buildEndpointHeader(endpoint) +
-            buildEndpointBody(endpoint)
-                .let { if (it.isNotEmpty()) "\n$it" else it }
-                .replace("\n", "\n    ")
-
-    override fun buildEntityName(name: String) = name.camelCase()
-
-    override fun buildEntity(entity: Entity): String {
-        if (entity.fields.isEmpty()) {
-            return ""
-        }
-        return PyMarshmallowDataclassGenerator(this).buildEntity(entity)
-    }
-
-    override fun buildBodyPrefix(): String {
-        requiredHeaders().forEach { headers.add(it) }
-
-        listOf(
-            "/templates/python/baseSchema.py",
-        )
-            .map { this.javaClass.getResource(it)!!.path }
-            .map { File(it).readText() }
-            .map { addDefinition(it) }
-
-        return buildMainApiClass()
-    }
-
-    protected open fun requiredHeaders() =
+    override fun renderHeaders(): String {
         listOf(
             "import os",
             "import io",
@@ -327,40 +158,11 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             "from datetime import timezone",
             "from decimal import Decimal",
             "from typeguard import typechecked",
-        )
-
-    protected open fun getMainApiClassBody() =
-        this.javaClass.getResource("/templates/python/apiClientBody.py")!!.path.let {
-            File(it).readText()
-        }
-
-    private fun buildMainApiClass(): String {
-        val entity = defaultEntity
-        val className = buildEntityName(entity.name)
-        val classDefinition = "class $className:"
-        val classBody = getMainApiClassBody()
-        val classMethods = entity.endpoints.map { buildEndpoint(it) }
-        return classMethods.joinToString(
-            separator = "\n\n",
-            prefix = "${classDefinition}\n${classBody}\n\n",
-            postfix = CodeFormatRules.PYTHON.entitiesSeparator,
-        ) { "    ${it.replace("\n", "\n    ")}" }
+        ).forEach { headers.add(it) }
+        return super.renderHeaders()
     }
 
-    override fun buildBodyPostfix(): String {
-        getIncludedIntoFooterPaths()
-            .map { this.javaClass.getResource(it)!!.path }
-            .map { File(it).readText() }
-            .map { addDefinition(it) }
-
-        definedNames
-            .sorted()
-            .joinToString("\n", "__all__ = [\n", "\n]") { "    \"${it}\"," }
-            .also { addDefinition(it, "__all__") }
-        return "\n"
-    }
-
-    protected open fun getIncludedIntoFooterPaths() =
+    override fun getBodyIncludedFiles() =
         listOf(
             "/templates/python/baseJsonHttpClient.py",
             "/templates/python/baseSerializer.py",
@@ -368,4 +170,9 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : Abstract
             "/templates/python/failsafeCall.py",
             "/templates/python/buildCurlCommand.py",
         )
+
+    override fun getMainApiClassBody() =
+        this.javaClass.getResource("/templates/python/apiClientBody.py")!!.path.let {
+            File(it).readText()
+        }
 }

@@ -11,7 +11,7 @@ class EnumValue(models.TextChoices):
     VALUE_3 = 'value 3', _('name 3')
 
 
-class BasicDTO(models.Model):
+class BasicDto(models.Model):
     timestamp = models.DateTimeField()
     duration = models.CharField(max_length=32)
     optional_value = models.FloatField(default=0)
@@ -25,7 +25,7 @@ class BasicDTO(models.Model):
         abstract = True
 
 
-class AdvancedDTO(models.Model):
+class AdvancedDto(models.Model):
     """
     entity with all-singing all-dancing properties
     """
@@ -36,7 +36,7 @@ class AdvancedDTO(models.Model):
         abstract = True
 
 
-class ContainerDTO(models.Model):
+class ContainerDto(models.Model):
     """
     entity with containers
     """
@@ -45,10 +45,3 @@ class ContainerDTO(models.Model):
 
     class Meta:
         abstract = True
-
-
-GENERATED_MODELS = [
-    AdvancedDTO,
-    BasicDTO,
-    ContainerDTO
-]

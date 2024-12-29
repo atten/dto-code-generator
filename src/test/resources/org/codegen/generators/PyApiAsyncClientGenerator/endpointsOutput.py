@@ -19,7 +19,7 @@ import re
 import typing as t
 
 
-class ApiClient:
+class Generated:
     @typechecked
     def __init__(
         self,
@@ -73,42 +73,42 @@ class ApiClient:
             method='POST',
         )
 
-    async def get_basic_dto_list(self) -> t.AsyncIterator['BasicDTO']:
+    async def get_basic_dto_list(self) -> t.AsyncIterator['BasicDto']:
         """
         endpoint description
         """
         raw_data = await self._client.fetch(
             url='api/v1/basic',
         )
-        for item in self._deserializer.deserialize(raw_data, BasicDTO, many=True):
+        for item in self._deserializer.deserialize(raw_data, BasicDto, many=True):
             yield item
 
-    async def create_basic_dto(self, item: 'BasicDTO') -> 'BasicDTO':
+    async def create_basic_dto(self, item: 'BasicDto') -> 'BasicDto':
         item = self._serializer.serialize(item, is_payload=True)
         raw_data = await self._client.fetch(
             url='api/v1/basic',
             method='POST',
             payload=item,
         )
-        gen = self._deserializer.deserialize(raw_data, BasicDTO)
+        gen = self._deserializer.deserialize(raw_data, BasicDto)
         return next(gen)
 
-    async def create_basic_dto_bulk(self, items: t.Sequence['BasicDTO']) -> t.AsyncIterator['BasicDTO']:
+    async def create_basic_dto_bulk(self, items: t.Sequence['BasicDto']) -> t.AsyncIterator['BasicDto']:
         items = self._serializer.serialize(items, is_payload=True)
         raw_data = await self._client.fetch(
             url='api/v1/basic/bulk',
             method='POST',
             payload=items,
         )
-        for item in self._deserializer.deserialize(raw_data, BasicDTO, many=True):
+        for item in self._deserializer.deserialize(raw_data, BasicDto, many=True):
             yield item
 
-    async def get_basic_dto_by_timestamp(self, timestamp: datetime) -> 'BasicDTO':
+    async def get_basic_dto_by_timestamp(self, timestamp: datetime) -> 'BasicDto':
         timestamp = self._serializer.serialize(timestamp)
         raw_data = await self._client.fetch(
             url=f'api/v1/basic/{timestamp}',
         )
-        gen = self._deserializer.deserialize(raw_data, BasicDTO)
+        gen = self._deserializer.deserialize(raw_data, BasicDto)
         return next(gen)
 
     async def ping(self):
@@ -180,7 +180,7 @@ ENUM_VALUES = [ENUM_VALUE_VALUE_1, ENUM_VALUE_VALUE_2, ENUM_VALUE_VALUE_3]
 
 
 @dataclass
-class BasicDTO:
+class BasicDto:
     timestamp: datetime = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime()))
     duration: timedelta = field(metadata=dict(marshmallow_field=JavaDurationField()))
     enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
@@ -511,10 +511,10 @@ def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: s
 
 
 __all__ = [
-    "ApiClient",
-    "BasicDTO",
+    "BasicDto",
     "ENUM_VALUES",
     "ENUM_VALUE_VALUE_1",
     "ENUM_VALUE_VALUE_2",
     "ENUM_VALUE_VALUE_3",
+    "Generated",
 ]

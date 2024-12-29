@@ -28,7 +28,7 @@ import time
 import typing as t
 
 
-class ApiClient:
+class Generated:
     @typechecked
     def __init__(
         self,
@@ -71,30 +71,30 @@ class ApiClient:
     def some_action(self, enum: str):
         self._client.mk_request(f'api/v1/action/{enum}', 'some_action').get()
 
-    def get_basic_dto_list(self) -> t.List['BasicDTO']:
+    def get_basic_dto_list(self) -> t.List['BasicDto']:
         """
         endpoint description
         """
         raw_data = self._client.mk_request(f'api/v1/basic', 'get_basic_dto_list').get()
-        return list(self._deserializer.deserialize(raw_data, BasicDTO, many=True))
+        return list(self._deserializer.deserialize(raw_data, BasicDto, many=True))
 
-    def create_basic_dto(self, item: 'BasicDTO') -> 'BasicDTO':
+    def create_basic_dto(self, item: 'BasicDto') -> 'BasicDto':
         item = self._serializer.serialize(item, is_payload=True)
         args = (item,)
         raw_data = self._client.mk_request(f'api/v1/basic', 'create_basic_dto', *args).get()
-        gen = self._deserializer.deserialize(raw_data, BasicDTO)
+        gen = self._deserializer.deserialize(raw_data, BasicDto)
         return next(gen)
 
-    def create_basic_dto_bulk(self, items: t.Sequence['BasicDTO']) -> t.List['BasicDTO']:
+    def create_basic_dto_bulk(self, items: t.Sequence['BasicDto']) -> t.List['BasicDto']:
         items = self._serializer.serialize(items, is_payload=True)
         args = (items,)
         raw_data = self._client.mk_request(f'api/v1/basic/bulk', 'create_basic_dto_bulk', *args).get()
-        return list(self._deserializer.deserialize(raw_data, BasicDTO, many=True))
+        return list(self._deserializer.deserialize(raw_data, BasicDto, many=True))
 
-    def get_basic_dto_by_timestamp(self, timestamp: datetime) -> 'BasicDTO':
+    def get_basic_dto_by_timestamp(self, timestamp: datetime) -> 'BasicDto':
         timestamp = self._serializer.serialize(timestamp)
         raw_data = self._client.mk_request(f'api/v1/basic/{timestamp}', 'get_basic_dto_by_timestamp').get()
-        gen = self._deserializer.deserialize(raw_data, BasicDTO)
+        gen = self._deserializer.deserialize(raw_data, BasicDto)
         return next(gen)
 
     def ping(self):
@@ -164,7 +164,7 @@ ENUM_VALUES = [ENUM_VALUE_VALUE_1, ENUM_VALUE_VALUE_2, ENUM_VALUE_VALUE_3]
 
 
 @dataclass
-class BasicDTO:
+class BasicDto:
     timestamp: datetime = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime()))
     duration: timedelta = field(metadata=dict(marshmallow_field=JavaDurationField()))
     enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
@@ -672,11 +672,11 @@ def failsafe_call(
 
 
 __all__ = [
-    "ApiClient",
-    "BasicDTO",
+    "BasicDto",
     "ENUM_VALUES",
     "ENUM_VALUE_VALUE_1",
     "ENUM_VALUE_VALUE_2",
     "ENUM_VALUE_VALUE_3",
     "FailedAmqpRequestError",
+    "Generated",
 ]

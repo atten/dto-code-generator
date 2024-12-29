@@ -14,11 +14,15 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
 ) {
     private val plainDataTypes = listOf("bool", "int", "float", "str")
 
-    override fun buildEntityName(name: String) = name.camelCase()
+    override fun renderEntityName(name: String) = name.camelCase()
 
-    override fun buildEntity(entity: Entity): String {
+    override fun renderEntity(entity: Entity): String {
+        if (entity.fields.isEmpty()) {
+            return ""
+        }
+
         val preLines = mutableListOf<String>()
-        val className = buildEntityName(entity.name)
+        val className = renderEntityName(entity.name)
         val lines = mutableListOf("class $className(models.Model):")
 
         entity.description?.also {
@@ -122,24 +126,8 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
         return (preLines + lines).joinToString("\n")
     }
 
-    override fun buildBodyPrefix(): String {
-        headers.add("from django.db import models")
+    override fun renderHeaders(): String {
         headers.add("from django.utils.translation import gettext_lazy as _")
-
-        // remove root entity (contains only endpoints which are irrelevant to django models)
-        if (entities.size == 1 && entities[0].endpoints.isNotEmpty()) {
-            entities.clear()
-        }
-
-        return ""
-    }
-
-    override fun buildBodyPostfix(): String {
-        entities
-            .map { buildEntityName(it.name) }
-            .sorted()
-            .joinToString(",\n", "GENERATED_MODELS = [\n", "\n]") { "    $it" }
-            .also { addDefinition(it, "GENERATED_MODELS") }
-        return "\n"
+        return super.renderHeaders()
     }
 }

@@ -40,6 +40,25 @@ class PyApiClientGeneratorTest {
     }
 
     @Test
+    fun openApiWithCustomName() {
+        val args =
+            Args().also {
+                it.target = AllGeneratorsEnum.PY_API_CLIENT
+                it.name = "SomeRestApiCustom"
+                it.inputFiles =
+                    listOf(
+                        this.javaClass.getResource("/input/openApi.json")!!.path,
+                    )
+            }
+
+        val output = Builder(args).build()
+        val expectedOutput =
+            File(this.javaClass.getResource("PyApiClientGenerator/openApiOutput.py")!!.path).readText()
+                .replace("SomeRestApi", "SomeRestApiCustom")
+        Assertions.assertEquals(expectedOutput, output)
+    }
+
+    @Test
     fun openApiPartial() {
         val args =
             Args().also {
@@ -61,14 +80,12 @@ class PyApiClientGeneratorTest {
         @BeforeAll
         fun setup() {
             System.setProperty("DECORATOR_ARGS", "")
-            System.setProperty("ENTITY_NAME", "ApiClient")
         }
 
         @JvmStatic
         @AfterAll
         fun teardown() {
             System.clearProperty("DECORATOR_ARGS")
-            System.clearProperty("ENTITY_NAME")
         }
     }
 }

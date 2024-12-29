@@ -23,4 +23,20 @@ class PyDjangoModelGeneratorTest {
 
         assertEquals(expectedOutput, output)
     }
+
+    @Test
+    fun openApi() {
+        val args =
+            Args().also {
+                it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
+                it.inputFiles =
+                    listOf(
+                        this.javaClass.getResource("/input/openApi.json")!!.path,
+                    )
+            }
+
+        val output = Builder(args).build()
+        val expectedOutput = File(this.javaClass.getResource("PyDjangoModelGenerator/openApiOutput.py")!!.path).readText()
+        assertEquals(expectedOutput, output)
+    }
 }

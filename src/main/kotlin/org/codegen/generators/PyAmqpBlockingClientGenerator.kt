@@ -4,13 +4,13 @@ import org.codegen.format.snakeCase
 import org.codegen.schema.Endpoint
 import java.io.File
 
-open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiClientGenerator(proxy) {
-    override fun buildEndpointHeader(endpoint: Endpoint): String {
+open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseClientGenerator(proxy) {
+    override fun renderEndpointHeader(endpoint: Endpoint): String {
         // amqp client does not support streaming yet
-        return super.buildEndpointHeader(endpoint).replace("Iterator", "List")
+        return super.renderEndpointHeader(endpoint).replace("Iterator", "List")
     }
 
-    override fun buildEndpointBody(endpoint: Endpoint): String {
+    override fun renderEndpointBody(endpoint: Endpoint): String {
         val returnDtypeProps = getDtype(endpoint.dtype)
         val returnType = returnDtypeProps.definition
         val lines = mutableListOf<String>()
@@ -87,7 +87,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         return lines.joinToString(separator = "\n")
     }
 
-    override fun requiredHeaders() =
+    override fun renderHeaders(): String {
         listOf(
             "import typing as t",
             "import io",
@@ -96,6 +96,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
             "from dataclasses import is_dataclass",
             "from dataclasses import astuple",
             "from dataclasses import dataclass",
+            "from dataclasses import field",
             "import marshmallow_dataclass",
             "from datetime import datetime",
             "from datetime import timedelta",
@@ -113,23 +114,25 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
             "from kombu import Connection, Exchange, Queue, Message",
             "from socket import timeout as SocketTimeout",
             "from typeguard import typechecked",
-        )
+        ).forEach { headers.add(it) }
+        return super.renderHeaders()
+    }
 
     override fun getMainApiClassBody() =
         this.javaClass.getResource(
             "/templates/python/amqpClientBody.py",
         )!!.path.let { File(it).readText() }
 
-    override fun buildBodyPostfix(): String {
-        addDefinition("", "FailedAmqpRequestError") // make error class accessible from outside
-        return super.buildBodyPostfix()
-    }
-
-    override fun getIncludedIntoFooterPaths() =
+    override fun getBodyIncludedFiles() =
         listOf(
             "/templates/python/baseJsonAmqpBlockingClient.py",
             "/templates/python/baseSerializer.py",
             "/templates/python/baseDeserializer.py",
             "/templates/python/failsafeCall.py",
         )
+
+    override fun renderBodySuffix(): String {
+        definedNames.add("FailedAmqpRequestError") // make error class accessible from outside
+        return super.renderBodySuffix()
+    }
 }

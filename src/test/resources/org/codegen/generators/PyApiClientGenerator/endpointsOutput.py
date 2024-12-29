@@ -22,7 +22,7 @@ import typing as t
 import urllib3
 
 
-class ApiClient:
+class Generated:
     @typechecked
     def __init__(
         self,
@@ -76,40 +76,40 @@ class ApiClient:
             method='POST',
         )
 
-    def get_basic_dto_list(self) -> t.Iterator['BasicDTO']:
+    def get_basic_dto_list(self) -> t.Iterator['BasicDto']:
         """
         endpoint description
         """
         raw_data = self._client.fetch(
             url='api/v1/basic',
         )
-        yield from self._deserializer.deserialize(raw_data, BasicDTO, many=True)
+        yield from self._deserializer.deserialize(raw_data, BasicDto, many=True)
 
-    def create_basic_dto(self, item: 'BasicDTO') -> 'BasicDTO':
+    def create_basic_dto(self, item: 'BasicDto') -> 'BasicDto':
         item = self._serializer.serialize(item, is_payload=True)
         raw_data = self._client.fetch(
             url='api/v1/basic',
             method='POST',
             payload=item,
         )
-        gen = self._deserializer.deserialize(raw_data, BasicDTO)
+        gen = self._deserializer.deserialize(raw_data, BasicDto)
         return next(gen)
 
-    def create_basic_dto_bulk(self, items: t.Sequence['BasicDTO']) -> t.Iterator['BasicDTO']:
+    def create_basic_dto_bulk(self, items: t.Sequence['BasicDto']) -> t.Iterator['BasicDto']:
         items = self._serializer.serialize(items, is_payload=True)
         raw_data = self._client.fetch(
             url='api/v1/basic/bulk',
             method='POST',
             payload=items,
         )
-        yield from self._deserializer.deserialize(raw_data, BasicDTO, many=True)
+        yield from self._deserializer.deserialize(raw_data, BasicDto, many=True)
 
-    def get_basic_dto_by_timestamp(self, timestamp: datetime) -> 'BasicDTO':
+    def get_basic_dto_by_timestamp(self, timestamp: datetime) -> 'BasicDto':
         timestamp = self._serializer.serialize(timestamp)
         raw_data = self._client.fetch(
             url=f'api/v1/basic/{timestamp}',
         )
-        gen = self._deserializer.deserialize(raw_data, BasicDTO)
+        gen = self._deserializer.deserialize(raw_data, BasicDto)
         return next(gen)
 
     def ping(self):
@@ -181,7 +181,7 @@ ENUM_VALUES = [ENUM_VALUE_VALUE_1, ENUM_VALUE_VALUE_2, ENUM_VALUE_VALUE_3]
 
 
 @dataclass
-class BasicDTO:
+class BasicDto:
     timestamp: datetime = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime()))
     duration: timedelta = field(metadata=dict(marshmallow_field=JavaDurationField()))
     enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
@@ -524,10 +524,10 @@ def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: s
 
 
 __all__ = [
-    "ApiClient",
-    "BasicDTO",
+    "BasicDto",
     "ENUM_VALUES",
     "ENUM_VALUE_VALUE_1",
     "ENUM_VALUE_VALUE_2",
     "ENUM_VALUE_VALUE_3",
+    "Generated",
 ]

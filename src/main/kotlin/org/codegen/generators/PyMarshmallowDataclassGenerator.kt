@@ -16,7 +16,7 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
     AllGeneratorsEnum.PY_MARSHMALLOW_DATACLASS,
     proxy,
 ) {
-    override fun buildBodyPrefix(): String {
+    override fun renderBodyPrefix(): String {
         headers.add("import typing as t")
 
         listOf(
@@ -25,14 +25,14 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             this.javaClass.getResource(path)!!.path
                 .let { File(it).readText() }
         }
-            .let { addDefinition(it) }
+            .let { addCodePart(it) }
 
         return ""
     }
 
-    override fun buildEntity(entity: Entity): String {
+    override fun renderEntity(entity: Entity): String {
         val preLines = mutableListOf<String>()
-        val className = buildEntityName(entity.name)
+        val className = renderEntityName(entity.name)
         val lines = mutableListOf<String>()
         val decorator =
             getEnvVariable("DECORATOR_ARGS").getOrNull().let {
@@ -43,7 +43,7 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             lines.add(decorator)
             lines.add("class $className:")
         } else {
-            val parentClassName = buildEntityName(entity.parent)
+            val parentClassName = renderEntityName(entity.parent)
             lines.add(decorator)
             lines.add("class $className($parentClassName):")
         }
@@ -131,12 +131,12 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 )) {
                     choicesName = choicesNameVariant
                     body = bodyWithPlaceholder.replace(choicesNamePlaceholder, choicesNameVariant)
-                    if (definedNames.contains(choicesName) == containsDefinition(body)) {
+                    if (definedNames.contains(choicesName) == containsCodePartExact(body)) {
                         break
                     }
                 }
 
-                addDefinition(
+                addCodePart(
                     body,
                     choicesName,
                     *choices.keys.toTypedArray(),

@@ -15,10 +15,10 @@ class StringKtTest {
 
         assertEquals("capslock", "CAPSLOCK".normalize())
 
-        assertEquals("simple D T O", "simple DTO".normalize())
+        assertEquals("simple dto", "simple DTO".normalize())
         assertEquals("simple s3 file", "simple s3 file".normalize())
-        assertEquals("simple s3 D T O", "simple S3 DTO".normalize())
-        assertEquals("simple 3d D T O", "simple 3d DTO".normalize())
+        assertEquals("simple s3 dto", "simple S3 DTO".normalize())
+        assertEquals("simple 3d dto", "simple 3d DTO".normalize())
     }
 
     @Test
@@ -30,10 +30,10 @@ class StringKtTest {
 
         assertEquals("capslock", "CAPSLOCK".snakeCase())
 
-        assertEquals("simple_DTO", "simple DTO".snakeCase())
+        assertEquals("simple_dto", "simple DTO".snakeCase())
         assertEquals("simple_s3_file", "simple s3 file".snakeCase())
-        assertEquals("simple_s3_DTO", "simple S3 DTO".snakeCase())
-        assertEquals("simple_3d_DTO", "simple 3d DTO".snakeCase())
+        assertEquals("simple_s3_dto", "simple S3 DTO".snakeCase())
+        assertEquals("simple_3d_dto", "simple 3d DTO".snakeCase())
     }
 
     @Test
@@ -45,10 +45,10 @@ class StringKtTest {
 
         assertEquals("Capslock", "CAPSLOCK".camelCase())
 
-        assertEquals("SimpleDTO", "simple DTO".camelCase())
+        assertEquals("SimpleDto", "simple DTO".camelCase())
         assertEquals("SimpleS3File", "simple s3 file".camelCase())
-        assertEquals("SimpleS3DTO", "simple S3 DTO".camelCase())
-        assertEquals("Simple3dDTO", "simple 3d DTO".camelCase())
+        assertEquals("SimpleS3Dto", "simple S3 DTO".camelCase())
+        assertEquals("Simple3dDto", "simple 3d DTO".camelCase())
     }
 
     @Test

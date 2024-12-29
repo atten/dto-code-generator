@@ -17,7 +17,7 @@ internal class OpenApiConverter(
         )
 
     fun convertToDocument(): Document {
-        val document = Document()
+        val document = Document(name = spec.info.title)
         spec.definitions.forEach { addDefinitionToDocument(it.key, it.value, document) }
         spec.components.schemas.forEach { addDefinitionToDocument(it.key, it.value, document) }
         spec.paths.forEach { addPathToDocument(it.key, it.value, document) }

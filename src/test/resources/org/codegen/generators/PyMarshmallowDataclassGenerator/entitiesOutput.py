@@ -73,7 +73,7 @@ ENUM_VALUES = [ENUM_VALUE_VALUE_1, ENUM_VALUE_VALUE_2, ENUM_VALUE_VALUE_3]
 
 
 @dataclass
-class BasicDTO:
+class BasicDto:
     timestamp: datetime = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime()))
     duration: timedelta = field(metadata=dict(marshmallow_field=JavaDurationField()))
     enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
@@ -87,7 +87,7 @@ class BasicDTO:
 
 
 @dataclass
-class AdvancedDTO:
+class AdvancedDto:
     """
     entity with all-singing all-dancing properties
     """
@@ -106,18 +106,18 @@ class AdvancedDTO:
 
 
 @dataclass
-class ContainerDTO:
+class ContainerDto:
     """
     entity with containers
     """
-    basic_single: BasicDTO = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDTO, base_schema=BaseSchema), data_key="basic")))
-    basic_list: t.Optional[list[BasicDTO]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDTO, base_schema=BaseSchema)), allow_none=True, data_key="basics")))
+    basic_single: BasicDto = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDto, base_schema=BaseSchema), data_key="basic")))
+    basic_list: t.Optional[list[BasicDto]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDto, base_schema=BaseSchema)), allow_none=True, data_key="basics")))
 
 
 __all__ = [
-    "AdvancedDTO",
-    "BasicDTO",
-    "ContainerDTO",
+    "AdvancedDto",
+    "BasicDto",
+    "ContainerDto",
     "ENUM_VALUES",
     "ENUM_VALUE_VALUE_1",
     "ENUM_VALUE_VALUE_2",

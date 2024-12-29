@@ -1,6 +1,7 @@
 package org.codegen.generators
 
 import org.codegen.schema.Endpoint
+import java.io.File
 
 class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiClientGenerator(proxy) {
     override fun buildMethodDefinition(
@@ -25,8 +26,8 @@ class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiCli
         return ret
     }
 
-    override fun buildEndpointBody(endpoint: Endpoint): String {
-        return super.buildEndpointBody(endpoint)
+    override fun renderEndpointBody(endpoint: Endpoint): String {
+        return super.renderEndpointBody(endpoint)
             .replace("self._client.fetch", "await self._client.fetch")
             .let {
                 if ("yield from" in it) {
@@ -37,32 +38,33 @@ class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiCli
             }
     }
 
-    override fun requiredHeaders() =
+    override fun renderHeaders(): String {
         listOf(
-            "import os",
-            "import typing as t",
-            "import logging",
             "import asyncio",
             "import aiohttp",
-            "from urllib.parse import urljoin, urlencode",
-            "import marshmallow",
-            "import marshmallow_dataclass",
-            "from dataclasses import is_dataclass",
-            "from datetime import datetime",
-            "from datetime import timedelta",
-            "from datetime import timezone",
-            "from decimal import Decimal",
-            "from typeguard import typechecked",
-        )
+        ).forEach { headers.add(it) }
 
-    override fun buildBodyPrefix(): String = super.buildBodyPrefix().replace("BaseJsonHttpClient", "BaseJsonHttpAsyncClient")
+        return super.renderHeaders()
+            .replace("\nimport ijson", "")
+            .replace("\nimport urllib3", "")
+            .replace("\nfrom time import sleep", "")
+            .replace("\nimport io", "")
+            .replace("\nimport json", "")
+    }
 
-    override fun getIncludedIntoFooterPaths() =
-        listOf(
-            "/templates/python/baseJsonHttpAsyncClient.py",
-            "/templates/python/baseSerializer.py",
-            "/templates/python/baseDeserializer.py",
-            "/templates/python/failsafeCallAsync.py",
-            "/templates/python/buildCurlCommand.py",
-        )
+    override fun getMainApiClassBody() =
+        this.javaClass.getResource("/templates/python/apiClientBody.py")!!.path.let {
+            File(it).readText().replace("BaseJsonHttpClient", "BaseJsonHttpAsyncClient")
+        }
+
+    override fun getBodyIncludedFiles(): List<String> {
+        val original = super.getBodyIncludedFiles().toMutableList()
+        original.replaceAll {
+            mapOf(
+                "/templates/python/baseJsonHttpClient.py" to "/templates/python/baseJsonHttpAsyncClient.py",
+                "/templates/python/failsafeCall.py" to "/templates/python/failsafeCallAsync.py",
+            ).getOrDefault(it, it)
+        }
+        return original
+    }
 }

@@ -7,4 +7,4 @@ from marshmallow.exceptions import ValidationError
 
 
 def test_import():
-    from generated.api import ApiClient  # noqa
+    from generated.api import Generated  # noqa

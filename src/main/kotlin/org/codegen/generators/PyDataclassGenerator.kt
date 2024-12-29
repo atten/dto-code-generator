@@ -7,6 +7,7 @@ import org.codegen.schema.DataType
 import org.codegen.schema.Entity
 import org.codegen.schema.Property
 import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
+import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGeneratorsEnum.PY_DATACLASS, proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
@@ -17,22 +18,22 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
     // list of __all__ items
     protected val definedNames = mutableListOf<String>()
 
-    override fun addDefinition(
+    override fun addCodePart(
         body: String,
         vararg names: String,
     ) {
-        super.addDefinition(body, *names)
+        super.addCodePart(body, *names)
         // add missing names into __all__
         names
             .filter { it.isNotEmpty() && it !in definedNames }
             .forEach { definedNames.add(it) }
     }
 
-    override fun buildEntityName(name: String) = name.camelCase()
+    override fun renderEntityName(name: String) = name.camelCase()
 
-    override fun buildEntity(entity: Entity): String {
+    override fun renderEntity(entity: Entity): String {
         val preLines = mutableListOf<String>()
-        val className = buildEntityName(entity.name)
+        val className = renderEntityName(entity.name)
         val lines = mutableListOf<String>()
         val decorator =
             getEnvVariable("DECORATOR_ARGS").getOrNull().let {
@@ -99,6 +100,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
             }
 
             if (field.nullable) {
+                headers.add("import typing as t")
                 definition = "t.Optional[$definition]"
             }
 
@@ -190,16 +192,12 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
             else -> throw RuntimeException("Unrecognized primitive: $key (${key.first().category})")
         }
 
-    override fun buildBodyPrefix(): String {
-        headers.add("import typing as t")
-        return ""
-    }
-
-    override fun buildBodyPostfix(): String {
+    override fun renderBodySuffix(): String {
+        val suffix = StringJoiner(CodeFormatRules.PYTHON.entitiesSeparator, CodeFormatRules.PYTHON.entitiesSeparator, "\n")
         definedNames
             .sorted()
             .joinToString("\n", "__all__ = [\n", "\n]") { "    \"${it}\"," }
-            .also { addDefinition(it, "__all__") }
-        return "\n"
+            .also { suffix.add(it) }
+        return suffix.toString()
     }
 }

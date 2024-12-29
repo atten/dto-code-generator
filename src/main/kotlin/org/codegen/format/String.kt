@@ -12,22 +12,18 @@ internal fun String.normalize(): String {
         cleaned = cleaned.replace("  ", " ")
     }
 
-    cleaned =
-        if (cleaned.all { it.isUpperCase() }) {
-            // transform uppercase string to lowercase
-            cleaned.lowercase()
+    // Apply more complex rule for string with mixed case. Prepend uppercase char with space:
+    // minValue -> min Value
+    // MyDTO -> My dto
+    cleaned = cleaned.zipWithNext { a, b ->
+        if (a.isDigit() != b.isDigit()) {
+            a.lowercase()
+        } else if (a.isLowerCase() && !b.isLowerCase()) {
+            "$a "
         } else {
-            // Apply more complex rule for string with mixed case. Prepend uppercase char with space:
-            // minValue -> min Value
-            // MyDTO -> My D T O
-            cleaned.zipWithNext { a, b ->
-                if (b.isLetter() && !b.isLowerCase()) {
-                    "$a "
-                } else {
-                    a.lowercase()
-                }
-            }.joinToString("") + cleaned.last()
+            a.lowercase()
         }
+    }.joinToString("") + cleaned.last().lowercase()
 
     while (cleaned.contains("  ")) {
         cleaned = cleaned.replace("  ", " ")

@@ -1,5 +1,5 @@
 import os
-from generated.api import ApiClient, BasicDTO, ENUM_VALUE_VALUE_1
+from generated.api import Generated, BasicDto, ENUM_VALUE_VALUE_1
 
 import pytest
 import types
@@ -12,24 +12,24 @@ SECURED_BASE_URL = os.environ['SECURED_BASE_URL']
 
 
 def test_get():
-    api = ApiClient(base_url=BASE_URL)
+    api = Generated(base_url=BASE_URL)
     timestamp = datetime.now(tz=timezone.utc)
     result = api.get_basic_dto_by_timestamp(timestamp)
 
-    assert isinstance(result, BasicDTO)
+    assert isinstance(result, BasicDto)
 
 
 def test_get_list():
-    api = ApiClient(base_url=BASE_URL)
+    api = Generated(base_url=BASE_URL)
     result = api.get_basic_dto_list()
 
     assert isinstance(result, types.GeneratorType)
-    assert isinstance(next(result), BasicDTO)
+    assert isinstance(next(result), BasicDto)
 
 
 def test_post():
-    api = ApiClient(base_url=BASE_URL)
-    item = BasicDTO(
+    api = Generated(base_url=BASE_URL)
+    item = BasicDto(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
         enum_value=ENUM_VALUE_VALUE_1,
@@ -38,12 +38,12 @@ def test_post():
     )
     result = api.create_basic_dto(item)
 
-    assert isinstance(result, BasicDTO)
+    assert isinstance(result, BasicDto)
 
 
 def test_post_list_required_fields_only():
-    api = ApiClient(base_url=BASE_URL)
-    item = BasicDTO(
+    api = Generated(base_url=BASE_URL)
+    item = BasicDto(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
         enum_value=ENUM_VALUE_VALUE_1,
@@ -54,11 +54,11 @@ def test_post_list_required_fields_only():
     result = api.create_basic_dto_bulk(payload)
 
     assert isinstance(result, types.GeneratorType)
-    assert isinstance(next(result), BasicDTO)
+    assert isinstance(next(result), BasicDto)
 
 
 def test_post_empty_list():
-    api = ApiClient(base_url=BASE_URL)
+    api = Generated(base_url=BASE_URL)
     payload = []
     result = api.create_basic_dto_bulk(payload)
 
@@ -68,8 +68,8 @@ def test_post_empty_list():
 
 
 def test_post_request_wrong_enum_value():
-    api = ApiClient()
-    item = BasicDTO(
+    api = Generated()
+    item = BasicDto(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
         enum_value=ENUM_VALUE_VALUE_1 + 'azaza',
@@ -84,13 +84,13 @@ def test_post_request_wrong_enum_value():
 
 
 def test_403():
-    api = ApiClient(base_url=SECURED_BASE_URL, max_retries=0)
+    api = Generated(base_url=SECURED_BASE_URL, max_retries=0)
     with pytest.raises(RuntimeError):
         api.ping()
 
 
 def test_user_agent_and_headers():
-    api = ApiClient(
+    api = Generated(
         base_url=SECURED_BASE_URL,
         user_agent=os.environ['SECURED_USER_AGENT'],
         headers={
@@ -101,7 +101,7 @@ def test_user_agent_and_headers():
 
 
 def test_use_debug_curl():
-    api = ApiClient(base_url="http://none", use_debug_curl=True, max_retries=0)
+    api = Generated(base_url="http://none", use_debug_curl=True, max_retries=0)
     with pytest.raises(RuntimeError) as e:
         api.ping()
 

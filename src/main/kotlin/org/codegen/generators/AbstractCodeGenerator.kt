@@ -3,8 +3,8 @@ package org.codegen.generators
 import org.codegen.format.CodeFormatRules
 import org.codegen.schema.DataType
 import org.codegen.schema.Entity
-import org.codegen.utils.EnvironmentUtils.Companion.getRequiredEnvVariable
 import org.codegen.utils.EnvironmentUtils.Companion.substituteEnvVariables
+import java.util.StringJoiner
 import kotlin.reflect.full.primaryConstructor
 
 abstract class AbstractCodeGenerator(
@@ -15,27 +15,15 @@ abstract class AbstractCodeGenerator(
     // mapping of data types by name
     private val dataTypes = mutableMapOf<String, DataType>()
 
-    // entities included into output (own entities without parent)
     protected val entities = mutableListOf<Entity>()
-
-    // available entities to refer to, but not include into output
-    private val includedEntities = mutableListOf<Entity>()
 
     // collected headers at the top of the output file
     protected val headers = mutableSetOf<String>()
         get() = parent?.headers ?: field
 
     // built classes/enums (included entities)
-    private val includedDefinitions = mutableListOf<String>()
-        get() = parent?.includedDefinitions ?: field
-
-    /**
-     * construct implied entity with name from env
-     */
-    val defaultEntity: Entity by lazy {
-        val name = getRequiredEnvVariable("ENTITY_NAME")
-        Entity(name = name).also { addEntity(it) }
-    }
+    private val codeParts = mutableListOf<String>()
+        get() = parent?.codeParts ?: field
 
     /**
      * Pick primary corresponding enum value and it's aliases.
@@ -57,16 +45,31 @@ abstract class AbstractCodeGenerator(
         }
     }
 
-    protected open fun addDefinition(
+    fun render(): String {
+        val prefix = renderBodyPrefix()
+        val body = renderBody()
+        // confirm headers list after body is rendered
+        val headers = renderHeaders()
+        val suffix = renderBodySuffix()
+
+        return StringJoiner("")
+            .add(headers)
+            .add(prefix)
+            .add(body)
+            .add(suffix)
+            .toString()
+    }
+
+    protected open fun addCodePart(
         body: String,
         vararg names: String,
     ) {
         if (parent != null) {
-            parent.addDefinition(body, *names)
+            parent.addCodePart(body, *names)
         } else if (body.isNotEmpty()) {
             body.trim().let { trimmed ->
-                if (!includedDefinitions.contains(trimmed)) {
-                    includedDefinitions.add(trimmed)
+                if (!codeParts.contains(trimmed)) {
+                    codeParts.add(trimmed)
                 }
             }
         }
@@ -83,12 +86,8 @@ abstract class AbstractCodeGenerator(
         }
     }
 
-    fun addEntity(
-        entity: Entity,
-        output: Boolean = true,
-    ) {
-        val destination = if (output) entities else includedEntities
-        if (destination.contains(entity)) {
+    fun addEntity(entity: Entity) {
+        if (entities.contains(entity)) {
             // found exact match
             return
         }
@@ -96,16 +95,15 @@ abstract class AbstractCodeGenerator(
             // found entity with same name
             throw IllegalArgumentException("Found different entities with same name: ${entity.name}")
         }
-        destination.add(entity)
+        entities.add(entity)
     }
 
     protected fun findEntity(name: String): Entity? {
-        val allEntities = entities + includedEntities
-        return allEntities.find { it.name == name } ?: parent?.findEntity(name)
+        return entities.find { it.name == name } ?: parent?.findEntity(name)
     }
 
     protected fun getDtype(name: String): DataType {
-        val dtype = parent?.getDtype(name) ?: dataTypes[name] ?: findEntity(name)?.toDataType()?.copy(definition = buildEntityName(name))
+        val dtype = parent?.getDtype(name) ?: dataTypes[name] ?: findEntity(name)?.toDataType()?.copy(definition = renderEntityName(name))
         requireNotNull(dtype) {
             "${this::class.simpleName}: Missing extension for dtype '$name'. Define it in any of following sections: ${target.dtypeAliases()}."
         }
@@ -118,7 +116,7 @@ abstract class AbstractCodeGenerator(
         type.requiredHeaders.forEach { headers.add(substituteEnvVariables(it)) }
 
         // include files
-        type.loadIncludedFiles().forEach { addDefinition(it) }
+        type.loadIncludedFiles().forEach { addCodePart(it) }
 
         // add missing entities (if required)
         type.requiredEntities
@@ -129,23 +127,20 @@ abstract class AbstractCodeGenerator(
                 }
 
                 includedEntityGenerator
-                    .buildEntity(entity)
-                    .also { addDefinition(it, buildEntityName(name)) }
+                    .renderEntity(entity)
+                    .also { addCodePart(it, renderEntityName(name)) }
             }
     }
 
-    protected fun containsDefinition(definition: String) = definition in includedDefinitions
+    protected fun containsCodePartExact(codePart: String) = codePart in codeParts
 
-    /**
-     * whether function/method/variable/class with specified name is presented in code
-     */
-    private fun containsDefinitionName(name: String): Boolean = includedDefinitions.find { it.contains(name) } != null
+    private fun containsCodePartFragment(name: String): Boolean = codeParts.find { it.contains(name) } != null
 
-    abstract fun buildEntityName(name: String): String
+    abstract fun renderEntityName(name: String): String
 
-    abstract fun buildEntity(entity: Entity): String
+    abstract fun renderEntity(entity: Entity): String
 
-    private fun buildHeaders(): String {
+    protected open fun renderHeaders(): String {
         // sort alphabetically
         return headers
             .sorted()
@@ -156,27 +151,20 @@ abstract class AbstractCodeGenerator(
             )
     }
 
-    protected open fun buildBodyPrefix() = ""
+    protected open fun renderBodyPrefix() = ""
 
-    protected open fun buildBodyPostfix() = "\n" // newline at the end by default
-
-    fun build(): String {
-        val prefix = buildBodyPrefix()
-
-        if (entities.isEmpty()) {
-            // if document contains no explicitly added entities, then build all included entities
-            entities.addAll(includedEntities)
-        }
-
+    protected open fun renderBody(): String {
         for (entity in entities) {
-            val body = buildEntity(entity)
-            addDefinition(body, buildEntityName(entity.name))
+            val body = renderEntity(entity)
+            addCodePart(body, renderEntityName(entity.name))
         }
 
-        val postfix = buildBodyPostfix()
-        return buildHeaders() +
-            prefix +
-            includedDefinitions.joinToString(separator = codeFormatRules.entitiesSeparator) +
-            postfix
+        val bodyParts = StringJoiner(codeFormatRules.entitiesSeparator)
+        for (codePart in codeParts) {
+            bodyParts.add(codePart)
+        }
+        return bodyParts.toString()
     }
+
+    protected open fun renderBodySuffix() = "\n" // newline at the end by default
 }

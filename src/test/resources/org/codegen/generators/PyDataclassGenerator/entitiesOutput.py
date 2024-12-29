@@ -8,7 +8,7 @@ import typing as t
 
 
 @dataclass
-class BasicDTO:
+class BasicDto:
     timestamp: datetime = field()
     duration: timedelta = field()
     enum_value: str = field()
@@ -22,7 +22,7 @@ class BasicDTO:
 
 
 @dataclass
-class AdvancedDTO:
+class AdvancedDto:
     """
     entity with all-singing all-dancing properties
     """
@@ -35,16 +35,16 @@ class AdvancedDTO:
 
 
 @dataclass
-class ContainerDTO:
+class ContainerDto:
     """
     entity with containers
     """
-    basic_single: BasicDTO = field()
-    basic_list: t.Optional[list[BasicDTO]] = field()
+    basic_single: BasicDto = field()
+    basic_list: t.Optional[list[BasicDto]] = field()
 
 
 __all__ = [
-    "AdvancedDTO",
-    "BasicDTO",
-    "ContainerDTO",
+    "AdvancedDto",
+    "BasicDto",
+    "ContainerDto",
 ]

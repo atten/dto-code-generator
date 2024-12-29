@@ -41,7 +41,7 @@ class KtInterfaceGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeG
         }
 
         // include enums (if present among method arguments)
-        includedEntityGenerator.buildEntity(method.toEntity())
+        includedEntityGenerator.renderEntity(method.toEntity())
 
         val argumentsString = arguments.joinToString(separator = ", ")
         val definition = "fun $name($argumentsString)$returnStatement"
@@ -54,18 +54,18 @@ class KtInterfaceGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeG
         return lines.joinToString(separator = "\n")
     }
 
-    override fun buildEntityName(name: String) = name.camelCase()
+    override fun renderEntityName(name: String) = name.camelCase()
 
-    override fun buildEntity(entity: Entity): String {
+    override fun renderEntity(entity: Entity): String {
         // either build an interface or regular DTO
         if (entity.fields.isEmpty()) {
             return buildInterfaceEntity(entity)
         }
-        return KtDataclassSerializableGenerator(this).buildEntity(entity)
+        return KtDataclassSerializableGenerator(this).renderEntity(entity)
     }
 
     private fun buildInterfaceEntity(entity: Entity): String {
-        val entityName = buildEntityName(entity.name)
+        val entityName = renderEntityName(entity.name)
         val interfaceDefinition = "interface $entityName {"
         val builtMethods = entity.methodsPlusEndpoints().map { buildMethod(it) }
         return builtMethods.joinToString(separator = "\n\n", prefix = "${interfaceDefinition}\n", postfix = "\n}\n") {

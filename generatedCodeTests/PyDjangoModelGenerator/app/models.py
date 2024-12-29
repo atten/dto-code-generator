@@ -1,13 +1,13 @@
 from generated.models import *
 
 
-class BasicModel(BasicDTO):
+class BasicModel(BasicDto):
     pass
 
 
-class AdvancedModel(AdvancedDTO):
+class AdvancedModel(AdvancedDto):
     pass
 
 
-class ContainerModel(ContainerDTO):
+class ContainerModel(ContainerDto):
     pass

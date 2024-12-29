@@ -28,14 +28,12 @@ class PyAmqpBlockingClientGeneratorTest {
         @BeforeAll
         fun setup() {
             System.setProperty("DECORATOR_ARGS", "")
-            System.setProperty("ENTITY_NAME", "ApiClient")
         }
 
         @JvmStatic
         @AfterAll
         fun teardown() {
             System.clearProperty("DECORATOR_ARGS")
-            System.clearProperty("ENTITY_NAME")
         }
     }
 }

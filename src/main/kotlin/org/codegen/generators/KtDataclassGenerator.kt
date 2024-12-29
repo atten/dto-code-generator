@@ -42,16 +42,16 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
         return "$definitionKeyword $fieldName: $typeName $assignmentExpression".trim()
     }
 
-    override fun buildEntityName(name: String) = name.camelCase()
+    override fun renderEntityName(name: String) = name.camelCase()
 
-    override fun buildEntity(entity: Entity) = buildEntity(entity, setOf())
+    override fun renderEntity(entity: Entity) = buildEntity(entity, setOf())
 
     open fun buildEntity(
         entity: Entity,
         annotations: Set<String>,
     ): String {
         val preLines = mutableListOf<String>()
-        val className = buildEntityName(entity.name)
+        val className = renderEntityName(entity.name)
         val definition = "data class $className("
         val lines = annotations.toMutableList().also { it.add(definition) }
 
@@ -75,7 +75,7 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
                         prefix = "enum class $enumName(val value: String) {\n",
                         postfix = "\n}\n",
                     ) { "    ${it.replace("\n", "\n    ")}," }
-                addDefinition(enumBody, enumName)
+                addCodePart(enumBody, enumName)
             }
 
             field.description?.let { lines.add("    // $it") }

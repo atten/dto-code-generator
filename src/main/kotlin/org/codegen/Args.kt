@@ -29,6 +29,12 @@ class Args {
     )
     var excludePaths: List<String> = listOf()
 
+    @Parameter(
+        names = ["-n", "--name"],
+        description = "Generated class name (inferred from input files if not specified)",
+    )
+    var name = ""
+
     @Parameter(names = ["--help"], help = true)
     var help: Boolean = false
 

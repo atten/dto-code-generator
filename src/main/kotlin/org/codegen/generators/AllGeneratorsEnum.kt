@@ -7,7 +7,6 @@ enum class AllGeneratorsEnum(val generatorClass: KClass<out AbstractCodeGenerato
     KT_DATACLASS(KtDataclassGenerator::class),
     KT_SERIALIZABLE_DATACLASS(KtDataclassSerializableGenerator::class),
     KT_INTERFACE(KtInterfaceGenerator::class),
-    PY_ABSTRACT_CLASS(PyAbstractClassGenerator::class),
     PY_DJANGO_MODEL(PyDjangoModelGenerator::class),
     PY_API_CLIENT(PyApiClientGenerator::class),
     PY_API_ASYNC_CLIENT(PyApiAsyncClientGenerator::class),
@@ -24,7 +23,6 @@ enum class AllGeneratorsEnum(val generatorClass: KClass<out AbstractCodeGenerato
         when (this) {
             KT_INTERFACE -> KT_DATACLASS
             KT_SERIALIZABLE_DATACLASS -> KT_DATACLASS
-            PY_ABSTRACT_CLASS -> PY_MARSHMALLOW_DATACLASS
             PY_API_CLIENT -> PY_MARSHMALLOW_DATACLASS
             PY_API_ASYNC_CLIENT -> PY_API_CLIENT
             PY_AMQP_BLOCKING_CLIENT -> PY_MARSHMALLOW_DATACLASS
