@@ -21,9 +21,9 @@ class AdvancedDto(models.Model):
 
 
 class SomeEnum(models.TextChoices):
-    VARIANT1 = 'variant1', _('variant1')
-    VARIANT2 = 'variant2', _('variant2')
-    VARIANT3 = 'variant3', _('variant3')
+    VARIANT_1 = 'variant1', _('variant1')
+    VARIANT_2 = 'variant2', _('variant2')
+    VARIANT_3 = 'variant3', _('variant3')
 
 
 class BasicDto(models.Model):

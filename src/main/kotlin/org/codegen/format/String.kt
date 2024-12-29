@@ -8,16 +8,12 @@ internal fun String.normalize(): String {
     cleaned = cleaned.trim()
     require(cleaned.isNotEmpty()) { "Normalized string can't be empty: $this" }
 
-    while (cleaned.contains("  ")) {
-        cleaned = cleaned.replace("  ", " ")
-    }
-
     // Apply more complex rule for string with mixed case. Prepend uppercase char with space:
     // minValue -> min Value
     // MyDTO -> My dto
     cleaned = cleaned.zipWithNext { a, b ->
         if (a.isDigit() != b.isDigit()) {
-            a.lowercase()
+            a.lowercase() + ' '
         } else if (a.isLowerCase() && !b.isLowerCase()) {
             "$a "
         } else {
@@ -25,9 +21,23 @@ internal fun String.normalize(): String {
         }
     }.joinToString("") + cleaned.last().lowercase()
 
+    // remove extra space
     while (cleaned.contains("  ")) {
         cleaned = cleaned.replace("  ", " ")
     }
+
+    // glue common 2-character combinations (digit + character):
+    // s 3 -> s3
+    // 2 d -> 2d
+    // 4 k -> 4k
+    val parts = cleaned.split(' ')
+    cleaned = parts.zipWithNext { a, b ->
+        if (a.length == 1 && b.length == 1) {
+            a
+        } else {
+            "$a "
+        }
+    }.joinToString("") + parts.last()
     return cleaned
 }
 

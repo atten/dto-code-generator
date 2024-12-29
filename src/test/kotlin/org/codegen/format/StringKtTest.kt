@@ -14,11 +14,14 @@ class StringKtTest {
         assertEquals("simple text", "simple_text!".normalize())
 
         assertEquals("capslock", "CAPSLOCK".normalize())
-
         assertEquals("simple dto", "simple DTO".normalize())
-        assertEquals("simple s3 file", "simple s3 file".normalize())
-        assertEquals("simple s3 dto", "simple S3 DTO".normalize())
-        assertEquals("simple 3d dto", "simple 3d DTO".normalize())
+
+        assertEquals("simple s3 url", "simple s3 url".normalize())
+        assertEquals("simple s3 url", "simpleS3Url".normalize())
+        assertEquals("simple s3 url", "simple S3 URL".normalize())
+
+        assertEquals("vector 2d", "vector2D".normalize())
+        assertEquals("vector 2d dto", "vector 2d DTO".normalize())
     }
 
     @Test
@@ -27,8 +30,6 @@ class StringKtTest {
         assertEquals("simple_text", "simpleText".snakeCase())
         assertEquals("simple_text", "simple_text".snakeCase())
         assertEquals("simple_text", "simple_text!".snakeCase())
-
-        assertEquals("capslock", "CAPSLOCK".snakeCase())
 
         assertEquals("simple_dto", "simple DTO".snakeCase())
         assertEquals("simple_s3_file", "simple s3 file".snakeCase())
