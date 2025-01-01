@@ -26,10 +26,11 @@ internal fun String.normalize(): String {
         cleaned = cleaned.replace("  ", " ")
     }
 
-    // glue common 2-character combinations (digit + character):
+    // group single characters together:
     // s 3 -> s3
     // 2 d -> 2d
     // 4 k -> 4k
+    // e 2 e -> e2e
     val parts = cleaned.split(' ')
     cleaned = parts.zipWithNext { a, b ->
         if (a.length == 1 && b.length == 1) {

@@ -1,4 +1,4 @@
-from generated.models import *
+from generated.entities_models import *
 
 
 class BasicModel(BasicDto):

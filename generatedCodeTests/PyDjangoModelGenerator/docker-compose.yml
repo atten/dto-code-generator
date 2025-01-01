@@ -4,4 +4,4 @@ services:
     build:
       context: .
     volumes:
-      - './app/migrations/:/app/app/migrations/'
+      - './entities/migrations/:/testproject/entities/migrations/'

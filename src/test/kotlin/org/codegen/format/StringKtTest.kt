@@ -22,6 +22,8 @@ class StringKtTest {
 
         assertEquals("vector 2d", "vector2D".normalize())
         assertEquals("vector 2d dto", "vector 2d DTO".normalize())
+
+        assertEquals("e2e asset generator", "E2eAssetGenerator".normalize())
     }
 
     @Test
@@ -35,6 +37,8 @@ class StringKtTest {
         assertEquals("simple_s3_file", "simple s3 file".snakeCase())
         assertEquals("simple_s3_dto", "simple S3 DTO".snakeCase())
         assertEquals("simple_3d_dto", "simple 3d DTO".snakeCase())
+
+        assertEquals("e2e_asset_generator", "E2eAssetGenerator".snakeCase())
     }
 
     @Test
@@ -50,6 +54,8 @@ class StringKtTest {
         assertEquals("SimpleS3File", "simple s3 file".camelCase())
         assertEquals("SimpleS3Dto", "simple S3 DTO".camelCase())
         assertEquals("Simple3dDto", "simple 3d DTO".camelCase())
+
+        assertEquals("E2eAssetGenerator", "E2eAssetGenerator".camelCase())
     }
 
     @Test

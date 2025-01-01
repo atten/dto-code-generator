@@ -1,3 +1,3 @@
 mkdir -p generated/
-cp -v ../../src/test/resources/org/codegen/generators/PyApiClientGenerator/endpointsOutput.py generated/api.py
-docker compose up --build --abort-on-container-exit
+cp ../../src/test/resources/org/codegen/generators/PyApiClientGenerator/endpointsOutput.py generated/api.py
+docker compose --progress quiet up --build --abort-on-container-exit
