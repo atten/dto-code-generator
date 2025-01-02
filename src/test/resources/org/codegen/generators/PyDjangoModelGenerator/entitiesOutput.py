@@ -5,6 +5,9 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+DEFAULT_MAX_LENGTH = 256
+
+
 class EnumValue(models.TextChoices):
     VALUE_1 = 'value 1', _('name 1')
     VALUE_2 = 'value 2', _('name 2')
@@ -15,11 +18,11 @@ class BasicDto(models.Model):
     timestamp = models.DateTimeField()
     duration = models.CharField(max_length=32)
     optional_value = models.FloatField(default=0)
-    nullable_value = models.BooleanField(blank=True, null=True)
-    enum_value = models.CharField(choices=EnumValue.choices, max_length=7)
+    nullable_value = models.BooleanField(null=True, blank=True)
+    enum_value = models.CharField(max_length=7, choices=EnumValue.choices)
     documented_value = models.FloatField(verbose_name=_('short description'), help_text=_('very long description lol'))
     list_value = ArrayField(base_field=models.IntegerField())
-    optional_list_value = ArrayField(default=list, blank=True, base_field=models.IntegerField())
+    optional_list_value = ArrayField(blank=True, default=list, base_field=models.IntegerField())
 
     class Meta:
         abstract = True
@@ -41,7 +44,7 @@ class ContainerDto(models.Model):
     entity with containers
     """
     basic_single = models.JSONField()
-    basic_list = models.JSONField(blank=True, null=True)
+    basic_list = models.JSONField(null=True, blank=True)
 
     class Meta:
         abstract = True

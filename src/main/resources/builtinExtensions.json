@@ -19,6 +19,9 @@
         },
         "PY_DJANGO_MODEL": {
           "definition": "models.BooleanField",
+          "requiredHeaders": [
+            "from django.db import models"
+          ],
           "valuesMapping": {
             "true": "True",
             "false": "False"
@@ -55,7 +58,16 @@
         },
         "PY_DJANGO_MODEL": {
           "definition": "models.CharField",
-          "valueWrapper": "\"%s\""
+          "valueWrapper": "\"%s\"",
+          "requiredHeaders": [
+            "from django.db import models"
+          ],
+          "definitionArguments": {
+            "max_length": "DEFAULT_MAX_LENGTH"
+          },
+          "includeFiles": [
+            "templates/python/djangoCharField.py"
+          ]
         },
         "PY_MARSHMALLOW_DATACLASS": {
           "definition": "str",
@@ -76,7 +88,10 @@
           "definition": "Int"
         },
         "PY_DJANGO_MODEL": {
-          "definition": "models.IntegerField"
+          "definition": "models.IntegerField",
+          "requiredHeaders": [
+            "from django.db import models"
+          ]
         },
         "PY_DATACLASS": {
           "definition": "int"
@@ -102,7 +117,10 @@
           }
         },
         "PY_DJANGO_MODEL": {
-          "definition": "models.FloatField"
+          "definition": "models.FloatField",
+          "requiredHeaders": [
+            "from django.db import models"
+          ]
         },
         "PY_DATACLASS": {
           "definition": "float"

@@ -11,4 +11,4 @@ RUN sed -i 's/INSTALLED_APPS = \[/INSTALLED_APPS = \["entities","openapi",/g' te
 
 ADD . .
 
-CMD ./manage.py makemigrations entities
+CMD ./manage.py makemigrations entities openapi

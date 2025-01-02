@@ -99,7 +99,7 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
                 preLines.add(choicesDefinition)
 
                 attrs["choices"] = "$enumName.choices"
-                attrs["max_length"] = it.keys.map { s -> s.length }.maxOrNull().toString()
+                attrs["max_length"] = it.keys.maxOfOrNull { s -> s.length }.toString()
             }
 
             field.description?.let {
@@ -110,7 +110,11 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
                 attrs["help_text"] = "_('${it.replace("'", "\\'")}')"
             }
 
-            val attrsString = attrs.map { entry -> "${entry.key}=${entry.value}" }.joinToString()
+            val attrsString =
+                attrs
+                    .map { entry -> "${entry.key}=${entry.value}" }
+                    .sortedBy { it.length }
+                    .joinToString()
             lines.add("    $fieldName = $fieldClass($attrsString)")
         }
 

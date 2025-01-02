@@ -5,6 +5,9 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+DEFAULT_MAX_LENGTH = 256
+
+
 class SomeEnum(models.TextChoices):
     ROCK = 'ROCK', _('ROCK')
     SCISSORS = 'SCISSORS', _('SCISSORS')
@@ -12,9 +15,9 @@ class SomeEnum(models.TextChoices):
 
 
 class AdvancedDto(models.Model):
-    json = models.JSONField(blank=True, null=True, verbose_name=_('Example: [{"foo": "bar"}]'))
-    some_enum = models.CharField(blank=True, null=True, choices=SomeEnum.choices, max_length=8, verbose_name=_('Enum field with the same name as of different entity'))
-    java_duration = models.CharField(max_length=32, blank=True, null=True)
+    json = models.JSONField(null=True, blank=True, verbose_name=_('Example: [{"foo": "bar"}]'))
+    some_enum = models.CharField(null=True, blank=True, max_length=8, choices=SomeEnum.choices, verbose_name=_('Enum field with the same name as of different entity'))
+    java_duration = models.CharField(null=True, blank=True, max_length=32)
 
     class Meta:
         abstract = True
@@ -27,31 +30,31 @@ class SomeEnum(models.TextChoices):
 
 
 class BasicDto(models.Model):
-    some_string = models.CharField(blank=True, null=True)
+    some_string = models.CharField(null=True, blank=True, max_length=DEFAULT_MAX_LENGTH)
     some_integer = models.IntegerField(verbose_name=_('Field description'))
     some_number = models.FloatField(verbose_name=_('Field description'))
-    some_boolean = models.BooleanField(blank=True, null=True)
-    timestamp = models.DateTimeField(blank=True, null=True)
-    some_enum = models.CharField(blank=True, null=True, choices=SomeEnum.choices, max_length=8)
-    nested_object = models.JSONField(blank=True, null=True)
-    combined_type = models.IntegerField(blank=True, null=True)
+    some_boolean = models.BooleanField(null=True, blank=True)
+    timestamp = models.DateTimeField(null=True, blank=True)
+    some_enum = models.CharField(null=True, blank=True, max_length=8, choices=SomeEnum.choices)
+    nested_object = models.JSONField(null=True, blank=True)
+    combined_type = models.IntegerField(null=True, blank=True)
 
     class Meta:
         abstract = True
 
 
 class ErrorResponse(models.Model):
-    message = models.CharField(blank=True, null=True)
-    proxied_error = models.JSONField(blank=True, null=True)
+    message = models.CharField(null=True, blank=True, max_length=DEFAULT_MAX_LENGTH)
+    proxied_error = models.JSONField(null=True, blank=True)
 
     class Meta:
         abstract = True
 
 
 class Pageable(models.Model):
-    page = models.IntegerField(blank=True, null=True)
-    size = models.IntegerField(blank=True, null=True)
-    sort = ArrayField(blank=True, null=True, base_field=models.CharField())
+    page = models.IntegerField(null=True, blank=True)
+    size = models.IntegerField(null=True, blank=True)
+    sort = ArrayField(null=True, blank=True, max_length=DEFAULT_MAX_LENGTH, base_field=models.CharField())
 
     class Meta:
         abstract = True
