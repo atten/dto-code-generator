@@ -75,18 +75,6 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
                 }
             }
 
-            val fieldClass =
-                when {
-                    field.many && isScalar ->
-                        "ArrayField".also {
-                            headers.add("from django.contrib.postgres.fields import ArrayField")
-                            attrs["base_field"] = dtypeProps.definition + "()"
-                        }
-                    field.many && !isScalar -> "models.JSONField" // use json field for multiple non-scalar values
-                    !isDjangoModel -> "models.JSONField"
-                    else -> dtypeProps.definition
-                }
-
             field.enum?.let {
                 val subclass = "models.TextChoices"
                 val enumName = (field.enumPrefix ?: field.name).camelCase()
@@ -109,6 +97,24 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
             field.longDescription?.let {
                 attrs["help_text"] = "_('${it.replace("'", "\\'")}')"
             }
+
+            val fieldClass =
+                when {
+                    field.many && isScalar ->
+                        "ArrayField".also {
+                            headers.add("from django.contrib.postgres.fields import ArrayField")
+                            val baseFieldAttributes = mutableMapOf<String, String>()
+                            attrs.remove("max_length")?.let { baseFieldAttributes["max_length"] = it }
+                            val baseFieldAttributesString =
+                                baseFieldAttributes
+                                    .map { entry -> "${entry.key}=${entry.value}" }
+                                    .joinToString()
+                            attrs["base_field"] = "${dtypeProps.definition}($baseFieldAttributesString)"
+                        }
+                    field.many && !isScalar -> "models.JSONField" // use json field for multiple non-scalar values
+                    !isDjangoModel -> "models.JSONField"
+                    else -> dtypeProps.definition
+                }
 
             val attrsString =
                 attrs

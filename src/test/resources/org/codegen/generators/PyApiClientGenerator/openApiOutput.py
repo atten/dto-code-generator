@@ -266,7 +266,8 @@ class BasicDto:
     timestamp: t.Optional[datetime] = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime(allow_none=True)), default=None)
     some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(SOME_ENUMS)])), default=None)
     nested_object: t.Optional[AdvancedDto] = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(AdvancedDto, base_schema=BaseSchema), allow_none=True)), default=None)
-    combined_type: t.Optional[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.Integer(allow_none=True)), default=None)
+    number_or_list: t.Optional[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.Integer(allow_none=True)), default=None)
+    list_of_mixed_types: t.Optional[list[str]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.String(allow_none=True))), default=None)
 
 
 JSON_PAYLOAD = t.Union[dict, str, int, float, list]

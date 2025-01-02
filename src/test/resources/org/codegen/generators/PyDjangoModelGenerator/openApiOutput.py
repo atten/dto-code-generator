@@ -37,7 +37,8 @@ class BasicDto(models.Model):
     timestamp = models.DateTimeField(null=True, blank=True)
     some_enum = models.CharField(null=True, blank=True, max_length=8, choices=SomeEnum.choices)
     nested_object = models.JSONField(null=True, blank=True)
-    combined_type = models.IntegerField(null=True, blank=True)
+    number_or_list = models.IntegerField(null=True, blank=True)
+    list_of_mixed_types = ArrayField(null=True, blank=True, base_field=models.CharField(max_length=DEFAULT_MAX_LENGTH))
 
     class Meta:
         abstract = True
@@ -54,7 +55,7 @@ class ErrorResponse(models.Model):
 class Pageable(models.Model):
     page = models.IntegerField(null=True, blank=True)
     size = models.IntegerField(null=True, blank=True)
-    sort = ArrayField(null=True, blank=True, max_length=DEFAULT_MAX_LENGTH, base_field=models.CharField())
+    sort = ArrayField(null=True, blank=True, base_field=models.CharField(max_length=DEFAULT_MAX_LENGTH))
 
     class Meta:
         abstract = True

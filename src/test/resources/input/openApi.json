@@ -291,8 +291,8 @@
         "nested_object": {
           "$ref": "#/components/schemas/AdvancedDTO"
         },
-        "combined_type": {
-          "title": "number_or_list",
+        "number_or_list": {
+          "title": "number or list",
           "anyOf": [
             {
               "type": "array",
@@ -304,6 +304,20 @@
               "type": "integer"
             }
           ]
+        },
+        "list_of_mixed_types": {
+          "title": "list of mixed types",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          }
         }
       }
     }

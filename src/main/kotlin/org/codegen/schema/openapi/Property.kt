@@ -39,12 +39,20 @@ internal data class Property(
             return type
         }
 
-        if (oneOf.isNotEmpty()) {
-            return oneOf.map { it.definitionName() }.toSet().joinToString(separator = "Or")
-        }
-
-        if (anyOf.isNotEmpty()) {
-            return anyOf.map { it.definitionName() }.toSet().joinToString(separator = "Or")
+        val unionType = oneOf + anyOf
+        if (unionType.isNotEmpty()) {
+            return unionType
+                .map { it.definitionName() }
+                .toSet()
+                .let {
+                    when (it) {
+                        // reduce integer + string to just string
+                        setOf("integer", "string") -> setOf("string")
+                        else -> it
+                    }
+                }
+                .sorted()
+                .joinToString(separator = "Or")
         }
 
         TODO()
