@@ -7,7 +7,7 @@ RUN django-admin startproject testproject
 
 WORKDIR /testproject
 
-RUN sed -i 's/INSTALLED_APPS = \[/INSTALLED_APPS = \["entities",/g' testproject/settings.py
+RUN sed -i 's/INSTALLED_APPS = \[/INSTALLED_APPS = \["entities","openapi",/g' testproject/settings.py
 
 ADD . .
 
