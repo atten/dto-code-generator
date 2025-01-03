@@ -65,24 +65,33 @@ internal class OpenApiConverter(
                 .sortedBy { it.length }
                 .joinToString("\n")
 
+        // use request body of any supported format
+        val body =
+            mapOf(
+                Endpoint.EndpointEncoding.JSON to "application/json",
+                Endpoint.EndpointEncoding.FORM to "application/x-www-form-urlencoded",
+            )
+                .mapValues { method.requestBody?.content?.get(it.value)?.schema }
+                .filterValues { it != null }
+                .mapValues { it.value!! }
+                .mapValues {
+                    val many = it.value.type == "array"
+                    MethodArgument(
+                        name = if (many) "values" else "value",
+                        dtype = it.value.definitionName(),
+                        many = many,
+                    )
+                }
+                .toList()
+                .firstOrNull()
+
         val endpointArguments =
             (pathBody.parameters + method.parameters)
                 .filter { it.source != "header" }
                 .flatMap { convertAnyParameter(it, document) }
-                .sortedBy { it.name }
                 .toMutableList()
-
-        // if requestBody is defined, then add it as method argument
-        method.requestBody?.content?.get("application/json")?.schema?.let {
-            val many = it.type == "array"
-            MethodArgument(
-                name = if (many) "values" else "value",
-                dtype = it.definitionName(),
-                many = many,
-            )
-        }?.let {
-            endpointArguments.add(it)
-        }
+                .also { list -> body?.second?.let { list.add(it) } }
+                .sortedBy { it.name }
 
         val successResponseCode = method.responses.keys.first { it in 200..299 }
         val successResponse = method.responses[successResponseCode]
@@ -107,6 +116,7 @@ internal class OpenApiConverter(
             verb = EndpointVerb.valueOf(verb.uppercase()),
             arguments = endpointArguments,
             many = successResponseSchema?.type == "array",
+            encoding = body?.first,
         )
     }
 

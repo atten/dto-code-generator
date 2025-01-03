@@ -122,7 +122,7 @@ class SomeRestApi:
         raw_data = self._client.fetch(
             url='/api/v1/basic',
             method='POST',
-            payload=item,
+            json_body=item,
         )
         gen = self._deserializer.deserialize(raw_data, BasicDto)
         return next(gen)
@@ -157,7 +157,7 @@ class SomeRestApi:
         self._client.fetch(
             url='/api/v1/basic-bulk',
             method='POST',
-            payload=values,
+            json_body=values,
         )
 
     def get_basic_by_entity_id(self, entity_id: str) -> 'BasicDto':
@@ -172,9 +172,22 @@ class SomeRestApi:
         raw_data = self._client.fetch(
             url=f'/api/v1/basic/{entity_id}/',
             method='PUT',
-            payload=value,
+            json_body=value,
         )
         gen = self._deserializer.deserialize(raw_data, BasicDto)
+        return next(gen)
+
+    def post_login(self, value: 'Credentials') -> str:
+        """
+        Login For Access Token
+        """
+        value = self._serializer.serialize(value, is_payload=True)
+        raw_data = self._client.fetch(
+            url='/api/v1/login',
+            method='POST',
+            form_fields=value,
+        )
+        gen = self._deserializer.deserialize(raw_data)
         return next(gen)
 
 
@@ -270,6 +283,12 @@ class BasicDto:
     list_of_mixed_types: t.Optional[list[str]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.String(allow_none=True))), default=None)
 
 
+@dataclass
+class Credentials:
+    username: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String()))
+    password: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String()))
+
+
 JSON_PAYLOAD = t.Union[dict, str, int, float, list]
 RESPONSE_BODY = [str, io.IOBase]
 
@@ -306,7 +325,8 @@ class BaseJsonHttpClient:
         url: str,
         method: str = 'get',
         query_params: t.Optional[dict] = None,
-        payload: t.Optional[JSON_PAYLOAD] = None,
+        json_body: t.Optional[JSON_PAYLOAD] = None,
+        form_fields: t.Optional[t.Dict[str, str]] = None,
     ) -> RESPONSE_BODY:
         """
         Retrieve JSON response from remote API request.
@@ -316,14 +336,19 @@ class BaseJsonHttpClient:
         :param url: target url (relative to base url)
         :param method: HTTP verb, e.g. get/post
         :param query_params: key-value arguments like ?param1=11&param2=22
-        :param payload: JSON-like HTTP body
+        :param json_body: JSON-encoded HTTP body
+        :param form_fields: form-encoded HTTP body
         :return: decoded JSON from server
         """
         full_url = self._get_full_url(url, query_params)
         headers = self._headers.copy() if self._headers else dict()
-        if payload is not None:
-            payload = json.dumps(payload).encode('utf8')
+        body = None
+        if json_body is not None:
+            body = json.dumps(json_body).encode('utf8')
             headers['content-type'] = 'application/json'
+        if form_fields is not None:
+            body = urlencode(form_fields)
+            headers['content-type'] = 'application/x-www-form-urlencoded'
         if self._user_agent:
             headers['user-agent'] = self._user_agent
 
@@ -332,7 +357,7 @@ class BaseJsonHttpClient:
             url=full_url,
             method=method,
             headers=headers,
-            body=payload,
+            body=body,
         )
 
         try:
@@ -354,7 +379,7 @@ class BaseJsonHttpClient:
                     url=full_url,
                     method=method,
                     headers=headers,
-                    body=payload,
+                    body=body,
                 )
                 raise RuntimeError(f'Failed to {curl_cmd}: {error_verbose}') from e
 
@@ -611,6 +636,7 @@ __all__ = [
     "ADVANCED_DTO_SOME_ENUMS",
     "AdvancedDto",
     "BasicDto",
+    "Credentials",
     "SOME_ENUMS",
     "SOME_ENUM_PAPER",
     "SOME_ENUM_ROCK",

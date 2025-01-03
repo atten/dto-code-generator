@@ -96,7 +96,7 @@ class Generated:
         raw_data = self._client.fetch(
             url='api/v1/basic',
             method='POST',
-            payload=item,
+            json_body=item,
         )
         gen = self._deserializer.deserialize(raw_data, BasicDto)
         return next(gen)
@@ -106,7 +106,7 @@ class Generated:
         raw_data = self._client.fetch(
             url='api/v1/basic/bulk',
             method='POST',
-            payload=items,
+            json_body=items,
         )
         yield from self._deserializer.deserialize(raw_data, BasicDto, many=True)
 
@@ -236,7 +236,8 @@ class BaseJsonHttpClient:
         url: str,
         method: str = 'get',
         query_params: t.Optional[dict] = None,
-        payload: t.Optional[JSON_PAYLOAD] = None,
+        json_body: t.Optional[JSON_PAYLOAD] = None,
+        form_fields: t.Optional[t.Dict[str, str]] = None,
     ) -> RESPONSE_BODY:
         """
         Retrieve JSON response from remote API request.
@@ -246,14 +247,19 @@ class BaseJsonHttpClient:
         :param url: target url (relative to base url)
         :param method: HTTP verb, e.g. get/post
         :param query_params: key-value arguments like ?param1=11&param2=22
-        :param payload: JSON-like HTTP body
+        :param json_body: JSON-encoded HTTP body
+        :param form_fields: form-encoded HTTP body
         :return: decoded JSON from server
         """
         full_url = self._get_full_url(url, query_params)
         headers = self._headers.copy() if self._headers else dict()
-        if payload is not None:
-            payload = json.dumps(payload).encode('utf8')
+        body = None
+        if json_body is not None:
+            body = json.dumps(json_body).encode('utf8')
             headers['content-type'] = 'application/json'
+        if form_fields is not None:
+            body = urlencode(form_fields)
+            headers['content-type'] = 'application/x-www-form-urlencoded'
         if self._user_agent:
             headers['user-agent'] = self._user_agent
 
@@ -262,7 +268,7 @@ class BaseJsonHttpClient:
             url=full_url,
             method=method,
             headers=headers,
-            body=payload,
+            body=body,
         )
 
         try:
@@ -284,7 +290,7 @@ class BaseJsonHttpClient:
                     url=full_url,
                     method=method,
                     headers=headers,
-                    body=payload,
+                    body=body,
                 )
                 raise RuntimeError(f'Failed to {curl_cmd}: {error_verbose}') from e
 

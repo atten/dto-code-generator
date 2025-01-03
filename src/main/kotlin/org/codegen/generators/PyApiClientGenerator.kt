@@ -60,7 +60,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseCl
                 val defaultValue = if (argument.default != UNSET && isAtomicType) buildArgumentDefaultValue(argument) else null
                 queryParams.add(Triple(queryParamName, argName, defaultValue))
             } else if (isPayload) {
-                require(payloadVariableName.isEmpty()) { "Having multiple payload variables is unsupported yet" }
+                require(payloadVariableName.isEmpty()) { "Having multiple payload variables is not unsupported" }
                 payloadVariableName = argName
             }
 
@@ -116,7 +116,10 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseCl
         }
 
         if (payloadVariableName.isNotEmpty()) {
-            lines.add("    payload=$payloadVariableName,")
+            when (endpoint.encoding) {
+                Endpoint.EndpointEncoding.FORM -> lines.add("    form_fields=$payloadVariableName,")
+                else -> lines.add("    json_body=$payloadVariableName,")
+            }
         }
 
         lines.add(")") // end of 'self._fetch('

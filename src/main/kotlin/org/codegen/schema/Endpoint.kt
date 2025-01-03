@@ -19,7 +19,13 @@ data class Endpoint(
     // whether return data can be memoized
     val cacheable: Boolean = false,
     val verb: EndpointVerb = EndpointVerb.GET,
+    val encoding: EndpointEncoding? = EndpointEncoding.JSON,
 ) {
+    enum class EndpointEncoding {
+        JSON,
+        FORM,
+    }
+
     private val argumentsWithoutDefaults = arguments.filter { it.default == UNSET }
     private val argumentsWithDefaults = arguments.filter { it.default != UNSET }
     val argumentsSortedByDefaults = argumentsWithoutDefaults + argumentsWithDefaults

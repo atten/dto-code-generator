@@ -59,3 +59,11 @@ class Pageable(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Credentials(models.Model):
+    username = models.CharField(max_length=DEFAULT_MAX_LENGTH)
+    password = models.CharField(max_length=DEFAULT_MAX_LENGTH)
+
+    class Meta:
+        abstract = True

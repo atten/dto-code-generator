@@ -30,7 +30,8 @@ class BaseJsonHttpAsyncClient:
         url: str,
         method: str = 'get',
         query_params: t.Optional[dict] = None,
-        payload: t.Optional[JSON_PAYLOAD] = None,
+        json_body: t.Optional[JSON_PAYLOAD] = None,
+        form_fields: t.Optional[t.Dict[str, str]] = None,
     ) -> RESPONSE_BODY:
         """
         Retrieve JSON response from remote API request.
@@ -40,13 +41,17 @@ class BaseJsonHttpAsyncClient:
         :param url: target url (relative to base url)
         :param method: HTTP verb, e.g. get/post
         :param query_params: key-value arguments like ?param1=11&param2=22
-        :param payload: JSON-like HTTP body
+        :param json_body: JSON-encoded HTTP body
+        :param form_fields: form-encoded HTTP body
         :return: decoded JSON from server
         """
         full_url = self._get_full_url(url, query_params)
         headers = self._headers.copy() if self._headers else dict()
-        if payload is not None:
+        if json_body is not None:
             headers['content-type'] = 'application/json'
+        if form_fields is not None:
+            json_body = urlencode(form_fields)
+            headers['content-type'] = 'application/x-www-form-urlencoded'
         if self._user_agent:
             headers['user-agent'] = self._user_agent
 
@@ -55,7 +60,7 @@ class BaseJsonHttpAsyncClient:
             full_url=full_url,
             method=method,
             headers=headers,
-            payload=payload,
+            body=json_body,
         )
 
         try:
@@ -73,18 +78,18 @@ class BaseJsonHttpAsyncClient:
                     url=full_url,
                     method=method,
                     headers=headers,
-                    body=payload,
+                    body=json_body,
                 )
                 raise RuntimeError(f'Failed to {curl_cmd}: {e}') from e
             raise RuntimeError(f'Failed to {method} {full_url}: {e}') from e
 
     @classmethod
-    async def _mk_request(cls, full_url: str, method: str, payload: t.Optional[JSON_PAYLOAD], headers: t.Optional[dict]) -> RESPONSE_BODY:
+    async def _mk_request(cls, full_url: str, method: str, body: t.Optional[JSON_PAYLOAD], headers: t.Optional[dict]) -> RESPONSE_BODY:
         async with aiohttp.request(
             url=full_url,
             method=method,
             headers=headers,
-            json=payload,
+            json=body,
         ) as response:
             response.raise_for_status()
             return await response.json()
