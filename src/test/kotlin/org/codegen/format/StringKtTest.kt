@@ -15,6 +15,7 @@ class StringKtTest {
 
         assertEquals("capslock", "CAPSLOCK".normalize())
         assertEquals("simple dto", "simple DTO".normalize())
+        assertEquals("http validation error", "HTTPValidationError".normalize())
 
         assertEquals("simple s3 url", "simple s3 url".normalize())
         assertEquals("simple s3 url", "simpleS3Url".normalize())

@@ -11,15 +11,20 @@ internal fun String.normalize(): String {
     // Apply more complex rule for string with mixed case. Prepend uppercase char with space:
     // minValue -> min Value
     // MyDTO -> My dto
-    cleaned = cleaned.zipWithNext { a, b ->
-        if (a.isDigit() != b.isDigit()) {
-            a.lowercase() + ' '
-        } else if (a.isLowerCase() && !b.isLowerCase()) {
-            "$a "
-        } else {
-            a.lowercase()
+    cleaned = cleaned
+        .zipWithNext { a, b ->
+            if (a.isDigit() != b.isDigit()) {
+                a.lowercase() + ' '
+            } else if (a.isLowerCase() && b.isUpperCase()) {
+                "$a "
+            } else if (a.isUpperCase() && b.isLowerCase()) {
+                ' ' + a.lowercase()
+            } else {
+                a.lowercase()
+            }
         }
-    }.joinToString("") + cleaned.last().lowercase()
+        .joinToString("")
+        .trimStart() + cleaned.last().lowercase()
 
     // remove extra space
     while (cleaned.contains("  ")) {
