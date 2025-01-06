@@ -76,7 +76,7 @@ Swagger -> Python
     # Downloads OpenApi spec from gitlab assets, runs generator in docker container and saves output to file.
     
     OPENAPI_URL="https://gitlab.com/atten0/dto-code-generator/-/raw/master/src/test/resources/input/openApi.json"
-    DOCKER_IMAGE="registry.gitlab.com/atten0/dto-code-generator:release-1-3-0"
+    DOCKER_IMAGE="registry.gitlab.com/atten0/dto-code-generator:master"
     
     docker pull $DOCKER_IMAGE
     
