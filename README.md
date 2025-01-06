@@ -22,8 +22,8 @@ https://gitlab.com/atten0/dto-code-generator/container_registry
 Download and extract archive into current dir:
 
 ```
-wget -qO- https://github.com/atten/dto-code-generator/releases/download/v1.3.0/dto-codegen-1.3.0.zip | busybox unzip -
-cd dto-codegen-1.3.0/bin/
+wget -qO- https://github.com/atten/dto-code-generator/releases/download/v2.0.0/dto-codegen-2.0.0.zip | busybox unzip -
+cd dto-codegen-2.0.0/bin/
 chmod +x dto-codegen
 ```
 
