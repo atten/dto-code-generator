@@ -3,7 +3,17 @@
 [![pipeline](https://gitlab.com/atten0/dto-code-generator/badges/master/pipeline.svg)](https://gitlab.com/atten0/dto-code-generator/-/pipelines)
 [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg)](http://www.jacoco.org/jacoco)
 
-Generate pretty API clients from OpenApi specs with ease.
+Console tool for generating data classes, validators and API clients. Written in Kotlin, produces Kotlin and Python code for various purposes (see "Available generators" below). For the input it takes OpenApi specification (JSON) or custom codegen schema (also JSON).
+
+The main goal of this project is to reduce integration costs between teams in multi-service environments.
+
+### Common use cases
+
+- Write integration code in agile, fast-moving projects
+- Use code generation in CI
+- Track API changes and check them for backward compatibility on both sides (client/server)
+- Build ETL pipelines with transparent interfaces
+- Unify type declarations across languages
 
 ## Install
 
@@ -67,13 +77,11 @@ Options:
 
 ## Example
 
-### Shell script
+### Script for python API client generation from OpenApi
 
-Swagger -> Python
+Downloads remote OpenApi spec (gitlab assets), runs docker container with generator and saves output to file.
 
     #!/usr/bin/env sh
-    # Script for API client generation from OpenApi.
-    # Downloads OpenApi spec from gitlab assets, runs generator in docker container and saves output to file.
     
     OPENAPI_URL="https://gitlab.com/atten0/dto-code-generator/-/raw/master/src/test/resources/input/openApi.json"
     DOCKER_IMAGE="registry.gitlab.com/atten0/dto-code-generator:master"
@@ -91,7 +99,7 @@ Swagger -> Python
     -t PY_API_CLIENT \
     > ~/client_generated.py
 
-## Avaliable generators
+## Available generators
 
 | Target                    | Language/Framework | Serialization         | Dependencies                                                                            | Example output                                                                                                                                | Coverage                                                                                                                                                                                                                                                                                                                      |
 |---------------------------|--------------------|-----------------------|-----------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -104,3 +112,9 @@ Swagger -> Python
 | PY_DJANGO_MODEL           | Python3 + Django   | -                     | [requirements.txt](generatedCodeTests/PyDjangoModelGenerator/requirements.txt)          | [entitiesOutput.py](src/test/resources/org/codegen/generators/PyDjangoModelGenerator/entitiesOutput.py)                                       | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyDjangoModelGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyDjangoModelGenerator/app/migrations?job=run-tests-PyDjangoModelGenerator)                        |
 | PY_AMQP_BLOCKING_CLIENT   | Python3            | Marshmallow           |                                                                                         | [endpointsOutput.py](src/test/resources/org/codegen/generators/PyAmqpBlockingClientGenerator/endpointsOutput.py)                              | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyAmqpBlockingClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyAmqpBlockingClientGenerator/htmlcov?job=run-tests-PyAmqpBlockingClientGenerator)          |
 | PY_AMQP_GEVENT_CLIENT     | Python3 + Gevent   | Marshmallow           |                                                                                         | [endpointsOutput.py](src/test/resources/org/codegen/generators/PyAmqpGeventClientGenerator/endpointsOutput.py)                                | [![coverage](https://gitlab.com/atten0/dto-code-generator/badges/master/coverage.svg?job=run-tests-PyAmqpGeventClientGenerator)](https://gitlab.com/atten0/dto-code-generator/-/jobs/artifacts/master/browse/generatedCodeTests/PyAmqpGeventClientGenerator/htmlcov?job=run-tests-PyAmqpGeventClientGenerator)                |
+
+## Support and feedback
+
+For usage questions, feature proposals and bug reports: [github issues page](https://github.com/atten/dto-code-generator/issues).
+
+For other matters: [author's profile with contacts](https://github.com/atten).
