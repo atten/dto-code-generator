@@ -1,7 +1,5 @@
 package org.codegen.generators
 
-import org.codegen.format.camelCase
-import org.codegen.format.lowercaseFirst
 import org.codegen.format.snakeCase
 import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
@@ -56,7 +54,7 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseCl
             }
 
             if (isQueryVariable) {
-                val queryParamName = argument.name.camelCase().lowercaseFirst()
+                val queryParamName = argument.name
                 val defaultValue = if (argument.default != UNSET && isAtomicType) buildArgumentDefaultValue(argument) else null
                 queryParams.add(Triple(queryParamName, argName, defaultValue))
             } else if (isPayload) {

@@ -110,7 +110,7 @@ class SomeRestApi:
         if page is not None:
             query_params['page'] = page
         if page_size is not None:
-            query_params['pageSize'] = page_size
+            query_params['page_size'] = page_size
         raw_data = self._client.fetch(
             url='/api/v1/basic',
             query_params=query_params,
