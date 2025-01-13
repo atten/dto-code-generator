@@ -16,7 +16,7 @@ class SomeEnum(models.TextChoices):
 
 class AdvancedDto(models.Model):
     json = models.JSONField(null=True, blank=True, verbose_name=_('Example: [{"foo": "bar"}]'))
-    some_enum = models.CharField(null=True, blank=True, max_length=8, choices=SomeEnum.choices, verbose_name=_('Enum field with the same name as of different entity'))
+    some_enum = models.CharField(null=True, blank=True, max_length=8, default="PAPER", choices=SomeEnum.choices, verbose_name=_('Enum field with the same name as of different entity'))
     java_duration = models.CharField(null=True, blank=True, max_length=32)
 
     class Meta:

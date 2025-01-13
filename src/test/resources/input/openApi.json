@@ -380,7 +380,8 @@
               "ROCK",
               "SCISSORS",
               "PAPER"
-            ]
+            ],
+            "default": "PAPER"
           },
           "javaDuration" : {
             "type" : "object",

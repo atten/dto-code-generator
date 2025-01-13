@@ -191,6 +191,13 @@ internal class OpenApiConverter(
         definition: Definition,
     ): Field {
         val required = definition.required.contains(name)
+
+        val default =
+            when {
+                property.default == UNSET && !required -> null
+                else -> property.default
+            }
+
         return Field(
             name = name,
             serializedName = name,
@@ -198,7 +205,7 @@ internal class OpenApiConverter(
             dtype = property.definitionName().let { dtypeMapping.getOrDefault(it, it) },
             many = property.type == "array",
             nullable = !required,
-            default = if (required) UNSET else null,
+            default = default,
             enum = property.enum?.associateBy { it },
             enumPrefix = property.title,
         )

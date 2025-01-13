@@ -2,6 +2,7 @@ package org.codegen.schema.openapi
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.codegen.schema.Constants.Companion.UNSET
 
 @Serializable
 internal data class Property(
@@ -10,6 +11,7 @@ internal data class Property(
     val type: String? = null,
     val format: String? = null,
     val enum: List<String>? = null,
+    val default: String? = UNSET,
     @SerialName("\$ref")
     val ref: String? = null,
     val items: Property? = null,
