@@ -20,7 +20,7 @@ data class CodeFormatRules(
 
         val PYTHON =
             CodeFormatRules(
-                filePrefix = { "# ${HEADER}\n\n" },
+                filePrefix = { "# ${HEADER}\n# flake8: noqa\n" },
                 headersPostfix = "\n\n\n",
                 entitiesSeparator = "\n\n\n",
             )
