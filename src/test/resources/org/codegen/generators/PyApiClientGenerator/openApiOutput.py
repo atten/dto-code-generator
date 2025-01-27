@@ -275,7 +275,7 @@ class BasicDto:
     # Field description
     some_number: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()))
     some_string: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True)), default=None)
-    some_boolean: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True, data_key="someBoolean")), default=None)
+    boolean_with_default: bool = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(data_key="booleanWithDefault")), default=True)
     timestamp: t.Optional[datetime] = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime(allow_none=True)), default=None)
     some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(SOME_ENUMS)])), default=None)
     nested_object: t.Optional[AdvancedDto] = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(AdvancedDto, base_schema=BaseSchema), allow_none=True)), default=None)

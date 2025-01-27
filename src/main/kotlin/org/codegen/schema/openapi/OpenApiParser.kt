@@ -6,7 +6,11 @@ import org.codegen.schema.Document
 
 class OpenApiParser {
     fun parse(content: String): Document {
-        val format = Json { ignoreUnknownKeys = true }
+        val format =
+            Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+            }
         val root = format.decodeFromString<Root>(content)
         return OpenApiConverter(root).convertToDocument()
     }

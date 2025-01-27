@@ -33,7 +33,7 @@ class BasicDto(models.Model):
     some_string = models.CharField(null=True, blank=True, max_length=DEFAULT_MAX_LENGTH)
     some_integer = models.IntegerField(verbose_name=_('Field description'))
     some_number = models.FloatField(verbose_name=_('Field description'))
-    some_boolean = models.BooleanField(null=True, blank=True)
+    boolean_with_default = models.BooleanField(default=True)
     timestamp = models.DateTimeField(null=True, blank=True)
     some_enum = models.CharField(null=True, blank=True, max_length=8, choices=SomeEnum.choices)
     nested_object = models.JSONField(null=True, blank=True)

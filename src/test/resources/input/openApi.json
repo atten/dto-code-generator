@@ -288,7 +288,8 @@
     "BasicDto": {
       "required": [
         "some_integer",
-        "some_number"
+        "some_number",
+        "booleanWithDefault"
       ],
       "type": "object",
       "properties": {
@@ -310,9 +311,10 @@
           "description": "Field description",
           "type": "number"
         },
-        "someBoolean": {
+        "booleanWithDefault": {
           "title": "Some boolean",
-          "type": "boolean"
+          "type": "boolean",
+          "default": true
         },
         "timestamp": {
           "title": "Timestamp",
