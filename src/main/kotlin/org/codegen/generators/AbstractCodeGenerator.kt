@@ -46,6 +46,8 @@ abstract class AbstractCodeGenerator(
     }
 
     fun render(): String {
+        require(entities.isNotEmpty()) { "Nothing to render, entities list is empty. Check input files and try again." }
+
         val prefix = renderBodyPrefix()
         val body = renderBody()
         // confirm headers list after body is rendered

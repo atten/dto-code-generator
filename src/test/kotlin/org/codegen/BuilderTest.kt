@@ -49,4 +49,18 @@ class BuilderTest {
         val builder = Builder(args)
         assertThrows(IllegalArgumentException::class.java) { builder.build() }
     }
+
+    @Test
+    fun shouldFailOnEmptySchema() {
+        val args =
+            Args().also {
+                it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
+                it.inputFiles =
+                    listOf(
+                        this.javaClass.getResource("/input/empty.json")!!.path,
+                    )
+            }
+        val builder = Builder(args)
+        assertThrows(IllegalArgumentException::class.java) { builder.build() }
+    }
 }
