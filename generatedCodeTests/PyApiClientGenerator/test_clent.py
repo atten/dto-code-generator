@@ -1,5 +1,5 @@
 import os
-from generated.api import Generated, BasicDto, ENUM_VALUE_VALUE_1
+from generated.api import Generated, AllDataclassesCollection as dto, AllConstantsCollection as constants
 
 import pytest
 import types
@@ -16,7 +16,7 @@ def test_get():
     timestamp = datetime.now(tz=timezone.utc)
     result = api.get_basic_dto_by_timestamp(timestamp)
 
-    assert isinstance(result, BasicDto)
+    assert isinstance(result, dto.BasicDto)
 
 
 def test_get_list():
@@ -24,29 +24,29 @@ def test_get_list():
     result = api.get_basic_dto_list()
 
     assert isinstance(result, types.GeneratorType)
-    assert isinstance(next(result), BasicDto)
+    assert isinstance(next(result), dto.BasicDto)
 
 
 def test_post():
     api = Generated(base_url=BASE_URL)
-    item = BasicDto(
+    item = dto.BasicDto(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
-        enum_value=ENUM_VALUE_VALUE_1,
+        enum_value=constants.ENUM_VALUE_VALUE_1,
         documented_value=2.5,
         list_value=[50, 100, 150]
     )
     result = api.create_basic_dto(item)
 
-    assert isinstance(result, BasicDto)
+    assert isinstance(result, dto.BasicDto)
 
 
 def test_post_list_required_fields_only():
     api = Generated(base_url=BASE_URL)
-    item = BasicDto(
+    item = dto.BasicDto(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
-        enum_value=ENUM_VALUE_VALUE_1,
+        enum_value=constants.ENUM_VALUE_VALUE_1,
         documented_value=2.5,
         list_value=[50, 100, 150]
     )
@@ -54,7 +54,7 @@ def test_post_list_required_fields_only():
     result = api.create_basic_dto_bulk(payload)
 
     assert isinstance(result, types.GeneratorType)
-    assert isinstance(next(result), BasicDto)
+    assert isinstance(next(result), dto.BasicDto)
 
 
 def test_post_empty_list():
@@ -69,10 +69,10 @@ def test_post_empty_list():
 
 def test_post_request_wrong_enum_value():
     api = Generated()
-    item = BasicDto(
+    item = dto.BasicDto(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
-        enum_value=ENUM_VALUE_VALUE_1 + 'azaza',
+        enum_value=constants.ENUM_VALUE_VALUE_1 + 'azaza',
         documented_value=2.5,
         list_value=[50, 100, 150]
     )

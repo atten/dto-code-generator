@@ -632,17 +632,25 @@ def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: s
     return f'curl "{url}"{method}{headers}{body}'
 
 
+class AllConstantsCollection:
+    ADVANCED_DTO_SOME_ENUMS = ADVANCED_DTO_SOME_ENUMS
+    SOME_ENUMS = SOME_ENUMS
+    SOME_ENUM_PAPER = SOME_ENUM_PAPER
+    SOME_ENUM_ROCK = SOME_ENUM_ROCK
+    SOME_ENUM_SCISSORS = SOME_ENUM_SCISSORS
+    SOME_ENUM_VARIANT_1 = SOME_ENUM_VARIANT_1
+    SOME_ENUM_VARIANT_2 = SOME_ENUM_VARIANT_2
+    SOME_ENUM_VARIANT_3 = SOME_ENUM_VARIANT_3
+
+
+class AllDataclassesCollection:
+    AdvancedDto = AdvancedDto
+    BasicDto = BasicDto
+    Credentials = Credentials
+
+
 __all__ = [
-    "ADVANCED_DTO_SOME_ENUMS",
-    "AdvancedDto",
-    "BasicDto",
-    "Credentials",
-    "SOME_ENUMS",
-    "SOME_ENUM_PAPER",
-    "SOME_ENUM_ROCK",
-    "SOME_ENUM_SCISSORS",
-    "SOME_ENUM_VARIANT_1",
-    "SOME_ENUM_VARIANT_2",
-    "SOME_ENUM_VARIANT_3",
+    "AllConstantsCollection",
+    "AllDataclassesCollection",
     "SomeRestApi",
 ]

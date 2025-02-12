@@ -671,12 +671,24 @@ def failsafe_call(
         )
 
 
+class AllConstantsCollection:
+    ENUM_VALUES = ENUM_VALUES
+    ENUM_VALUE_VALUE_1 = ENUM_VALUE_VALUE_1
+    ENUM_VALUE_VALUE_2 = ENUM_VALUE_VALUE_2
+    ENUM_VALUE_VALUE_3 = ENUM_VALUE_VALUE_3
+
+
+class AllDataclassesCollection:
+    BasicDto = BasicDto
+
+
+class AllExceptionsCollection:
+    FailedAmqpRequestError = FailedAmqpRequestError
+
+
 __all__ = [
-    "BasicDto",
-    "ENUM_VALUES",
-    "ENUM_VALUE_VALUE_1",
-    "ENUM_VALUE_VALUE_2",
-    "ENUM_VALUE_VALUE_3",
-    "FailedAmqpRequestError",
+    "AllConstantsCollection",
+    "AllDataclassesCollection",
+    "AllExceptionsCollection",
     "Generated",
 ]

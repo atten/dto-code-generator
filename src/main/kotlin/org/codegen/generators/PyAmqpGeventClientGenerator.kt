@@ -25,8 +25,8 @@ class PyAmqpGeventClientGenerator(proxy: AbstractCodeGenerator? = null) : PyAmqp
         return original
     }
 
-    override fun renderBodySuffix(): String {
+    override fun renderBodyPrefix(): String {
         definedNames.add("AmqpApiWithLazyListener") // make listener class accessible from outside
-        return super.renderBodySuffix()
+        return super.renderBodyPrefix()
     }
 }

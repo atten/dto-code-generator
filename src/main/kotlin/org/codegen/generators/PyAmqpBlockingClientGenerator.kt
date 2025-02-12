@@ -131,8 +131,8 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
             "/templates/python/failsafeCall.py",
         )
 
-    override fun renderBodySuffix(): String {
-        definedNames.add("FailedAmqpRequestError") // make error class accessible from outside
-        return super.renderBodySuffix()
+    override fun renderBodyPrefix(): String {
+        definedExceptions.add("FailedAmqpRequestError") // make error class accessible from outside
+        return super.renderBodyPrefix()
     }
 }

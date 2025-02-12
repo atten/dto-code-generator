@@ -527,11 +527,19 @@ def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: s
     return f'curl "{url}"{method}{headers}{body}'
 
 
+class AllConstantsCollection:
+    ENUM_VALUES = ENUM_VALUES
+    ENUM_VALUE_VALUE_1 = ENUM_VALUE_VALUE_1
+    ENUM_VALUE_VALUE_2 = ENUM_VALUE_VALUE_2
+    ENUM_VALUE_VALUE_3 = ENUM_VALUE_VALUE_3
+
+
+class AllDataclassesCollection:
+    BasicDto = BasicDto
+
+
 __all__ = [
-    "BasicDto",
-    "ENUM_VALUES",
-    "ENUM_VALUE_VALUE_1",
-    "ENUM_VALUE_VALUE_2",
-    "ENUM_VALUE_VALUE_3",
+    "AllConstantsCollection",
+    "AllDataclassesCollection",
     "Generated",
 ]

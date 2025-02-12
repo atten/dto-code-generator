@@ -16,7 +16,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
     proxy,
 ) {
     // list of __all__ items
-    protected val definedNames = mutableListOf<String>()
+    protected val definedNames = mutableSetOf<String>()
 
     override fun addCodePart(
         body: String,
@@ -25,7 +25,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
         super.addCodePart(body, *names)
         // add missing names into __all__
         names
-            .filter { it.isNotEmpty() && it !in definedNames }
+            .filter { it.isNotEmpty() }
             .forEach { definedNames.add(it) }
     }
 
@@ -193,11 +193,15 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
         }
 
     override fun renderBodySuffix(): String {
-        val suffix = StringJoiner(CodeFormatRules.PYTHON.entitiesSeparator, CodeFormatRules.PYTHON.entitiesSeparator, "\n")
-        definedNames
-            .sorted()
-            .joinToString("\n", "__all__ = [\n", "\n]") { "    \"${it}\"," }
-            .also { suffix.add(it) }
-        return suffix.toString()
+        return StringJoiner("")
+            .add(CodeFormatRules.PYTHON.entitiesSeparator)
+            .add("__all__ = ")
+            .add(
+                definedNames
+                    .sorted()
+                    .joinToString("\n", "[\n", "\n]") { "    \"${it}\"," },
+            )
+            .add("\n")
+            .toString()
     }
 }

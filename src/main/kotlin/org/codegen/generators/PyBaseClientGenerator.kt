@@ -9,7 +9,6 @@ import org.codegen.schema.Endpoint
 import org.codegen.schema.Entity
 import org.codegen.schema.MethodArgument
 import java.io.File
-import java.util.*
 
 abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
     CodeFormatRules.PYTHON,
@@ -19,7 +18,10 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
     protected val atomicJsonTypes = listOf("str", "float", "int", "None", "bool")
 
     // list if __all__ items
-    protected val definedNames = mutableListOf<String>()
+    protected val definedNames = mutableSetOf<String>()
+    private val definedDataclasses = mutableSetOf<String>()
+    protected val definedExceptions = mutableSetOf<String>()
+    private val definedConstants = mutableSetOf<String>()
 
     private fun buildArgumentDefaultValue(argument: MethodArgument): String {
         val dtypeProps = getDtype(argument.dtype)
@@ -41,11 +43,14 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
         body: String,
         vararg names: String,
     ) {
+        if (body.startsWith("@dataclass")) {
+            definedDataclasses.addAll(names)
+        } else if (body.first().isUpperCase()) {
+            definedConstants.addAll(names)
+        } else {
+            definedNames.addAll(names)
+        }
         super.addCodePart(body, *names)
-        // add missing names into __all__
-        names
-            .filter { it.isNotEmpty() && it !in definedNames }
-            .forEach { definedNames.add(it) }
     }
 
     protected open fun buildMethodDefinition(
@@ -218,19 +223,48 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
             .map { File(it).readText() }
             .map { addCodePart(it) }
 
+        if (definedConstants.isNotEmpty()) {
+            addCodePart(
+                "class AllConstantsCollection:\n" +
+                    definedConstants
+                        .sorted()
+                        .joinToString("\n") { "    $it = $it" },
+                "AllConstantsCollection",
+            )
+        }
+
+        if (definedDataclasses.isNotEmpty()) {
+            addCodePart(
+                "class AllDataclassesCollection:\n" +
+                    definedDataclasses
+                        .sorted()
+                        .joinToString("\n") { "    $it = $it" },
+                "AllDataclassesCollection",
+            )
+        }
+
+        if (definedExceptions.isNotEmpty()) {
+            addCodePart(
+                "class AllExceptionsCollection:\n" +
+                    definedExceptions
+                        .sorted()
+                        .joinToString("\n") { "    $it = $it" },
+                "AllExceptionsCollection",
+            )
+        }
+
+        addCodePart(
+            "__all__ = [\n" +
+                definedNames
+                    .filter { it.isNotEmpty() }
+                    .sorted()
+                    .joinToString("\n") { "    \"${it}\"," } + "\n]",
+        )
+
         return super.renderBody()
     }
 
     abstract fun getMainApiClassBody(): String
 
     abstract fun getBodyIncludedFiles(): List<String>
-
-    override fun renderBodySuffix(): String {
-        val suffix = StringJoiner(CodeFormatRules.PYTHON.entitiesSeparator, CodeFormatRules.PYTHON.entitiesSeparator, "\n")
-        definedNames
-            .sorted()
-            .joinToString("\n", "__all__ = [\n", "\n]") { "    \"${it}\"," }
-            .also { suffix.add(it) }
-        return suffix.toString()
-    }
 }
