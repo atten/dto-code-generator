@@ -35,3 +35,15 @@ test_generated_code:
 	cd generatedCodeTests && ./run_all.sh
 
 test_all: test test_generated_code
+
+
+# ===================== PUBLISH ===================
+
+release_major:
+    ./bumpversion.sh patch
+
+release_minor:
+	./bumpversion.sh minor
+
+release_patch:
+    ./bumpversion.sh patch
