@@ -25,7 +25,7 @@ class PyApiClientGeneratorTest {
     }
 
     @Test
-    fun openApi() {
+    fun openApiJson() {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_API_CLIENT
@@ -41,7 +41,23 @@ class PyApiClientGeneratorTest {
     }
 
     @Test
-    fun openApiWithCustomName() {
+    fun openApiYaml() {
+        val args =
+            Args().also {
+                it.target = AllGeneratorsEnum.PY_API_CLIENT
+                it.inputFiles =
+                    listOf(
+                        this.javaClass.getResource("/input/openApi.yaml")!!.path,
+                    )
+            }
+
+        val output = Builder(args).build()
+        val expectedOutput = File(this.javaClass.getResource("PyApiClientGenerator/openApiOutput.py")!!.path).readText()
+        assertEquals(expectedOutput, output)
+    }
+
+    @Test
+    fun openApiJsonWithCustomName() {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_API_CLIENT
@@ -60,7 +76,7 @@ class PyApiClientGeneratorTest {
     }
 
     @Test
-    fun openApiPartial() {
+    fun openApiJsonPartial() {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_API_CLIENT

@@ -1,4 +1,4 @@
-package org.codegen.schema.openapi
+package org.codegen.parser.openapi
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

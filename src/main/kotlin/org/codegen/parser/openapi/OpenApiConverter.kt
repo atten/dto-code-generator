@@ -1,4 +1,4 @@
-package org.codegen.schema.openapi
+package org.codegen.parser.openapi
 
 import org.codegen.schema.*
 import org.codegen.schema.Constants.Companion.UNSET

@@ -1,15 +1,9 @@
 package org.codegen
 
-import kotlinx.serialization.SerializationException
 import org.codegen.generators.AbstractCodeGenerator
-import org.codegen.schema.Document
+import org.codegen.parser.ParserRegistry
 import org.codegen.schema.Entity
 import org.codegen.schema.Extension
-import org.codegen.schema.SchemaJsonParser
-import org.codegen.schema.openapi.OpenApiJsonParser
-import java.io.File
-import java.text.ParseException
-import java.util.*
 import kotlin.reflect.full.createInstance
 
 class Builder(
@@ -25,7 +19,7 @@ class Builder(
                     it.add(0, defaultInputFile)
                 }
 
-        val documents = inputFiles.associateWith { parseAnyFormatFromFile(it) }
+        val documents = inputFiles.associateWith { ParserRegistry.parseFile(it) }
         val generatorClass = params.target.generatorClass
         val generator = generatorClass.createInstance()
         val rootEntityName =
@@ -62,30 +56,6 @@ class Builder(
             generator.addEntity(rootEntity)
         }
         return generator.render()
-    }
-
-    private fun parseAnyFormatFromFile(path: String): Document {
-        val exceptions = mutableMapOf<String, Exception>()
-        val content = File(path).readText()
-
-        try {
-            return SchemaJsonParser().parse(content)
-        } catch (e: SerializationException) {
-            exceptions["CodegenDoc"] = e
-        }
-
-        try {
-            return OpenApiJsonParser().parse(content)
-        } catch (e: SerializationException) {
-            exceptions["OpenApi"] = e
-        }
-
-        val parserNames = exceptions.keys.joinToString(", ")
-        val errorText = StringJoiner("\n")
-        errorText.add("Failed to parse JSON at '$path'.")
-        errorText.add("Parsers tried: $parserNames. Corresponding exceptions below:")
-        exceptions.forEach { (name, exception) -> errorText.add("$name: $exception") }
-        throw ParseException(errorText.toString(), 0)
     }
 
     private fun applyGeneratorExtension(

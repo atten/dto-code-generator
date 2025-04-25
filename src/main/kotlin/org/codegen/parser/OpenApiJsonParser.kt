@@ -1,11 +1,12 @@
-package org.codegen.schema.openapi
+package org.codegen.parser
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.codegen.parser.openapi.OpenApiConverter
+import org.codegen.parser.openapi.Root
 import org.codegen.schema.Document
 
-class OpenApiJsonParser {
-    fun parse(content: String): Document {
+internal class OpenApiJsonParser : AbstractParser() {
+    override fun parse(content: String): Document {
         val format =
             Json {
                 ignoreUnknownKeys = true

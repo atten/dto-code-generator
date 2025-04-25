@@ -1,0 +1,327 @@
+swagger: '2.0'
+info:
+  title: Some REST API
+  version: 1.0.0
+host: foo.com
+schemes:
+  - http
+basePath: "/api/v1"
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  Basic:
+    type: basic
+security:
+  - Basic: []
+paths:
+  "/basic/{entityId}/":
+    get:
+      operationId: get-basic-dto
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/definitions/BasicDto"
+        '500':
+          description: Неизвестная ошибка
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+    put:
+      operationId: update-basic-dto
+      description: ''
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/definitions/BasicDto"
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                "$ref": "#/definitions/BasicDto"
+    parameters:
+      - name: entityId
+        in: path
+        required: true
+        type: string
+      - name: x-jwt-token
+        in: header
+        description: JWT Auth token
+        style: simple
+        example: a.b.c
+  "/basic":
+    get:
+      operationId: get_basic_dto_list
+      description: endpoint description
+      parameters:
+        - name: page
+          in: query
+          description: A page number within the paginated result set.
+          required: false
+          type: integer
+        - name: page_size
+          in: query
+          description: Number of results to return per page.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/BasicDto"
+    post:
+      operationId: create_basic_dto
+      description: ''
+      parameters:
+        - name: item
+          in: body
+          required: true
+          schema:
+            "$ref": "#/definitions/BasicDto"
+      responses:
+        '201':
+          description: ''
+          schema:
+            "$ref": "#/definitions/BasicDto"
+  "/basic-bulk":
+    get:
+      operationId: get2
+      description: Pageable DTO as query object
+      parameters:
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            "$ref": "#/components/schemas/Pageable"
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/BasicDto"
+    post:
+      operationId: post2
+      description: Array of elements in request body
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                "$ref": "#/definitions/BasicDto"
+        required: true
+      responses:
+        '200':
+          description: ''
+  "/action":
+    get:
+      tags:
+        - some_tag
+      operationId: empty-schema-response
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  "/action/{enum}":
+    post:
+      operationId: action-with-complex-path
+      summary: description
+      description: description
+      parameters:
+        - name: enum
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - variant1
+              - variant2
+              - variant3
+      responses:
+        '200':
+          description: Success
+  "/login":
+    post:
+      tags:
+        - Auth
+      summary: Login For Access Token
+      operationId: login_for_access_token
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              "$ref": "#/components/schemas/Credentials"
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+definitions:
+  BasicDto:
+    required:
+      - some_integer
+      - some_number
+      - booleanWithDefault
+    type: object
+    properties:
+      some_string:
+        title: SomeString
+        type: string
+        maxLength: 150
+        minLength: 1
+      some_integer:
+        title: Some integer
+        description: Field description
+        type: integer
+        maximum: 2147483647
+        minimum: -2147483648
+      some_number:
+        title: Some number
+        description: Field description
+        type: number
+      booleanWithDefault:
+        title: Some boolean
+        type: boolean
+        default: true
+      timestamp:
+        title: Timestamp
+        type: string
+        format: date-time
+        readOnly: true
+      some_enum:
+        title: Some enum
+        type: string
+        enum:
+          - variant1
+          - variant2
+          - variant3
+      nested_object:
+        "$ref": "#/components/schemas/AdvancedDTO"
+      number_or_list:
+        title: number or list
+        anyOf:
+          - type: array
+            items:
+              type: integer
+          - type: integer
+      list_of_mixed_types:
+        title: list of mixed types
+        type: array
+        items:
+          anyOf:
+            - type: string
+            - type: integer
+components:
+  schemas:
+    AdvancedDTO:
+      type: object
+      properties:
+        json:
+          title: Some object
+          description: 'Example: [{"foo": "bar"}]'
+          type: object
+        some_enum:
+          description: Enum field with the same name as of different entity
+          type: string
+          enum:
+            - ROCK
+            - SCISSORS
+            - PAPER
+          default: PAPER
+        javaDuration:
+          type: object
+          properties:
+            seconds:
+              type: integer
+              format: int64
+            zero:
+              type: boolean
+            nano:
+              type: integer
+              format: int32
+            negative:
+              type: boolean
+            units:
+              type: array
+              items:
+                type: object
+                properties:
+                  durationEstimated:
+                    type: boolean
+                  duration:
+                    type: object
+                    properties:
+                      seconds:
+                        type: integer
+                        format: int64
+                      zero:
+                        type: boolean
+                      nano:
+                        type: integer
+                        format: int32
+                      negative:
+                        type: boolean
+                  timeBased:
+                    type: boolean
+                  dateBased:
+                    type: boolean
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        proxiedError:
+          "$ref": "#/components/schemas/JsonNode"
+    JsonNode:
+      type: object
+    Pageable:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+    Credentials:
+      title: ''
+      required:
+        - username
+        - password
+      type: object
+      properties:
+        username:
+          title: Username
+          type: string
+        password:
+          title: Password
+          type: string

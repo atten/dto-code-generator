@@ -1,10 +1,10 @@
-package org.codegen.schema
+package org.codegen.parser
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.codegen.schema.Document
 
-class SchemaJsonParser {
-    fun parse(content: String): Document {
+internal class SchemaJsonParser : AbstractParser() {
+    override fun parse(content: String): Document {
         val format =
             Json {
                 ignoreUnknownKeys = false
