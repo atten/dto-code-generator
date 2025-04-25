@@ -12,7 +12,7 @@ class PyApiClientGeneratorTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_API_CLIENT
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         this.javaClass.getResource("/input/entities.json")!!.path,
                         this.javaClass.getResource("/input/endpoints.json")!!.path,
@@ -29,7 +29,7 @@ class PyApiClientGeneratorTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_API_CLIENT
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         this.javaClass.getResource("/input/openApi.json")!!.path,
                     )
@@ -45,7 +45,7 @@ class PyApiClientGeneratorTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_API_CLIENT
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         this.javaClass.getResource("/input/openApi.yaml")!!.path,
                     )
@@ -62,7 +62,7 @@ class PyApiClientGeneratorTest {
             Args().also {
                 it.target = AllGeneratorsEnum.PY_API_CLIENT
                 it.name = "SomeRestApiCustom"
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         this.javaClass.getResource("/input/openApi.json")!!.path,
                     )
@@ -80,7 +80,7 @@ class PyApiClientGeneratorTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_API_CLIENT
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         this.javaClass.getResource("/input/openApi.json")!!.path,
                     )

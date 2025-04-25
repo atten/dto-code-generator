@@ -12,7 +12,7 @@ class PyDataclassGeneratorTest {
     val args =
         Args().also {
             it.target = AllGeneratorsEnum.PY_DATACLASS
-            it.inputFiles =
+            it.inputPaths =
                 listOf(
                     this.javaClass.getResource("/input/entities.json")!!.path,
                 )

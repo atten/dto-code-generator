@@ -3,34 +3,34 @@ package org.codegen
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.ParameterException
 import java.io.File
-import java.util.*
 
 class ArgsParser(
     private val input: Array<String>,
 ) {
-    fun parse(): Optional<Args> {
+    fun parse(): Args? {
         val params = Args()
         val parser = JCommander(Args())
+        parser.programName = "dto-codegen"
 
         try {
             JCommander.newBuilder().addObject(params).build().parse(*input)
         } catch (e: ParameterException) {
             println(e.toString())
             parser.usage()
-            return Optional.empty()
+            return null
         }
         if (params.help) {
             parser.usage()
-            return Optional.empty()
+            return null
         }
         if (params.version) {
             parser.console.println(AppConfiguration.version)
-            return Optional.empty()
+            return null
         }
 
-        params.inputFiles = extractFiles(params.inputFiles)
+        params.inputPaths = extractFiles(params.inputPaths)
 
-        return Optional.of(params)
+        return params
     }
 
     private fun extractFiles(list: List<String>): List<String> {

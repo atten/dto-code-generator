@@ -45,59 +45,46 @@ Other versions lists:
 
 ## Usage
 
-    ./dto-codegen [options] files/directories to parse
+    dto-codegen [options] <files/directories/urls...>
 
 Options:
 
-    -t, --target
-    Target implementation
-    Possible Values: [KT_DATACLASS, KT_SERIALIZABLE_DATACLASS, KT_INTERFACE, PY_DJANGO_MODEL, PY_API_CLIENT, PY_API_ASYNC_CLIENT, PY_AMQP_BLOCKING_CLIENT, PY_AMQP_GEVENT_CLIENT, PY_MARSHMALLOW_DATACLASS, PY_DATACLASS]
-    
-    -n, --name
-    Generated class name (inferred from input files if not specified)
-    Default: <empty string>
-    
-    --include-path
-    Include only paths containing given strings
-    Default: []
-    
-    --exclude-path
-    Do not include paths containing given strings
-    Default: []
-    
-    -p, --prefixed
-    If enabled, add prefix to all fields
-    Default: false
-    
-    --help
-    Show help usage and exit
-    
-    --version, -v
-    Display version and exit
+    * -t, --target
+      Target implementation
+      Possible Values: [KT_DATACLASS, KT_SERIALIZABLE_DATACLASS, KT_INTERFACE, PY_DJANGO_MODEL, PY_API_CLIENT, PY_API_ASYNC_CLIENT, PY_AMQP_BLOCKING_CLIENT, PY_AMQP_GEVENT_CLIENT, PY_MARSHMALLOW_DATACLASS, PY_DATACLASS]
+
+      -n, --name
+      Generated class name (inferred from input files if not specified)
+      Default: <empty string>
+
+      --include-url-path
+      Include only paths containing given strings
+      Default: []
+
+      --exclude-url-path
+      Do not include paths containing given strings
+      Default: []
+
+      -p, --prefixed
+      If enabled, add prefix to all fields
+      Default: false
+
+      --help
+      Show help usage and exit
+
+      --version, -v
+      Display version and exit
 
 ## Example
 
 ### Script for python API client generation from OpenApi
 
-Downloads remote OpenApi spec (gitlab assets), runs docker container with generator and saves output to file.
+Runs generator in docker container, reads OpenApi spec from URL and saves output to file.
 
-    #!/usr/bin/env sh
-    
-    OPENAPI_URL="https://gitlab.com/atten0/dto-code-generator/-/raw/master/src/test/resources/input/openApi.json"
-    DOCKER_IMAGE="registry.gitlab.com/atten0/dto-code-generator:master"
-    
-    docker pull $DOCKER_IMAGE
-    
-    echo "Fetch openapi schema..."
-    wget --quiet -O /tmp/openapi.json $OPENAPI_URL
-    
-    echo "Generate python API client..."
-    docker run --rm \
-    -v /tmp/openapi.json:/openapi.json:ro \
-    $DOCKER_IMAGE \
-    /openapi.json \
-    -t PY_API_CLIENT \
-    > ~/client_generated.py
+    docker run --rm registry.gitlab.com/atten0/dto-code-generator:master \
+        https://gitlab.com/atten0/dto-code-generator/-/raw/master/src/test/resources/input/openApi.json \
+        -t PY_API_CLIENT \
+        > ~/client_generated.py
 
 ## Available generators
 

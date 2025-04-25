@@ -3,5 +3,7 @@ import org.codegen.Builder
 
 fun main(args: Array<String>) {
     val parser = ArgsParser(args)
-    parser.parse().ifPresent { params -> Builder(params).build().also { print(it) } }
+    parser.parse()?.let { params ->
+        Builder(params).build().also { print(it) }
+    }
 }

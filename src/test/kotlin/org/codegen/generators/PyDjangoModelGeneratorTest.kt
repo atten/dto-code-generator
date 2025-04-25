@@ -12,7 +12,7 @@ class PyDjangoModelGeneratorTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         this.javaClass.getResource("/input/entities.json")!!.path,
                     )
@@ -29,7 +29,7 @@ class PyDjangoModelGeneratorTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         this.javaClass.getResource("/input/openApi.json")!!.path,
                     )

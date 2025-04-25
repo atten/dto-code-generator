@@ -7,10 +7,10 @@ import org.codegen.generators.AllGeneratorsEnum
 @Parameters(commandDescription = "Console tool which generates language-specific data classes and validators from OpenApi schema")
 class Args {
     @Parameter(
-        description = "files/directories to parse",
+        description = "<files/directories/urls...>",
         required = true,
     )
-    lateinit var inputFiles: List<String>
+    lateinit var inputPaths: List<String>
 
     @Parameter(
         names = ["-t", "--target"],

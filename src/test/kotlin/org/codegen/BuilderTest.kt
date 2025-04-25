@@ -12,7 +12,7 @@ class BuilderTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         "/non/existent/file",
                     )
@@ -26,7 +26,7 @@ class BuilderTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         this.javaClass.getResource("/input/entities.json")!!.path,
                         this.javaClass.getResource("/input/unknownSchemaFields.json")!!.path,
@@ -41,7 +41,7 @@ class BuilderTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         this.javaClass.getResource("/input/entitiesWithSameName.json")!!.path,
                     )
@@ -55,7 +55,7 @@ class BuilderTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_DJANGO_MODEL
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         this.javaClass.getResource("/input/empty.json")!!.path,
                     )

@@ -12,7 +12,7 @@ class KtSerializableDataclassGeneratorTest {
     val args =
         Args().also {
             it.target = AllGeneratorsEnum.KT_SERIALIZABLE_DATACLASS
-            it.inputFiles =
+            it.inputPaths =
                 listOf(
                     this.javaClass.getResource("/input/entities.json")!!.path,
                 )

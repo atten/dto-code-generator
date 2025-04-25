@@ -11,7 +11,7 @@ class PyAmqpBlockingClientGeneratorTest {
         val args =
             Args().also {
                 it.target = AllGeneratorsEnum.PY_AMQP_BLOCKING_CLIENT
-                it.inputFiles =
+                it.inputPaths =
                     listOf(
                         this.javaClass.getResource("/input/entities.json")!!.path,
                         this.javaClass.getResource("/input/endpoints.json")!!.path,
