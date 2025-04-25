@@ -1,11 +1,11 @@
 package org.codegen.generators
 
-import org.codegen.format.snakeCase
 import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.Endpoint
 import org.codegen.schema.EndpointVerb
 import org.codegen.schema.MethodArgument
+import org.codegen.utils.snakeCase
 import java.io.File
 
 open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseClientGenerator(proxy) {

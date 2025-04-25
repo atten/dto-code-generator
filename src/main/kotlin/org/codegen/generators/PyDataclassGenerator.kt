@@ -1,12 +1,14 @@
 package org.codegen.generators
 
-import org.codegen.format.*
 import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.DataType
 import org.codegen.schema.Entity
 import org.codegen.schema.Property
+import org.codegen.utils.CodeFormatRules
 import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
+import org.codegen.utils.camelCase
+import org.codegen.utils.snakeCase
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 

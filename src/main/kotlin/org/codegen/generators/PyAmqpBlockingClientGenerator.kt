@@ -1,7 +1,7 @@
 package org.codegen.generators
 
-import org.codegen.format.snakeCase
 import org.codegen.schema.Endpoint
+import org.codegen.utils.snakeCase
 import java.io.File
 
 open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseClientGenerator(proxy) {

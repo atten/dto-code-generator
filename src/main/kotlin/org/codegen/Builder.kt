@@ -5,8 +5,8 @@ import org.codegen.generators.AbstractCodeGenerator
 import org.codegen.schema.Document
 import org.codegen.schema.Entity
 import org.codegen.schema.Extension
-import org.codegen.schema.SchemaParser
-import org.codegen.schema.openapi.OpenApiParser
+import org.codegen.schema.SchemaJsonParser
+import org.codegen.schema.openapi.OpenApiJsonParser
 import java.io.File
 import java.text.ParseException
 import java.util.*
@@ -69,13 +69,13 @@ class Builder(
         val content = File(path).readText()
 
         try {
-            return SchemaParser().parse(content)
+            return SchemaJsonParser().parse(content)
         } catch (e: SerializationException) {
             exceptions["CodegenDoc"] = e
         }
 
         try {
-            return OpenApiParser().parse(content)
+            return OpenApiJsonParser().parse(content)
         } catch (e: SerializationException) {
             exceptions["OpenApi"] = e
         }

@@ -1,9 +1,11 @@
 package org.codegen.generators
 
-import org.codegen.format.*
 import org.codegen.schema.Entity
 import org.codegen.schema.Field
 import org.codegen.utils.EnvironmentUtils.Companion.getEnvFlag
+import org.codegen.utils.camelCase
+import org.codegen.utils.lowercaseFirst
+import org.codegen.utils.snakeCase
 
 /**
  * Supports kotlin serializer and jackson annotations

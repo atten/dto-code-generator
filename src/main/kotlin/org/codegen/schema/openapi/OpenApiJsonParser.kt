@@ -4,7 +4,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.codegen.schema.Document
 
-class OpenApiParser {
+class OpenApiJsonParser {
     fun parse(content: String): Document {
         val format =
             Json {

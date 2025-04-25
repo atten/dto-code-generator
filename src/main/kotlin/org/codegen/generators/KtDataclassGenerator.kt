@@ -1,10 +1,13 @@
 package org.codegen.generators
 
-import org.codegen.format.*
 import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.Entity
 import org.codegen.schema.Field
+import org.codegen.utils.CodeFormatRules
+import org.codegen.utils.camelCase
+import org.codegen.utils.lowercaseFirst
+import org.codegen.utils.snakeCase
 
 open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
     CodeFormatRules.KOTLIN,

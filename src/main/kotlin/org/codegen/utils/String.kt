@@ -1,4 +1,4 @@
-package org.codegen.format
+package org.codegen.utils
 
 internal fun String.normalize(): String {
     require(this.isNotEmpty()) { "String can't be empty" }

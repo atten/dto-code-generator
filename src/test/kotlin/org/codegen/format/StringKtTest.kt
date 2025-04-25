@@ -1,5 +1,9 @@
 package org.codegen.format
 
+import org.codegen.utils.camelCase
+import org.codegen.utils.normalize
+import org.codegen.utils.pluralize
+import org.codegen.utils.snakeCase
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

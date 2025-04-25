@@ -1,7 +1,5 @@
 package org.codegen.generators
 
-import org.codegen.format.pluralize
-import org.codegen.format.snakeCase
 import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.DataType
@@ -9,6 +7,8 @@ import org.codegen.schema.Entity
 import org.codegen.schema.Field
 import org.codegen.schema.Validator
 import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
+import org.codegen.utils.pluralize
+import org.codegen.utils.snakeCase
 import java.io.File
 import kotlin.jvm.optionals.getOrNull
 

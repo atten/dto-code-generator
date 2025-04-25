@@ -1,9 +1,9 @@
 package org.codegen.generators
 
-import org.codegen.format.*
 import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.Entity
 import org.codegen.schema.Method
+import org.codegen.utils.*
 
 class KtInterfaceGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
     CodeFormatRules.KOTLIN,

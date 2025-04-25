@@ -1,8 +1,8 @@
 package org.codegen.generators
 
-import org.codegen.format.CodeFormatRules
 import org.codegen.schema.DataType
 import org.codegen.schema.Entity
+import org.codegen.utils.CodeFormatRules
 import org.codegen.utils.EnvironmentUtils.Companion.substituteEnvVariables
 import java.util.StringJoiner
 import kotlin.reflect.full.primaryConstructor
