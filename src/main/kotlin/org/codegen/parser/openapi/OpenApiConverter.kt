@@ -160,15 +160,7 @@ internal class OpenApiConverter(
         return MethodArgument(
             name = parameter.name,
             description = description.toString(),
-            dtype =
-                if (!parameter.type.isNullOrEmpty()) {
-                    dtypeMapping[parameter.type]!!
-                } else if (parameter.schema?.definitionName() != null) {
-                    parameter.schema.definitionName().let { dtypeMapping.getOrDefault(it, it) }
-                } else {
-                    // parameter is implied to be string by default
-                    "str"
-                },
+            dtype = parameter.definitionName().let { dtypeMapping.getOrDefault(it, it) },
             nullable = !parameter.required,
             default = if (parameter.required) UNSET else null,
             many = parameter.type == "array" || parameter.schema?.type == "array",

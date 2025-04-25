@@ -262,7 +262,7 @@ def timedelta_to_java_duration(delta: timedelta) -> str:
 @dataclass
 class AdvancedDto:
     # Example: [{"foo": "bar"}]
-    json: t.Optional[dict] = None
+    json_underscoded: t.Optional[dict] = None
     # Enum field with the same name as of different entity
     some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(ADVANCED_DTO_SOME_ENUMS)])), default="PAPER")
     java_duration: t.Optional[timedelta] = field(metadata=dict(marshmallow_field=JavaDurationField(allow_none=True, data_key="javaDuration")), default=None)

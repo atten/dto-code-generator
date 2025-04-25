@@ -57,6 +57,6 @@ internal data class Property(
                 .joinToString(separator = "Or")
         }
 
-        TODO()
+        return "string"
     }
 }

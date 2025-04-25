@@ -2,7 +2,6 @@ package org.codegen.utils
 
 internal fun String.normalize(): String {
     require(this.isNotEmpty()) { "String can't be empty" }
-    require(this[0].isLetter() or this[0].isWhitespace()) { "String must start with letter: '$this'" }
 
     var cleaned = this.map { if (it.isLetterOrDigit()) it else ' ' }.joinToString("")
     cleaned = cleaned.trim()

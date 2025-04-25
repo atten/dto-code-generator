@@ -241,7 +241,7 @@ components:
     AdvancedDTO:
       type: object
       properties:
-        json:
+        _json_underscoded:
           title: Some object
           description: 'Example: [{"foo": "bar"}]'
           type: object
@@ -294,7 +294,7 @@ components:
       type: object
       properties:
         message:
-          type: string
+          description: error description
         proxiedError:
           "$ref": "#/components/schemas/JsonNode"
     JsonNode:

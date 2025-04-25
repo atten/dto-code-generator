@@ -13,4 +13,21 @@ internal data class Parameter(
     val type: String? = null,
     val format: String? = null,
     val schema: Schema? = null,
-)
+    val items: Schema? = null,
+) {
+    fun definitionName(): String {
+        if (type == "array") {
+            return items!!.definitionName()
+        }
+
+        if (schema?.definitionName() != null) {
+            return schema.definitionName()
+        }
+
+        if (type != null) {
+            return type
+        }
+
+        return "string"
+    }
+}

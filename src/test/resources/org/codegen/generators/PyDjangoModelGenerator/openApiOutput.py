@@ -15,7 +15,7 @@ class SomeEnum(models.TextChoices):
 
 
 class AdvancedDto(models.Model):
-    json = models.JSONField(null=True, blank=True, verbose_name=_('Example: [{"foo": "bar"}]'))
+    json_underscoded = models.JSONField(null=True, blank=True, verbose_name=_('Example: [{"foo": "bar"}]'))
     some_enum = models.CharField(null=True, blank=True, max_length=8, default="PAPER", choices=SomeEnum.choices, verbose_name=_('Enum field with the same name as of different entity'))
     java_duration = models.CharField(null=True, blank=True, max_length=32)
 
@@ -45,7 +45,7 @@ class BasicDto(models.Model):
 
 
 class ErrorResponse(models.Model):
-    message = models.CharField(null=True, blank=True, max_length=DEFAULT_MAX_LENGTH)
+    message = models.CharField(null=True, blank=True, max_length=DEFAULT_MAX_LENGTH, verbose_name=_('error description'))
     proxied_error = models.JSONField(null=True, blank=True)
 
     class Meta:
