@@ -52,8 +52,8 @@ class Builder(
 
             // add root-level endpoints to default entity
             document.endpoints
-                .filter { endpoint -> params.excludePaths.none { it in endpoint.path } }
-                .filter { endpoint -> params.indludePaths.isEmpty() || params.indludePaths.any { it in endpoint.path } }
+                .filter { endpoint -> params.excludeUrlPaths.none { it in endpoint.path } }
+                .filter { endpoint -> params.includeUrlPaths.isEmpty() || params.includeUrlPaths.any { it in endpoint.path } }
                 .sortedBy { it.path }
                 .forEach { rootEntity.endpoints.add(it) }
         }

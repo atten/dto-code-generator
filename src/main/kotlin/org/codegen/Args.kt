@@ -28,20 +28,20 @@ class Args {
     var name = ""
 
     @Parameter(
-        names = ["--include-path"],
+        names = ["--include-url-path"],
         description = "Include only paths containing given strings",
         variableArity = true,
         order = 10,
     )
-    var indludePaths: List<String> = listOf()
+    var includeUrlPaths: List<String> = listOf()
 
     @Parameter(
-        names = ["--exclude-path"],
+        names = ["--exclude-url-path"],
         description = "Do not include paths containing given strings",
         variableArity = true,
         order = 11,
     )
-    var excludePaths: List<String> = listOf()
+    var excludeUrlPaths: List<String> = listOf()
 
     @Parameter(
         names = ["-p", "--prefixed"],
