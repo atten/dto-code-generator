@@ -12,7 +12,7 @@ before_script:
 
 gradle:
   stage: build
-  image: openjdk:17
+  image: openjdk:21
   only:
     variables:
       # run for protected branches only
@@ -31,7 +31,7 @@ gradle:
 
 run-tests:
   stage: test
-  image: openjdk:17
+  image: openjdk:21
   only:
     variables:
       # run for protected branches only
@@ -122,7 +122,7 @@ run-tests-PyDjangoModelGenerator:
 
 publish-distro:
   stage: publish
-  image: openjdk:17
+  image: openjdk:21
   only:
     variables:
       # run for protected branches only
