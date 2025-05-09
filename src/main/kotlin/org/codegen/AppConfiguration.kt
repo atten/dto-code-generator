@@ -3,6 +3,7 @@ package org.codegen
 import java.util.Properties
 
 object AppConfiguration {
+    val name: String by lazy { getProperties().getProperty("name") }
     val version: String by lazy { getProperties().getProperty("version") }
 
     private fun getProperties(): Properties {

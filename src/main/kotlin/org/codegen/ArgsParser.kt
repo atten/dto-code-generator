@@ -10,7 +10,7 @@ class ArgsParser(
     fun parse(): Args? {
         val params = Args()
         val parser = JCommander(Args())
-        parser.programName = "dto-codegen"
+        parser.programName = AppConfiguration.name
 
         try {
             JCommander.newBuilder().addObject(params).build().parse(*input)

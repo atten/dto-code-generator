@@ -5,7 +5,7 @@ build:
 
 
 build_image:
-	./gradlew jibDockerBuild --image=dto-codegen:local
+	./gradlew jibDockerBuild --image=ez-code-generator:local
 
 
 # ===================== LOCAL ENV =================
@@ -40,8 +40,14 @@ test_all: test test_generated_code
 # ===================== RELEASE ===================
 
 git_set_remotes:
-	git remote show | grep github || git remote add --mirror=push github git@github.com:atten/dto-code-generator.git
-	git remote show | grep gitlab || git remote add --mirror=push gitlab git@gitlab.com:atten0/dto-code-generator.git
+	git remote show | grep github || git remote add github git@github.com:atten/ez-code-generator.git
+	git remote show | grep gitlab || git remote add gitlab git@gitlab.com:atten0/ez-code-generator.git
+
+git_clear_remotes:
+	git remote show | grep gitlab && git remote remove gitlab || echo
+	git remote show | grep github && git remote remove github || echo
+
+git_reset_remotes: git_clear_remotes git_set_remotes
 
 release_major: git_set_remotes
 	./bumpversion.sh major

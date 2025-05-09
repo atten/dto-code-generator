@@ -18,12 +18,12 @@ git branch "release_$NEW_VERSION"
 git checkout "release_$NEW_VERSION"
 
 # publish new docker image on gitlab
-git push --set-upstream origin "release_$NEW_VERSION"
+git push --set-upstream gitlab "release_$NEW_VERSION"
 git push --set-upstream github "release_$NEW_VERSION"
 
 # publish new archive on gitlab
 git checkout master
-git push origin
+git push gitlab
 git push github
 
 echo "Publish new release on github manually!"
