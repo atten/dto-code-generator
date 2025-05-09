@@ -37,13 +37,17 @@ test_generated_code:
 test_all: test test_generated_code
 
 
-# ===================== PUBLISH ===================
+# ===================== RELEASE ===================
 
-release_major:
+git_set_remotes:
+	git remote show | grep github || git remote add --mirror=push github git@github.com:atten/dto-code-generator.git
+	git remote show | grep gitlab || git remote add --mirror=push gitlab git@gitlab.com:atten0/dto-code-generator.git
+
+release_major: git_set_remotes
 	./bumpversion.sh major
 
-release_minor:
+release_minor: git_set_remotes
 	./bumpversion.sh minor
 
-release_patch:
+release_patch: git_set_remotes
 	./bumpversion.sh patch
