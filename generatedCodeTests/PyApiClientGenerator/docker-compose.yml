@@ -1,8 +1,11 @@
 services:
 
-  py_api_client_python_3_10:
+  py_api_client:
+    container_name: $CONTAINER_NAME
     build:
       context: .
+      args:
+        IMAGE: $IMAGE
     links:
       - mock_server
     environment:

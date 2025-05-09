@@ -1,7 +1,10 @@
 services:
 
-  py_api_async_client_python_3_10:
+  py_api_async_client:
+    container_name: $CONTAINER_NAME
     build:
       context: .
+      args:
+        IMAGE: $IMAGE
     volumes:
       - './htmlcov/:/app/htmlcov/'

@@ -1,7 +1,10 @@
 services:
 
-  py_dataclass_python_3_10:
+  py_dataclass:
+    container_name: $CONTAINER_NAME
     build:
       context: .
+      args:
+        IMAGE: $IMAGE
     volumes:
       - './htmlcov/:/app/htmlcov/'

@@ -1,4 +1,5 @@
-FROM python:3.10-alpine
+ARG IMAGE
+FROM $IMAGE
 
 ADD requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
@@ -11,4 +12,4 @@ RUN sed -i 's/INSTALLED_APPS = \[/INSTALLED_APPS = \["entities","openapi",/g' te
 
 ADD . .
 
-CMD ./manage.py makemigrations entities openapi
+CMD rm -rf entities/migrations/* openapi/migrations/* && ./manage.py makemigrations entities openapi
