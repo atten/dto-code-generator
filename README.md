@@ -3,17 +3,121 @@
 [![pipeline](https://gitlab.com/atten0/ez-code-generator/badges/master/pipeline.svg)](https://gitlab.com/atten0/ez-code-generator/-/pipelines)
 [![coverage](https://gitlab.com/atten0/ez-code-generator/badges/master/coverage.svg)](http://www.jacoco.org/jacoco)
 
-Console tool for generating API clients, data classes and validators. Written in Kotlin, produces Kotlin and Python code for various purposes (see "Available generators" below). For the input it takes OpenApi specification (JSON/YAML) or custom codegen schema (JSON).
+Console tool for generating API clients, data classes and validators. Written in Kotlin, produces Kotlin and Python code for various purposes (see "Available generators" below). For the input it takes OpenApi document (JSON/YAML, v2.0 ‒ v3.1.0) or custom codegen schema (JSON).
 
 The main goal of this project is to reduce integration costs between teams in multi-service environments.
 
+<table>
+<tr>
+<td> OpenAPI source YAML </td>
+<td>
+
+```yaml
+definitions:
+  BasicDto:
+    type: object
+    properties:
+      a:
+        title: Some integer
+        description: Field description
+        type: integer
+        maximum: 255
+        minimum: 0
+      b:
+        title: Timestamp
+        type: string
+        format: date-time
+      c:
+        title: Some enum
+        type: string
+        enum:
+          - variant1
+          - variant2
+          - variant3
+        default: variant1
+    required:
+      - a
+```
+
+</td>
+</tr>
+<tr>
+<td> Python generated dataclass </td>
+<td>
+
+```python
+@dataclass
+class BasicDto:
+    # Field description
+    a: int = field()
+    b: t.Optional[datetime] = None
+    c: t.Optional[str] = "variant1"    
+```
+
+</td>
+</tr>
+<tr>
+<td> Kotlin generated classes </td>
+<td>
+
+```kotlin
+@Serializable
+enum class SomeEnum(val value: String) {
+    @SerialName("variant1")
+    VARIANT_1("variant1"),
+    @SerialName("variant2")
+    VARIANT_2("variant2"),
+    @SerialName("variant3")
+    VARIANT_3("variant3"),
+}
+
+@Serializable
+data class BasicDto(
+    // Field description
+    val a: Int,
+    @Contextual
+    val b: Instant? = null,
+    val c: SomeEnum? = SomeEnum.VARIANT_1,
+)
+```
+
+</td>
+</tr>
+</table>
+
+> More examples: section [Available generators](#available-generators) below
+
+### Features
+
+- Several python frameworks support (asyncio, django, pure dataclass etc);
+- Schema validation, logging, error handling, retries and sessions within generated client out-of-the-box;
+- Streamed dump/load (ijson);
+- Kotlin experimental support.
+
+### Key differences
+
+*ez-code-generator* is similar to [openapi-generator](https://github.com/openapitools/openapi-generator) except a major aspect: **a single output file instead of a package**. 
+It is meant to be straightforward and concise. No extra configuration options, no tricky preparations before use.
+Just install dependencies, import generated client class and instantiate it. Then you can call API methods which take and return generated DTOs.
+
+```python
+from client_generated import AllConstantsCollection as consts
+from client_generated import AllDataclassesCollection as dto
+from client_generated import RestApi
+
+client = RestApi('https://example.com/v1/')
+item = client.get_item(a=10)
+
+# client = BasicDto(a=10, c="variant1")
+```
+
 ### Common use cases
 
-- Write integration code in agile, fast-moving projects
-- Use code generation in CI
-- Track API changes and check them for backward compatibility on both sides (client/server)
-- Build ETL pipelines with transparent interfaces
-- Unify type declarations across languages
+- Write integration code in agile, fast-moving projects;
+- Use code generation in CI;
+- Track API changes and check them for backward compatibility on both sides (client/server);
+- Build ETL pipelines with transparent interfaces;
+- Unify type declarations across languages.
 
 ## Install
 
@@ -31,7 +135,7 @@ https://gitlab.com/atten0/ez-code-generator/container_registry
 
 Download and extract archive into current dir:
 
-```
+```shell
 wget -qO- https://github.com/atten/ez-code-generator/releases/download/v3.0.0/ez-codegen-3.0.0.zip | busybox unzip -
 cd ez-codegen-3.0.0/bin/
 chmod +x ez-codegen
@@ -81,10 +185,14 @@ Options:
 
 Runs generator in docker container, reads OpenApi spec from URL and saves output to file.
 
-    docker run --rm registry.gitlab.com/atten0/ez-code-generator:master \
-        https://gitlab.com/atten0/ez-code-generator/-/raw/master/src/test/resources/input/openApi.json \
-        -t PY_API_CLIENT \
-        > client_generated.py
+```shell
+docker run --rm registry.gitlab.com/atten0/ez-code-generator:master \
+    https://gitlab.com/atten0/ez-code-generator/-/raw/master/src/test/resources/input/openApi.json \
+    -t PY_API_CLIENT \
+    > client_generated.py
+```
+
+> Result: [client_generated.py](src/test/resources/org/codegen/generators/PyApiClientGenerator/endpointsOutput.py)
 
 ## Available generators
 
