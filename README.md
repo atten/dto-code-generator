@@ -110,7 +110,7 @@ from client_generated import RestApi
 client = RestApi('https://example.com/v1/')
 item = client.get_item(a=10)
 
-# client = BasicDto(a=10, c="variant1")
+# item = BasicDto(a=10, b=None, c="variant1")
 ```
 
 ### Common use cases
