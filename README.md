@@ -3,9 +3,11 @@
 [![pipeline](https://gitlab.com/atten0/ez-code-generator/badges/master/pipeline.svg)](https://gitlab.com/atten0/ez-code-generator/-/pipelines)
 [![coverage](https://gitlab.com/atten0/ez-code-generator/badges/master/coverage.svg)](http://www.jacoco.org/jacoco)
 
-Console tool for generating API clients, data classes and validators. Written in Kotlin, produces Kotlin and Python code for various purposes (see "Available generators" below). For the input it takes OpenApi document (JSON/YAML, v2.0 ‒ v3.1.0) or custom codegen schema (JSON).
+Console tool for generating API clients, data classes and validators. Written in Kotlin, produces Kotlin and Python code. For the input it takes OpenApi document (JSON/YAML, v2.0 ‒ v3.1.0) or custom codegen schema (JSON).
 
 The main goal of this project is to reduce integration costs between teams in multi-service environments.
+
+### Example
 
 <table>
 <tr>
@@ -98,7 +100,7 @@ data class BasicDto(
 
 *ez-code-generator* is similar to [openapi-generator](https://github.com/openapitools/openapi-generator) except a major aspect: **a single output file instead of a package**. 
 It is meant to be straightforward and concise. No extra configuration options, no tricky preparations before use.
-Just install dependencies, import generated client class and instantiate it. Then you can call API methods which take and return generated DTOs.
+Just install dependencies, import generated client class and instantiate it. Then call API methods which take and return generated DTOs:
 
 ```python
 from client_generated import AllConstantsCollection as consts
