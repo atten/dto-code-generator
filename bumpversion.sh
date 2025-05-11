@@ -17,13 +17,11 @@ echo "Bump version: $CURRENT_VERSION → $NEW_VERSION"
 git branch "release_$NEW_VERSION"
 git checkout "release_$NEW_VERSION"
 
-# publish new docker image on gitlab
+# push release branch and trigger CI
 git push --set-upstream gitlab "release_$NEW_VERSION"
 git push --set-upstream github "release_$NEW_VERSION"
 
-# publish new archive on gitlab
+# push master branch and tags
 git checkout master
-git push gitlab
-git push github
-
-echo "Publish new release on github manually!"
+git push --tags gitlab
+git push --tags github

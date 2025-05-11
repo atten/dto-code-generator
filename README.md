@@ -129,9 +129,7 @@ item = client.get_item(a=10)
 docker image pull registry.gitlab.com/atten0/ez-code-generator:master
 ```
 
-Other image versions:
-
-https://gitlab.com/atten0/ez-code-generator/container_registry
+[Other image versions](https://gitlab.com/atten0/ez-code-generator/container_registry/1706585)
 
 ### Binary format (linux/x86)
 
@@ -143,11 +141,13 @@ cd ez-codegen-3.0.0/bin/
 chmod +x ez-codegen
 ```
 
-Other versions lists:
+Other binary versions: [Gitlab](https://gitlab.com/atten0/ez-code-generator/-/jobs/artifacts/master/browse/build/distributions/?job=publish-distro) | [Github](https://github.com/atten/ez-code-generator/releases)
 
-- https://gitlab.com/atten0/ez-code-generator/-/jobs/artifacts/master/browse/build/distributions/?job=publish-distro
+### Build from source
 
-- https://github.com/atten/ez-code-generator/releases
+```shell
+make build
+```
 
 ## Usage
 
@@ -181,7 +181,7 @@ Options:
       --version, -v
       Display version and exit
 
-## Example
+## Basic guide
 
 ### Script for python API client generation from OpenApi
 
@@ -194,7 +194,9 @@ docker run --rm registry.gitlab.com/atten0/ez-code-generator:master \
     > client_generated.py
 ```
 
-> Result: [client_generated.py](src/test/resources/org/codegen/generators/PyApiClientGenerator/endpointsOutput.py)
+> Result: [client_generated.py](src/test/resources/org/codegen/generators/PyApiClientGenerator/endpointsOutput.py).
+
+Usage examples: [test_clent.py](generatedCodeTests/PyApiClientGenerator/test_clent.py)
 
 ## Available generators
 

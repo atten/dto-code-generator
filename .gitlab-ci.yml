@@ -27,6 +27,7 @@ gradle:
         - build/
   script:
     - ./gradlew --warning-mode all ktlintCheck
+    - ./gradlew build
     - ./gradlew jibBuildTar --image=$IMAGE
 
 run-tests:
@@ -137,8 +138,7 @@ publish-distro:
     paths:
       - build/distributions/
   script:
-    - ./gradlew build
-
+    - ls build/distributions/
 
 docker-push:
   stage: publish
@@ -160,3 +160,22 @@ docker-push:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker load --input build/jib-image.tar
     - docker push $IMAGE
+
+github-create-release:
+  stage: publish
+  image: alpine:latest
+  only:
+    variables:
+      # run for release branches only
+      - $CI_COMMIT_BRANCH =~ 'release_'
+  cache:
+    key: $CI_PIPELINE_ID
+    policy: pull
+    paths:
+      - build/
+  script:
+    - apk add github-cli
+    - git tag --list
+    - git status
+    - git remote add github github.com:atten/ez-code-generator.git
+    - gh release create $(git tag --contains HEAD) --generate-notes --verify-tag build/distributions/*.zip
