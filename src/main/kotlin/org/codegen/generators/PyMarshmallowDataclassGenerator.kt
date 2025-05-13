@@ -7,9 +7,9 @@ import org.codegen.schema.Entity
 import org.codegen.schema.Field
 import org.codegen.schema.Validator
 import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
+import org.codegen.utils.Reader
 import org.codegen.utils.pluralize
 import org.codegen.utils.snakeCase
-import java.io.File
 import kotlin.jvm.optionals.getOrNull
 
 class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : PyDataclassGenerator(
@@ -20,10 +20,9 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
         headers.add("import typing as t")
 
         listOf(
-            "/templates/python/baseSchema.py",
+            "resource:/templates/python/baseSchema.py",
         ).joinToString(separator = "\n\n") { path ->
-            this.javaClass.getResource(path)!!.path
-                .let { File(it).readText() }
+            Reader().readFileOrResourceOrUrl(path)
         }
             .let { addCodePart(it) }
 

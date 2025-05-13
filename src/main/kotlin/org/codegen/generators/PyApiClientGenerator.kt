@@ -5,8 +5,8 @@ import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.Endpoint
 import org.codegen.schema.EndpointVerb
 import org.codegen.schema.MethodArgument
+import org.codegen.utils.Reader
 import org.codegen.utils.snakeCase
-import java.io.File
 
 open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseClientGenerator(proxy) {
     private fun buildArgumentDefaultValue(argument: MethodArgument): String {
@@ -165,15 +165,12 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseCl
 
     override fun getBodyIncludedFiles() =
         listOf(
-            "/templates/python/baseJsonHttpClient.py",
-            "/templates/python/baseSerializer.py",
-            "/templates/python/baseDeserializer.py",
-            "/templates/python/failsafeCall.py",
-            "/templates/python/buildCurlCommand.py",
+            "resource:/templates/python/baseJsonHttpClient.py",
+            "resource:/templates/python/baseSerializer.py",
+            "resource:/templates/python/baseDeserializer.py",
+            "resource:/templates/python/failsafeCall.py",
+            "resource:/templates/python/buildCurlCommand.py",
         )
 
-    override fun getMainApiClassBody() =
-        this.javaClass.getResource("/templates/python/apiClientBody.py")!!.path.let {
-            File(it).readText()
-        }
+    override fun getMainApiClassBody() = Reader().readFileOrResourceOrUrl("resource:/templates/python/apiClientBody.py")
 }

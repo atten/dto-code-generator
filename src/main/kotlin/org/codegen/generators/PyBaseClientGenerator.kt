@@ -6,9 +6,9 @@ import org.codegen.schema.Endpoint
 import org.codegen.schema.Entity
 import org.codegen.schema.MethodArgument
 import org.codegen.utils.CodeFormatRules
+import org.codegen.utils.Reader
 import org.codegen.utils.camelCase
 import org.codegen.utils.snakeCase
-import java.io.File
 
 abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
     CodeFormatRules.PYTHON,
@@ -201,10 +201,9 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
 
     override fun renderBodyPrefix(): String {
         listOf(
-            "/templates/python/baseSchema.py",
+            "resource:/templates/python/baseSchema.py",
         )
-            .map { this.javaClass.getResource(it)!!.path }
-            .map { File(it).readText() }
+            .map { Reader().readFileOrResourceOrUrl(it) }
             .map { addCodePart(it) }
 
         // put main client class on top of the file
@@ -219,8 +218,7 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
 
     override fun renderBody(): String {
         getBodyIncludedFiles()
-            .map { this.javaClass.getResource(it)!!.path }
-            .map { File(it).readText() }
+            .map { Reader().readFileOrResourceOrUrl(it) }
             .map { addCodePart(it) }
 
         if (definedConstants.isNotEmpty()) {

@@ -66,7 +66,7 @@
             "max_length": "DEFAULT_MAX_LENGTH"
           },
           "includeFiles": [
-            "templates/python/djangoCharField.py"
+            "resource:/templates/python/djangoCharField.py"
           ]
         },
         "PY_MARSHMALLOW_DATACLASS": {
@@ -226,7 +226,7 @@
             "metadata": "dict(marshmallow_field=JavaDurationField({metadata}))"
           },
           "includeFiles": [
-            "templates/python/javaDurationField.py"
+            "resource:/templates/python/javaDurationField.py"
           ]
         },
         "PY_DJANGO_MODEL": {

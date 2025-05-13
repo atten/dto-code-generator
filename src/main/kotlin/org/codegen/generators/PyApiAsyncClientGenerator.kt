@@ -1,7 +1,7 @@
 package org.codegen.generators
 
 import org.codegen.schema.Endpoint
-import java.io.File
+import org.codegen.utils.Reader
 
 class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiClientGenerator(proxy) {
     override fun buildMethodDefinition(
@@ -53,16 +53,15 @@ class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiCli
     }
 
     override fun getMainApiClassBody() =
-        this.javaClass.getResource("/templates/python/apiClientBody.py")!!.path.let {
-            File(it).readText().replace("BaseJsonHttpClient", "BaseJsonHttpAsyncClient")
-        }
+        Reader().readFileOrResourceOrUrl("resource:/templates/python/apiClientBody.py")
+            .replace("BaseJsonHttpClient", "BaseJsonHttpAsyncClient")
 
     override fun getBodyIncludedFiles(): List<String> {
         val original = super.getBodyIncludedFiles().toMutableList()
         original.replaceAll {
             mapOf(
-                "/templates/python/baseJsonHttpClient.py" to "/templates/python/baseJsonHttpAsyncClient.py",
-                "/templates/python/failsafeCall.py" to "/templates/python/failsafeCallAsync.py",
+                "resource:/templates/python/baseJsonHttpClient.py" to "resource:/templates/python/baseJsonHttpAsyncClient.py",
+                "resource:/templates/python/failsafeCall.py" to "resource:/templates/python/failsafeCallAsync.py",
             ).getOrDefault(it, it)
         }
         return original

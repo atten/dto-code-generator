@@ -19,7 +19,7 @@ class PyAmqpGeventClientGenerator(proxy: AbstractCodeGenerator? = null) : PyAmqp
         val original = super.getBodyIncludedFiles().toMutableList()
         original.replaceAll {
             mapOf(
-                "/templates/python/baseJsonAmqpBlockingClient.py" to "/templates/python/baseJsonAmqpGeventClient.py",
+                "resource:/templates/python/baseJsonAmqpBlockingClient.py" to "resource:/templates/python/baseJsonAmqpGeventClient.py",
             ).getOrDefault(it, it)
         }
         return original

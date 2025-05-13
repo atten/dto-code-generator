@@ -1,8 +1,8 @@
 package org.codegen.generators
 
 import org.codegen.schema.Endpoint
+import org.codegen.utils.Reader
 import org.codegen.utils.snakeCase
-import java.io.File
 
 open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseClientGenerator(proxy) {
     override fun renderEndpointHeader(endpoint: Endpoint): String {
@@ -118,17 +118,14 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         return super.renderHeaders()
     }
 
-    override fun getMainApiClassBody() =
-        this.javaClass.getResource(
-            "/templates/python/amqpClientBody.py",
-        )!!.path.let { File(it).readText() }
+    override fun getMainApiClassBody() = Reader().readFileOrResourceOrUrl("resource:/templates/python/amqpClientBody.py")
 
     override fun getBodyIncludedFiles() =
         listOf(
-            "/templates/python/baseJsonAmqpBlockingClient.py",
-            "/templates/python/baseSerializer.py",
-            "/templates/python/baseDeserializer.py",
-            "/templates/python/failsafeCall.py",
+            "resource:/templates/python/baseJsonAmqpBlockingClient.py",
+            "resource:/templates/python/baseSerializer.py",
+            "resource:/templates/python/baseDeserializer.py",
+            "resource:/templates/python/failsafeCall.py",
         )
 
     override fun renderBodyPrefix(): String {

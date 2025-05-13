@@ -1,7 +1,7 @@
 package org.codegen.schema
 
 import kotlinx.serialization.Serializable
-import java.io.File
+import org.codegen.utils.Reader
 
 @Serializable
 data class DataType(
@@ -26,5 +26,5 @@ data class DataType(
         return result
     }
 
-    fun loadIncludedFiles(): List<String> = includeFiles.map { File(sourcePath).resolveSibling(it).readText() }
+    fun loadIncludedFiles(): List<String> = includeFiles.map { Reader().readFileOrResourceOrUrl(it, sourcePath) }
 }

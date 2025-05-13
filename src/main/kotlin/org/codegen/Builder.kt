@@ -10,7 +10,7 @@ class Builder(
     private val params: Args,
 ) {
     fun build(): String {
-        val defaultInputFile = this.javaClass.getResource("/builtinExtensions.json")!!.path
+        val defaultInputFile = "resource:/builtinExtensions.json"
         val inputFiles =
             params.inputPaths
                 .toMutableList()
@@ -19,7 +19,7 @@ class Builder(
                     it.add(0, defaultInputFile)
                 }
 
-        val documents = inputFiles.associateWith { ParserRegistry.parseFileOrUrl(it) }
+        val documents = inputFiles.associateWith { ParserRegistry.parseFileOrResourceOrUrl(it) }
         val generatorClass = params.target.generatorClass
         val generator = generatorClass.createInstance()
         val rootEntityName =

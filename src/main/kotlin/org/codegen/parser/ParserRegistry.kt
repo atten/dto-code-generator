@@ -1,10 +1,8 @@
 package org.codegen.parser
 
 import kotlinx.serialization.SerializationException
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import org.codegen.schema.Document
-import java.io.File
+import org.codegen.utils.Reader
 import java.text.ParseException
 import java.util.*
 
@@ -16,32 +14,11 @@ object ParserRegistry {
             OpenApiYamlParser(),
         )
 
-    fun parseFileOrUrl(pathOrUrl: String): Document {
-        if (pathOrUrl.lowercase().startsWith("http")) {
-            return parseUrl(pathOrUrl)
-        }
-        return parseFile(pathOrUrl)
-    }
-
-    private fun parseFile(path: String): Document {
+    fun parseFileOrResourceOrUrl(pathOrUrl: String): Document {
         try {
-            return parseContent(File(path).readText())
+            return parseContent(Reader().readFileOrResourceOrUrl(pathOrUrl))
         } catch (e: ParseException) {
-            throw ParseException("Failed to parse '$path'.\n${e.message}", e.errorOffset)
-        }
-    }
-
-    private fun parseUrl(url: String): Document {
-        val client = OkHttpClient()
-        val request =
-            Request.Builder()
-                .url(url)
-                .build()
-
-        try {
-            return parseContent(client.newCall(request).execute().body!!.string())
-        } catch (e: ParseException) {
-            throw ParseException("Failed to parse '$url'.\n${e.message}", e.errorOffset)
+            throw ParseException("Failed to parse '$pathOrUrl'.\n${e.message}", e.errorOffset)
         }
     }
 
