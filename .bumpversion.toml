@@ -18,3 +18,6 @@ filename = "src/main/resources/application.properties"
 
 [[tool.bumpversion.files]]
 filename = "README.md"
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"

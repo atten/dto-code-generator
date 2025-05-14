@@ -1,0 +1,44 @@
+[project]
+name = "ez-code-generator"
+version = "3.0.0"
+description = "Console tool for generating API clients, data classes and validators"
+license = "MIT"
+readme = "README.md"
+authors = [
+    { name = "Artem Vasilev", email = "art@force.fm" },
+]
+requires-python = ">=3.9"
+keywords = [
+    "codegen",
+    "swagger",
+    "openapi",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Kotlin",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Code Generators",
+    "Typing :: Typed",
+]
+
+[build-system]
+requires = ["setuptools >= 77.0.3", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+repository = "https://github.com/atten/ez-code-generator"
+
+[tool.setuptools.packages.find]
+where = ["tmp"]
+
+[tool.setuptools.package-data]
+'*' = [
+    "ez-codegen",
+    "*.bat",
+    "*.jar"
+]
