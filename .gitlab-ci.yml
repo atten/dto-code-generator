@@ -14,9 +14,12 @@ gradle:
   stage: build
   image: openjdk:11
   only:
+    refs:
+      - branches
     variables:
-      # run for protected branches only
+      # run for protected and release branches only
       - $CI_COMMIT_REF_PROTECTED == 'true'
+      - $CI_COMMIT_BRANCH =~ 'release_'
   cache:
     - key: $CI_COMMIT_REF_SLUG
       paths:
@@ -33,10 +36,6 @@ gradle:
 run-tests:
   stage: test
   image: openjdk:11
-  only:
-    variables:
-      # run for protected branches only
-      - $CI_COMMIT_REF_PROTECTED == 'true'
   cache:
     - key: $CI_COMMIT_REF_SLUG
       policy: pull
@@ -125,9 +124,12 @@ publish-archive:
   stage: publish
   image: openjdk:11
   only:
+    refs:
+      - branches
     variables:
-      # run for protected branches only
+      # run for protected and release branches only
       - $CI_COMMIT_REF_PROTECTED == 'true'
+      - $CI_COMMIT_BRANCH =~ 'release_'
   cache:
     key: $CI_PIPELINE_ID
     policy: pull
@@ -144,9 +146,12 @@ docker-push:
   stage: publish
   image: docker:stable
   only:
+    refs:
+      - branches
     variables:
-      # run for protected branches only
+      # run for protected and release branches only
       - $CI_COMMIT_REF_PROTECTED == 'true'
+      - $CI_COMMIT_BRANCH =~ 'release_'
   cache:
     key: $CI_PIPELINE_ID
     policy: pull
@@ -165,6 +170,8 @@ github-create-release:
   stage: publish
   image: alpine:latest
   only:
+    refs:
+      - branches
     variables:
       # run for release branches only
       - $CI_COMMIT_BRANCH =~ 'release_'
@@ -184,6 +191,8 @@ pypi-package:
   stage: publish
   image: python:3-alpine
   only:
+    refs:
+      - branches
     variables:
       # run for release branches only
       - $CI_COMMIT_BRANCH =~ 'release_'

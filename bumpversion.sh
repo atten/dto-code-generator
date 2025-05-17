@@ -23,5 +23,5 @@ git push --set-upstream github "release_$NEW_VERSION"
 
 # push master branch and tags
 git checkout master
-git push --tags gitlab
-git push --tags github
+git push --all gitlab
+git push --all github
