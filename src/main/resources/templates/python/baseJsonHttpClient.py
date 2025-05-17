@@ -15,6 +15,7 @@ class BaseJsonHttpClient:
         use_debug_curl: bool,
         request_kwargs: dict,
         connection_pool_kwargs: dict,
+        exception_class: t.Type[Exception],
     ):
         connection_pool_kwargs.update(retries=False)
 
@@ -28,6 +29,7 @@ class BaseJsonHttpClient:
         self._use_response_streaming = use_response_streaming
         self._use_debug_curl = use_debug_curl
         self._request_kwargs = request_kwargs
+        self._exception_class = exception_class
 
     def fetch(
         self,
@@ -90,9 +92,9 @@ class BaseJsonHttpClient:
                     headers=headers,
                     body=body,
                 )
-                raise RuntimeError(f'Failed to {curl_cmd}: {error_verbose}') from e
+                raise self._exception_class(f'Failed to {curl_cmd}: {error_verbose}') from e
 
-            raise RuntimeError(f'Failed to {method} {full_url}: {error_verbose}') from e
+            raise self._exception_class(f'Failed to {method} {full_url}: {error_verbose}') from e
 
     def _mk_request(self, *args, **kwargs) -> RESPONSE_BODY:
         response = self._pool.request(*args, **kwargs, preload_content=False)

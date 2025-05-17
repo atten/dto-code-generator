@@ -37,6 +37,7 @@ class SomeRestApi:
         use_debug_curl: bool = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0))),
         request_kwargs: t.Optional[t.Dict[str, t.Any]] = None,
         connection_pool_kwargs: t.Optional[t.Dict[str, t.Any]] = None,
+        exception_class: t.Type[Exception] = RuntimeError,
     ):
         """
         API client constructor and configuration method.
@@ -44,7 +45,7 @@ class SomeRestApi:
         :param base_url: protocol://url[:port]
         :param headers: dict of HTTP headers (e.g. tokens)
         :param logger: logger instance (or callable like print()) for requests diagnostics
-        :param max_retries: number of connection attempts before RuntimeException raise
+        :param max_retries: number of request attempts before Exception defined in `exception_class` raised
         :param retry_timeout: seconds between attempts
         :param user_agent: request header
         :param use_response_streaming: enable alternative JSON library for deserialization (lower latency and memory footprint)
@@ -52,6 +53,7 @@ class SomeRestApi:
         :param use_debug_curl: include curl-formatted data for requests diagnostics
         :param request_kwargs: optional request arguments
         :param connection_pool_kwargs: optional arguments for internal connection pool
+        :param exception_class: exception class for irrecoverable API errors
         """
         self._client = BaseJsonHttpClient(
             base_url=base_url,
@@ -64,6 +66,7 @@ class SomeRestApi:
             use_debug_curl=use_debug_curl,
             request_kwargs=request_kwargs or {},
             connection_pool_kwargs=connection_pool_kwargs or {},
+            exception_class=exception_class,
         )
 
         self._deserializer = BaseDeserializer(
@@ -306,6 +309,7 @@ class BaseJsonHttpClient:
         use_debug_curl: bool,
         request_kwargs: dict,
         connection_pool_kwargs: dict,
+        exception_class: t.Type[Exception],
     ):
         connection_pool_kwargs.update(retries=False)
 
@@ -319,6 +323,7 @@ class BaseJsonHttpClient:
         self._use_response_streaming = use_response_streaming
         self._use_debug_curl = use_debug_curl
         self._request_kwargs = request_kwargs
+        self._exception_class = exception_class
 
     def fetch(
         self,
@@ -381,9 +386,9 @@ class BaseJsonHttpClient:
                     headers=headers,
                     body=body,
                 )
-                raise RuntimeError(f'Failed to {curl_cmd}: {error_verbose}') from e
+                raise self._exception_class(f'Failed to {curl_cmd}: {error_verbose}') from e
 
-            raise RuntimeError(f'Failed to {method} {full_url}: {error_verbose}') from e
+            raise self._exception_class(f'Failed to {method} {full_url}: {error_verbose}') from e
 
     def _mk_request(self, *args, **kwargs) -> RESPONSE_BODY:
         response = self._pool.request(*args, **kwargs, preload_content=False)
