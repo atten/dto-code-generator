@@ -19,7 +19,7 @@ gradle:
     variables:
       # run for protected and release branches only
       - $CI_COMMIT_REF_PROTECTED == 'true'
-      - $CI_COMMIT_BRANCH =~ 'release_'
+      - $CI_COMMIT_BRANCH =~ /^release_.*/
   cache:
     - key: $CI_COMMIT_REF_SLUG
       paths:
@@ -129,7 +129,7 @@ publish-archive:
     variables:
       # run for protected and release branches only
       - $CI_COMMIT_REF_PROTECTED == 'true'
-      - $CI_COMMIT_BRANCH =~ 'release_'
+      - $CI_COMMIT_BRANCH =~ /^release_.*/
   cache:
     key: $CI_PIPELINE_ID
     policy: pull
@@ -151,7 +151,7 @@ docker-push:
     variables:
       # run for protected and release branches only
       - $CI_COMMIT_REF_PROTECTED == 'true'
-      - $CI_COMMIT_BRANCH =~ 'release_'
+      - $CI_COMMIT_BRANCH =~ /^release_.*/
   cache:
     key: $CI_PIPELINE_ID
     policy: pull
@@ -174,7 +174,7 @@ github-create-release:
       - branches
     variables:
       # run for release branches only
-      - $CI_COMMIT_BRANCH =~ 'release_'
+      - $CI_COMMIT_BRANCH =~ /^release_.*/
   cache:
     key: $CI_PIPELINE_ID
     policy: pull
@@ -185,7 +185,7 @@ github-create-release:
     - git tag --list
     - git status
     - git remote add github github.com:atten/ez-code-generator.git
-    - gh release create $(git tag --contains HEAD) --generate-notes --verify-tag build/distributions/*.zip
+    - gh release create $(git tag --contains HEAD) --generate-notes build/distributions/*.zip
 
 pypi-package:
   stage: publish
@@ -195,7 +195,7 @@ pypi-package:
       - branches
     variables:
       # run for release branches only
-      - $CI_COMMIT_BRANCH =~ 'release_'
+      - $CI_COMMIT_BRANCH =~ /^release_.*/
   cache:
     key: $CI_PIPELINE_ID
     policy: pull
