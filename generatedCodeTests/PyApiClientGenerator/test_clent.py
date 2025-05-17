@@ -106,3 +106,12 @@ def test_use_debug_curl():
         api.ping()
 
     assert 'curl "http://none/api/v1/ping"' in str(e)
+
+
+def test_custom_exception_class():
+    class ApiError(Exception):
+        pass
+
+    api = Generated(base_url="http://none", max_retries=0, exception_class=ApiError)
+    with pytest.raises(ApiError) as e:
+        api.ping()

@@ -15,6 +15,7 @@ class BaseJsonHttpAsyncClient:
         use_debug_curl: bool,
         request_kwargs: dict,
         connection_pool_kwargs: dict,
+        exception_class: t.Type[Exception],
     ):
         self._base_url = base_url
         self._logger = logger
@@ -24,6 +25,7 @@ class BaseJsonHttpAsyncClient:
         self._headers = headers
         self._use_debug_curl = use_debug_curl
         self._request_kwargs = request_kwargs
+        self._exception_class = exception_class
 
     async def fetch(
         self,
@@ -80,8 +82,8 @@ class BaseJsonHttpAsyncClient:
                     headers=headers,
                     body=json_body,
                 )
-                raise RuntimeError(f'Failed to {curl_cmd}: {e}') from e
-            raise RuntimeError(f'Failed to {method} {full_url}: {e}') from e
+                raise self._exception_class(f'Failed to {curl_cmd}: {e}') from e
+            raise self._exception_class(f'Failed to {method} {full_url}: {e}') from e
 
     @classmethod
     async def _mk_request(cls, full_url: str, method: str, body: t.Optional[JSON_PAYLOAD], headers: t.Optional[dict]) -> RESPONSE_BODY:

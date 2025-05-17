@@ -123,8 +123,14 @@ class JavaDurationField(marshmallow.fields.Field):
 
 def str_java_duration_to_timedelta(duration: str) -> timedelta:
     """
-    :param duration: string duration:'PT5S', 'PT10H59S' etc
-    :return: timedelta()
+    >>> str_java_duration_to_timedelta('PT5S')
+    datetime.timedelta(seconds=5)
+
+    >>> str_java_duration_to_timedelta('PT10H59S')
+    datetime.timedelta(seconds=36059)
+
+    >>> str_java_duration_to_timedelta('PT0H5M')
+    datetime.timedelta(seconds=300)
     """
     groups = re.findall(r'PT(\d+H)?(\d+M)?([\d.]+S)?', duration)[0]
     if not groups:
