@@ -200,18 +200,6 @@ class BaseSchema(marshmallow.Schema):
         unknown = marshmallow.EXCLUDE
 
 
-SOME_ENUM_VARIANT_1 = "variant1"
-SOME_ENUM_VARIANT_2 = "variant2"
-SOME_ENUM_VARIANT_3 = "variant3"
-SOME_ENUMS = [SOME_ENUM_VARIANT_1, SOME_ENUM_VARIANT_2, SOME_ENUM_VARIANT_3]
-
-
-SOME_ENUM_ROCK = "ROCK"
-SOME_ENUM_SCISSORS = "SCISSORS"
-SOME_ENUM_PAPER = "PAPER"
-ADVANCED_DTO_SOME_ENUMS = [SOME_ENUM_ROCK, SOME_ENUM_SCISSORS, SOME_ENUM_PAPER]
-
-
 class JavaDurationField(marshmallow.fields.Field):
 
     def _deserialize(self, value, attr, data, **kwargs):
@@ -268,13 +256,25 @@ def timedelta_to_java_duration(delta: timedelta) -> str:
     return 'PT{}S'.format(int(seconds))
 
 
+SOME_ENUM_ROCK = "ROCK"
+SOME_ENUM_SCISSORS = "SCISSORS"
+SOME_ENUM_PAPER = "PAPER"
+SOME_ENUMS = [SOME_ENUM_ROCK, SOME_ENUM_SCISSORS, SOME_ENUM_PAPER]
+
+
 @dataclass
 class AdvancedDto:
     # Example: [{"foo": "bar"}]
     json_underscoded: t.Optional[dict] = None
-    # Enum field with the same name as of different entity
-    some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(ADVANCED_DTO_SOME_ENUMS)])), default="PAPER")
     java_duration: t.Optional[timedelta] = field(metadata=dict(marshmallow_field=JavaDurationField(allow_none=True, data_key="javaDuration")), default=None)
+    # Enum field with the same name as of different entity
+    some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(SOME_ENUMS)])), default="PAPER")
+
+
+SOME_ENUM_VARIANT_1 = "variant1"
+SOME_ENUM_VARIANT_2 = "variant2"
+SOME_ENUM_VARIANT_3 = "variant3"
+BASIC_DTO_SOME_ENUMS = [SOME_ENUM_VARIANT_1, SOME_ENUM_VARIANT_2, SOME_ENUM_VARIANT_3]
 
 
 @dataclass
@@ -283,13 +283,13 @@ class BasicDto:
     some_integer: int = field(metadata=dict(marshmallow_field=marshmallow.fields.Integer()))
     # Field description
     some_number: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()))
-    some_string: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True)), default=None)
     boolean_with_default: bool = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(data_key="booleanWithDefault")), default=True)
-    timestamp: t.Optional[datetime] = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime(allow_none=True)), default=None)
-    some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(SOME_ENUMS)])), default=None)
+    list_of_mixed_types: t.Optional[list[str]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.String(allow_none=True))), default=None)
     nested_object: t.Optional[AdvancedDto] = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(AdvancedDto, base_schema=BaseSchema), allow_none=True)), default=None)
     number_or_list: t.Optional[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.Integer(allow_none=True)), default=None)
-    list_of_mixed_types: t.Optional[list[str]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.String(allow_none=True))), default=None)
+    some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(BASIC_DTO_SOME_ENUMS)])), default=None)
+    some_string: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True)), default=None)
+    timestamp: t.Optional[datetime] = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime(allow_none=True)), default=None)
 
 
 @dataclass
@@ -644,7 +644,7 @@ def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: s
 
 
 class AllConstantsCollection:
-    ADVANCED_DTO_SOME_ENUMS = ADVANCED_DTO_SOME_ENUMS
+    BASIC_DTO_SOME_ENUMS = BASIC_DTO_SOME_ENUMS
     SOME_ENUMS = SOME_ENUMS
     SOME_ENUM_PAPER = SOME_ENUM_PAPER
     SOME_ENUM_ROCK = SOME_ENUM_ROCK

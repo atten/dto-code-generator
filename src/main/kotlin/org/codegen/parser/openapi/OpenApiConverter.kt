@@ -171,9 +171,15 @@ internal class OpenApiConverter(
         definition: Definition,
         name: String,
     ): Entity {
+        val fields = definition.properties.map { convertProperty(it.value, it.key, definition) }
+        val fieldsWithoutDefaults = fields.filter { it.default == UNSET }
+        val fieldsWithDefaults = fields.filter { it.default != UNSET }
+        // Compensate lack of certain fields ordering in some swagger implementations
+        val sortedFields = fieldsWithoutDefaults + fieldsWithDefaults.sortedBy { it.name }
+
         return Entity(
             name = name,
-            fields = definition.properties.map { convertProperty(it.value, it.key, definition) },
+            fields = sortedFields,
         )
     }
 

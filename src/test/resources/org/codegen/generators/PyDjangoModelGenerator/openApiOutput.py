@@ -16,8 +16,8 @@ class SomeEnum(models.TextChoices):
 
 class AdvancedDto(models.Model):
     json_underscoded = models.JSONField(null=True, blank=True, verbose_name=_('Example: [{"foo": "bar"}]'))
-    some_enum = models.CharField(null=True, blank=True, max_length=8, default="PAPER", choices=SomeEnum.choices, verbose_name=_('Enum field with the same name as of different entity'))
     java_duration = models.CharField(null=True, blank=True, max_length=32)
+    some_enum = models.CharField(null=True, blank=True, max_length=8, default="PAPER", choices=SomeEnum.choices, verbose_name=_('Enum field with the same name as of different entity'))
 
     class Meta:
         abstract = True
@@ -30,15 +30,15 @@ class SomeEnum(models.TextChoices):
 
 
 class BasicDto(models.Model):
-    some_string = models.CharField(null=True, blank=True, max_length=DEFAULT_MAX_LENGTH)
     some_integer = models.IntegerField(verbose_name=_('Field description'))
     some_number = models.FloatField(verbose_name=_('Field description'))
     boolean_with_default = models.BooleanField(default=True)
-    timestamp = models.DateTimeField(null=True, blank=True)
-    some_enum = models.CharField(null=True, blank=True, max_length=8, choices=SomeEnum.choices)
+    list_of_mixed_types = ArrayField(null=True, blank=True, base_field=models.CharField(max_length=DEFAULT_MAX_LENGTH))
     nested_object = models.JSONField(null=True, blank=True)
     number_or_list = models.IntegerField(null=True, blank=True)
-    list_of_mixed_types = ArrayField(null=True, blank=True, base_field=models.CharField(max_length=DEFAULT_MAX_LENGTH))
+    some_enum = models.CharField(null=True, blank=True, max_length=8, choices=SomeEnum.choices)
+    some_string = models.CharField(null=True, blank=True, max_length=DEFAULT_MAX_LENGTH)
+    timestamp = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         abstract = True
