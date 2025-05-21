@@ -6,5 +6,26 @@ services:
       context: .
       args:
         IMAGE: $IMAGE
+    links:
+      - mock_server
+    environment:
+      BASE_URL: 'http://mock_server'
+      SECURED_BASE_URL: 'http://mock_server_secured'
+      SECURED_HEADER_NAME: 'api-key'
+      SECURED_HEADER_VALUE: 'p0UVtk29Jwi4'
+      SECURED_USER_AGENT: 'Mr. smith'
+
     volumes:
       - './htmlcov/:/app/htmlcov/'
+
+  mock_server:
+    build:
+      context: ../sidecars/mock_server
+
+  mock_server_secured:
+    build:
+      context: ../sidecars/mock_server
+    environment:
+      AUTH_HEADER_NAME: 'api-key'
+      AUTH_HEADER_VALUE: 'p0UVtk29Jwi4'
+      ALLOWED_USER_AGENT: 'Mr. smith'

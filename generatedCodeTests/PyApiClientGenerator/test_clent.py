@@ -113,5 +113,5 @@ def test_custom_exception_class():
         pass
 
     api = Generated(base_url="http://none", max_retries=0, exception_class=ApiError)
-    with pytest.raises(ApiError) as e:
+    with pytest.raises(ApiError):
         api.ping()

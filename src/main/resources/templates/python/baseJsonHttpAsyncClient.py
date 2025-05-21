@@ -94,7 +94,11 @@ class BaseJsonHttpAsyncClient:
             json=body,
         ) as response:
             response.raise_for_status()
-            return await response.json()
+
+            if 'json' in response.headers.get('content-type', ''):
+                return await response.json()
+
+            return await response.text()
 
     def _get_full_url(self, url: str, query_params: t.Optional[dict] = None) -> str:
         if self._base_url:

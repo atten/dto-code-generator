@@ -4,7 +4,7 @@ FROM $IMAGE
 WORKDIR /app
 
 ADD requirements.txt requirements.txt
-RUN pip install pytest-cov
+RUN pip install pytest-cov pytest-asyncio
 RUN pip install --no-cache-dir -r requirements.txt
 
 ADD . .
