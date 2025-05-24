@@ -203,7 +203,7 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
         listOf(
             "resource:/templates/python/baseSchema.py",
         )
-            .map { Reader().readFileOrResourceOrUrl(it) }
+            .map { Reader.readFileOrResourceOrUrl(it) }
             .map { addCodePart(it) }
 
         // put main client class on top of the file
@@ -218,7 +218,7 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
 
     override fun renderBody(): String {
         getBodyIncludedFiles()
-            .map { Reader().readFileOrResourceOrUrl(it) }
+            .map { Reader.readFileOrResourceOrUrl(it) }
             .map { addCodePart(it) }
 
         if (definedConstants.isNotEmpty()) {

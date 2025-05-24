@@ -118,7 +118,7 @@ open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) :
         return super.renderHeaders()
     }
 
-    override fun getMainApiClassBody() = Reader().readFileOrResourceOrUrl("resource:/templates/python/amqpClientBody.py")
+    override fun getMainApiClassBody() = Reader.readFileOrResourceOrUrl("resource:/templates/python/amqpClientBody.py")
 
     override fun getBodyIncludedFiles() =
         listOf(

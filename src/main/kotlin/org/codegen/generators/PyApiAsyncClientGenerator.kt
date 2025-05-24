@@ -53,7 +53,7 @@ class PyApiAsyncClientGenerator(proxy: AbstractCodeGenerator? = null) : PyApiCli
     }
 
     override fun getMainApiClassBody() =
-        Reader().readFileOrResourceOrUrl("resource:/templates/python/apiClientBody.py")
+        Reader.readFileOrResourceOrUrl("resource:/templates/python/apiClientBody.py")
             .replace("BaseJsonHttpClient", "BaseJsonHttpAsyncClient")
 
     override fun getBodyIncludedFiles(): List<String> {

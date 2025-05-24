@@ -26,5 +26,5 @@ data class DataType(
         return result
     }
 
-    fun loadIncludedFiles(): List<String> = includeFiles.map { Reader().readFileOrResourceOrUrl(it, sourcePath) }
+    fun loadIncludedFiles(): List<String> = includeFiles.map { Reader.readFileOrResourceOrUrl(it, sourcePath) }
 }

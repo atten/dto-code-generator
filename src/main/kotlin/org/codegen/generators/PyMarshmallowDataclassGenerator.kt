@@ -22,7 +22,7 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
         listOf(
             "resource:/templates/python/baseSchema.py",
         ).joinToString(separator = "\n\n") { path ->
-            Reader().readFileOrResourceOrUrl(path)
+            Reader.readFileOrResourceOrUrl(path)
         }
             .let { addCodePart(it) }
 

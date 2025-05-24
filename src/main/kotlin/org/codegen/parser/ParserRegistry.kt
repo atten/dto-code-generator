@@ -16,7 +16,7 @@ object ParserRegistry {
 
     fun parseFileOrResourceOrUrl(pathOrUrl: String): Document {
         try {
-            return parseContent(Reader().readFileOrResourceOrUrl(pathOrUrl))
+            return parseContent(Reader.readFileOrResourceOrUrl(pathOrUrl))
         } catch (e: ParseException) {
             throw ParseException("Failed to parse '$pathOrUrl'.\n${e.message}", e.errorOffset)
         }

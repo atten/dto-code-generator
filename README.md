@@ -192,6 +192,10 @@ Options:
       If enabled, add prefix to all fields
       Default: false
 
+      -k, --insecure
+      Disable HTTPS certificates validation
+      Default: false
+
       --help
       Show help usage and exit
 

@@ -51,6 +51,13 @@ class Args {
     var usePrefixed = false
 
     @Parameter(
+        names = ["-k", "--insecure"],
+        description = "Disable HTTPS certificates validation",
+        order = 13,
+    )
+    var insecureRequests = false
+
+    @Parameter(
         names = ["--help"],
         description = "Show help usage and exit",
         help = true,

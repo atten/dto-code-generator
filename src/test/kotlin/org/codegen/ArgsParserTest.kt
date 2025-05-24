@@ -7,11 +7,12 @@ import org.junit.jupiter.api.Test
 class ArgsParserTest {
     @Test
     fun parseOk() {
-        val parser = ArgsParser(arrayOf("file1.json", "file2.json", "-t", "KT_DATACLASS", "--prefixed"))
+        val parser = ArgsParser(arrayOf("file1.json", "file2.json", "-t", "KT_DATACLASS", "--prefixed", "--insecure"))
         val args = parser.parse()
 
         assertEquals(2, args!!.inputPaths.size)
         assertEquals(true, args.usePrefixed)
+        assertEquals(true, args.insecureRequests)
         assertEquals(AllGeneratorsEnum.KT_DATACLASS, args.target)
     }
 

@@ -4,12 +4,15 @@ import org.codegen.generators.AbstractCodeGenerator
 import org.codegen.parser.ParserRegistry
 import org.codegen.schema.Entity
 import org.codegen.schema.Extension
+import org.codegen.utils.Reader
 import kotlin.reflect.full.createInstance
 
 class Builder(
     private val params: Args,
 ) {
     fun build(): String {
+        Reader.insecureHttps = params.insecureRequests
+
         val defaultInputFile = "resource:/builtinExtensions.json"
         val inputFiles =
             params.inputPaths
