@@ -112,9 +112,9 @@ run-tests-PyDjangoModelGenerator:
   services:
     - docker:25-dind
   artifacts:
-    name: migrations
+    name: coverage
     paths:
-      - generatedCodeTests/PyDjangoModelGenerator/app/migrations/
+      - generatedCodeTests/PyDjangoModelGenerator/htmlcov/
   script:
     - cd generatedCodeTests/PyDjangoModelGenerator
     - sh run.sh

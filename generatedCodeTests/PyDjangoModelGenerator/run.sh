@@ -10,4 +10,5 @@ do
   export IMAGE="$image"
   export CONTAINER_NAME="py_django_model_$(echo "$image" | tr -c '[:alnum:]_-' '-')"
   docker compose --progress quiet up --build --abort-on-container-exit
+  docker compose down
 done

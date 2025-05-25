@@ -6,6 +6,16 @@ services:
       context: .
       args:
         IMAGE: $IMAGE
+    links:
+      - postgres
     volumes:
       - './entities/migrations/:/testproject/entities/migrations/'
       - './openapi/migrations/:/testproject/openapi/migrations/'
+      - './htmlcov/:/testproject/htmlcov/'
+
+  postgres:
+    image: 'postgres:alpine'
+    environment:
+      - POSTGRES_DATABASE=DjangoModelGenerator
+      - POSTGRES_USER=DjangoModelGenerator
+      - POSTGRES_PASSWORD=DjangoModelGenerator
