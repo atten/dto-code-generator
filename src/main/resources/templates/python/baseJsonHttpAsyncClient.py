@@ -69,7 +69,7 @@ class BaseJsonHttpAsyncClient:
             return await failsafe_call_async(
                 self._mk_request,
                 kwargs=request_kwargs,
-                exceptions=(aiohttp.ClientConnectorError, ConnectionRefusedError),
+                exceptions=(aiohttp.ClientConnectorError, aiohttp.ClientResponseError, ConnectionRefusedError),
                 logger=self._logger,
                 max_attempts=self._max_retries,
                 on_transitional_fail=lambda exc, info: asyncio.sleep(self._retry_timeout)
