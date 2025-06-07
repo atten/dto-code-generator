@@ -15,15 +15,15 @@ NEW_VERSION=$(bump-my-version show --format json | jq '.current_version' --raw-o
 
 echo "Bump version: $CURRENT_VERSION → $NEW_VERSION"
 
-# create release branch
+# push master branch and tags
+git push --all gitlab
+git push --all github
+
+# create release branch, push it and trigger CI
 git branch "release_$NEW_VERSION"
 git checkout "release_$NEW_VERSION"
-
-# push release branch and trigger CI
 git push --set-upstream gitlab "release_$NEW_VERSION"
 git push --set-upstream github "release_$NEW_VERSION"
 
-# push master branch and tags
+# return to master branch
 git checkout master
-git push --all gitlab
-git push --all github
