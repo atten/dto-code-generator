@@ -11,13 +11,13 @@ internal data class Schema(
     val items: Schema? = null,
     val enum: List<String> = listOf(),
 ) {
-    fun definitionName(): String {
+    fun definitionName(spec: Root): String {
         if (ref != null) {
-            return Definition.simplifyName(ref)
+            return spec.getDefinition(ref).getName()
         }
 
         if (type == "array") {
-            return items!!.definitionName()
+            return items!!.definitionName(spec)
         }
 
         if (type != null) {

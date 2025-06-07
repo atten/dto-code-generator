@@ -15,13 +15,13 @@ internal data class Parameter(
     val schema: Schema? = null,
     val items: Schema? = null,
 ) {
-    fun definitionName(): String {
+    fun definitionName(spec: Root): String {
         if (type == "array") {
-            return items!!.definitionName()
+            return items!!.definitionName(spec)
         }
 
-        if (schema?.definitionName() != null) {
-            return schema.definitionName()
+        if (schema?.definitionName(spec) != null) {
+            return schema.definitionName(spec)
         }
 
         if (type != null) {

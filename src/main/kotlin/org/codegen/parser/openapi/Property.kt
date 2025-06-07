@@ -20,13 +20,13 @@ internal data class Property(
     val anyOf: List<Property> = listOf(),
     val properties: Map<String, Property> = mapOf(),
 ) {
-    fun definitionName(): String {
+    fun definitionName(spec: Root): String {
         if (ref != null) {
-            return Definition.simplifyName(ref)
+            return spec.getDefinition(ref).getName()
         }
 
         if (type == "array") {
-            return items!!.definitionName()
+            return items!!.definitionName(spec)
         }
 
         if (type == "string" && format == "date-time") {
@@ -44,7 +44,7 @@ internal data class Property(
         val unionType = oneOf + anyOf
         if (unionType.isNotEmpty()) {
             return unionType
-                .map { it.definitionName() }
+                .map { it.definitionName(spec) }
                 .toSet()
                 .let {
                     when (it) {

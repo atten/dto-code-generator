@@ -78,7 +78,7 @@ internal class OpenApiConverter(
                     val many = it.value.type == "array"
                     MethodArgument(
                         name = if (many) "values" else "value",
-                        dtype = it.value.definitionName(),
+                        dtype = it.value.definitionName(spec),
                         many = many,
                     )
                 }
@@ -106,7 +106,13 @@ internal class OpenApiConverter(
             } else {
                 null
             }
-        val successResponseDefinitionName = (successResponseSchema?.definitionName() ?: "void").let { dtypeMapping.getOrDefault(it, it) }
+        val successResponseDefinitionName =
+            (successResponseSchema?.definitionName(spec) ?: "void").let {
+                dtypeMapping.getOrDefault(
+                    it,
+                    it,
+                )
+            }
 
         return Endpoint(
             name = getEndpointName(path, verb),
@@ -134,7 +140,7 @@ internal class OpenApiConverter(
         parameter: Parameter,
         document: Document,
     ): List<MethodArgument> {
-        val definitionName = parameter.schema?.definitionName()
+        val definitionName = parameter.schema?.definitionName(spec)
         return if (parameter.source == "query" && definitionName != null && definitionName !in dtypeMapping) {
             // replace complex query parameter with nested fields
             convertComplexQueryParameter(parameter, document)
@@ -147,7 +153,7 @@ internal class OpenApiConverter(
         parameter: Parameter,
         document: Document,
     ): List<MethodArgument> {
-        val entityName = parameter.schema?.definitionName()
+        val entityName = parameter.schema?.definitionName(spec)
         val entity = document.entities.first { it.name == entityName }
         return entity.fields.map { it.toMethodArgument() }
     }
@@ -160,7 +166,7 @@ internal class OpenApiConverter(
         return MethodArgument(
             name = parameter.name,
             description = description.toString(),
-            dtype = parameter.definitionName().let { dtypeMapping.getOrDefault(it, it) },
+            dtype = parameter.definitionName(spec).let { dtypeMapping.getOrDefault(it, it) },
             nullable = !parameter.required,
             default = if (parameter.required) UNSET else null,
             many = parameter.type == "array" || parameter.schema?.type == "array",
@@ -200,7 +206,7 @@ internal class OpenApiConverter(
             name = name,
             serializedName = name,
             description = property.description,
-            dtype = property.definitionName().let { dtypeMapping.getOrDefault(it, it) },
+            dtype = property.definitionName(spec).let { dtypeMapping.getOrDefault(it, it) },
             many = property.type == "array",
             nullable = !required,
             default = default,

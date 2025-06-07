@@ -1,3 +1,4 @@
+# https://www.bairesdev.com/tools/json2yaml/
 swagger: '2.0'
 info:
   title: Some REST API
@@ -222,7 +223,12 @@ definitions:
           - variant3
       nested_object:
         "$ref": "#/components/schemas/AdvancedDTO"
-      number_or_list:
+      mixed_enums:
+        title: mixed enums
+        anyOf:
+          - "$ref": "#/components/schemas/BasicEnum"
+          - "$ref": "#/components/schemas/BasicEnum2"
+      list_or_number:
         title: number or list
         anyOf:
           - type: array
@@ -325,3 +331,19 @@ components:
         password:
           title: Password
           type: string
+    BasicEnum:
+      title: BasicEnum
+      type: string
+      enum:
+        - item1
+        - item2
+        - item3
+      description: An enumeration.
+    BasicEnum2:
+      title: BasicEnum2
+      type: string
+      enum:
+        - item4
+        - item5
+        - item6
+      description: An enumeration.
