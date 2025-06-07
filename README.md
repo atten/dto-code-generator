@@ -144,7 +144,7 @@ cd ez-codegen-3.2.0/bin/
 chmod +x ez-codegen
 ```
 
-Other versions: [Gitlab](https://gitlab.com/atten0/ez-code-generator/-/jobs/artifacts/master/browse/build/distributions/?job=publish-distro) | [Github](https://github.com/atten/ez-code-generator/releases)
+Other versions: [Gitlab](https://gitlab.com/atten0/ez-code-generator/-/jobs/artifacts/master/browse/build/distributions/?job=publish-archive) | [Github](https://github.com/atten/ez-code-generator/releases)
 
 ### Python package
 
