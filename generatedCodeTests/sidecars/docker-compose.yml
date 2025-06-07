@@ -6,3 +6,14 @@ services:
     restart: unless-stopped
     ports:
       - 8081:80
+
+  mock_server_secure:
+    build:
+      context: mock_server
+    restart: unless-stopped
+    ports:
+      - 8082:80
+    environment:
+      AUTH_HEADER_NAME: 'api-key'
+      AUTH_HEADER_VALUE: 'p0UVtk29Jwi4'
+      ALLOWED_USER_AGENT: 'Mr. smith'

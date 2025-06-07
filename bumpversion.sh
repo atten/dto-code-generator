@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 if [ -z $1 ]; then
   echo "usage: $0 major|minor|patch";
   exit 1
