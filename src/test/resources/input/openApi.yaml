@@ -242,6 +242,11 @@ definitions:
           anyOf:
             - type: string
             - type: integer
+      list_of_objects:
+        title: list of objects
+        type: array
+        items:
+          type: object
 components:
   schemas:
     AdvancedDTO:

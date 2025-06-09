@@ -372,6 +372,13 @@
               }
             ]
           }
+        },
+        "list_of_objects": {
+          "title": "list of objects",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
         }
       }
     }

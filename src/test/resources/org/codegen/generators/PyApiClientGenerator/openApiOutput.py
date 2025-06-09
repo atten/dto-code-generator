@@ -285,6 +285,7 @@ class BasicDto:
     some_number: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()))
     boolean_with_default: bool = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(data_key="booleanWithDefault")), default=True)
     list_of_mixed_types: t.Optional[list[str]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.String(allow_none=True))), default=None)
+    list_of_objects: t.Optional[list[dict]] = field(default=None, metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(dict), allow_none=True)))
     list_or_number: t.Optional[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.Integer(allow_none=True)), default=None)
     mixed_enums: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True)), default=None)
     nested_object: t.Optional[AdvancedDto] = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(AdvancedDto, base_schema=BaseSchema), allow_none=True)), default=None)

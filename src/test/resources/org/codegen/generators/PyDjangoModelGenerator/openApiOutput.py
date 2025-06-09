@@ -34,6 +34,7 @@ class BasicDto(models.Model):
     some_number = models.FloatField(verbose_name=_('Field description'))
     boolean_with_default = models.BooleanField(default=True)
     list_of_mixed_types = ArrayField(null=True, blank=True, base_field=models.CharField(max_length=DEFAULT_MAX_LENGTH))
+    list_of_objects = models.JSONField(null=True, blank=True)
     list_or_number = models.IntegerField(null=True, blank=True)
     mixed_enums = models.CharField(null=True, blank=True, max_length=DEFAULT_MAX_LENGTH)
     nested_object = models.JSONField(null=True, blank=True)

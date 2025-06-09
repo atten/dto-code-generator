@@ -61,13 +61,20 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             val fieldName = field.name.snakeCase()
             val attrs = dtypeProps.definitionArguments.toMutableMap()
             val fieldMetadata = field.metadata.toMutableMap()
-
+            val isDataclass = dtypeProps.requiredEntities.contains(field.dtype)
             var definition = dtypeProps.definition
 
+            val nestedFieldArguments =
+                if (isDataclass) {
+                    "marshmallow_dataclass.class_schema($definition, base_schema=BaseSchema"
+                } else {
+                    definition
+                }
+
             // build nested field
-            if (dtypeProps.requiredEntities.contains(field.dtype)) {
+            if (isDataclass) {
                 headers.add("import marshmallow_dataclass")
-                attrs["metadata"] = "dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema($definition, base_schema=BaseSchema), {metadata}))"
+                attrs["metadata"] = "dict(marshmallow_field=marshmallow.fields.Nested($nestedFieldArguments), {metadata}))"
             }
 
             if (field.default != UNSET) {
@@ -154,7 +161,7 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
                         ")"
                 } else if (fieldMetadata.isNotEmpty()) {
                     headers.add("import marshmallow_dataclass")
-                    attrs["metadata"] = "dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema($definition)), {metadata}))"
+                    attrs["metadata"] = "dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested($nestedFieldArguments), {metadata}))"
                 }
 
                 definition = "list[$definition]"
