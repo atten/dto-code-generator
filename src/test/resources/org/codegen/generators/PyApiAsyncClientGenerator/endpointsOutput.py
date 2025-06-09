@@ -84,7 +84,9 @@ class Generated:
 
     async def get_basic_dto_list(self) -> t.AsyncIterator['BasicDto']:
         """
-        endpoint description
+        Endpoint description
+
+        Second line
         """
         raw_data = await self._client.fetch(
             url='api/v1/basic',

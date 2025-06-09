@@ -73,7 +73,9 @@ class Generated:
 
     def get_basic_dto_list(self) -> t.List['BasicDto']:
         """
-        endpoint description
+        Endpoint description
+
+        Second line
         """
         raw_data = self._client.mk_request(f'api/v1/basic', 'get_basic_dto_list').get()
         return list(self._deserializer.deserialize(raw_data, BasicDto, many=True))

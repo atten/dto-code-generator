@@ -163,10 +163,10 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
 
         lines.add(buildMethodDefinition(name, arguments, returnStatement, singleLine = singleLine))
         endpoint.description
-            ?.replace("\n", "\n    ")
+            ?.prependIndent("    ")
             ?.let {
                 lines.add("    \"\"\"")
-                lines.add("    $it")
+                lines.add(it)
                 lines.add("    \"\"\"")
             }
         return lines.joinToString(separator = "\n")
@@ -177,8 +177,8 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
     private fun renderEndpoint(endpoint: Endpoint) =
         renderEndpointHeader(endpoint) +
             renderEndpointBody(endpoint)
+                .prependIndent("    ")
                 .let { if (it.isNotEmpty()) "\n$it" else it }
-                .replace("\n", "\n    ")
 
     override fun renderEntityName(name: String) = name.camelCase()
 
@@ -196,7 +196,11 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
             separator = "\n\n",
             prefix = "${classDefinition}\n${classBody}\n\n",
             postfix = CodeFormatRules.PYTHON.entitiesSeparator,
-        ) { "    ${it.replace("\n", "\n    ")}" }
+        ) {
+            it
+                .prependIndent("    ")
+                .replace("\n    \n", "\n\n") // remove blanks, keep linters silent
+        }
     }
 
     override fun renderBodyPrefix(): String {
