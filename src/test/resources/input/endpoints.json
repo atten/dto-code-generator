@@ -9,7 +9,7 @@
       "name": "get basic dto list",
       "dtype": "basic DTO",
       "many": true,
-      "description": "Endpoint description\n\nSecond line",
+      "description": "Endpoint description  \n\nSecond line",
       "path": "api/v1/basic"
     },
     {

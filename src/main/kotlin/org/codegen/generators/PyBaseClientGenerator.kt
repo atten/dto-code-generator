@@ -163,12 +163,12 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
 
         lines.add(buildMethodDefinition(name, arguments, returnStatement, singleLine = singleLine))
         endpoint.description
-            ?.prependIndent("    ")
-            ?.let {
-                lines.add("    \"\"\"")
-                lines.add(it)
-                lines.add("    \"\"\"")
-            }
+            ?.also { lines.add("    \"\"\"") }
+            ?.split("\n")
+            ?.map { line -> line.trimEnd { it.isWhitespace() } }
+            ?.forEach { lines.add("    $it") }
+            ?.also { lines.add("    \"\"\"") }
+
         return lines.joinToString(separator = "\n")
     }
 
