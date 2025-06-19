@@ -172,5 +172,5 @@ open class PyApiClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseCl
             "resource:/templates/python/buildCurlCommand.py",
         )
 
-    override fun getMainApiClassBody() = Reader.readFileOrResourceOrUrl("resource:/templates/python/apiClientBody.py")
+    override fun getMainApiClassBody() = Reader.readFileOrResourceOrUrl("resource:/templates/python/apiClientBody.py").trimEnd()
 }

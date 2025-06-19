@@ -75,7 +75,6 @@ class Generated:
             use_request_payload_validation=use_request_payload_validation
         )
 
-
     async def some_action(self, enum: str):
         await self._client.fetch(
             url=f'api/v1/action/{enum}',

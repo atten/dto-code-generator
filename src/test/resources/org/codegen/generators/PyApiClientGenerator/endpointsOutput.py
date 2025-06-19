@@ -78,7 +78,6 @@ class Generated:
             use_request_payload_validation=use_request_payload_validation
         )
 
-
     def some_action(self, enum: str):
         self._client.fetch(
             url=f'api/v1/action/{enum}',

@@ -13,7 +13,10 @@ class PyAmqpGeventClientGenerator(proxy: AbstractCodeGenerator? = null) : PyAmqp
             .replace("\nfrom threading import Lock", "")
     }
 
-    override fun getMainApiClassBody() = super.getMainApiClassBody().replace("AmqpApiWithBlockingListener", "AmqpApiWithLazyListener")
+    override fun getMainApiClassBody() =
+        super.getMainApiClassBody()
+            .replace("AmqpApiWithBlockingListener", "AmqpApiWithLazyListener")
+            .trimEnd()
 
     override fun getBodyIncludedFiles(): List<String> {
         val original = super.getBodyIncludedFiles().toMutableList()

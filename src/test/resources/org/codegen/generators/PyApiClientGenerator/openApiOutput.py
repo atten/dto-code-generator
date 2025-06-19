@@ -78,7 +78,6 @@ class SomeRestApi:
             use_request_payload_validation=use_request_payload_validation
         )
 
-
     def get_action(self) -> dict:
         raw_data = self._client.fetch(
             url='/api/v1/action',
