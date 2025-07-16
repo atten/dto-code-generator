@@ -41,7 +41,8 @@
         {
           "name": "list value",
           "dtype": "int",
-          "many": true
+          "many": true,
+          "serializedName": "listValue"
         },
         {
           "name": "optional list value",

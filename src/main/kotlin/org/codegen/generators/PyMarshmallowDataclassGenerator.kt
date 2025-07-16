@@ -60,7 +60,8 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             val dtypeProps = getDtype(field.dtype)
             val fieldName = field.name.snakeCase()
             val attrs = dtypeProps.definitionArguments.toMutableMap()
-            val fieldMetadata = field.metadata.toMutableMap()
+            val innerMetadata = field.metadata.toMutableMap()
+            val outerMetadata = mutableMapOf<String, String>()
             val isDataclass = dtypeProps.requiredEntities.contains(field.dtype)
             var definition = dtypeProps.definition
 
@@ -108,17 +109,17 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             }
 
             if (field.nullable) {
-                fieldMetadata["allow_none"] = "True"
+                innerMetadata["allow_none"] = "True"
             }
 
             field.serializedName?.let {
                 if (it != fieldName) {
-                    fieldMetadata["data_key"] = "\"$it\""
+                    outerMetadata["data_key"] = "\"$it\""
                 }
             }
 
             if (field.excludeFromSerialization) {
-                fieldMetadata["load_only"] = "True"
+                innerMetadata["load_only"] = "True"
             }
 
             field.enum?.let { enum ->
@@ -148,7 +149,7 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
                     *choices.keys.toTypedArray(),
                 )
 
-                fieldMetadata["validate"] = "[marshmallow.fields.validate.OneOf($choicesName)]"
+                innerMetadata["validate"] = "[marshmallow.fields.validate.OneOf($choicesName)]"
             }
 
             if (field.many) {
@@ -156,15 +157,18 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 if (metadata != null && "marshmallow_field" in metadata) {
                     // wrap field in list and move metadata to the upper level (from nested field to list field)
                     attrs["metadata"] = metadata
+                        .replace("{metadata})", "{metadata}), {outerMetadata}")
                         .replace(", {metadata})", "), {metadata}")
                         .replace("marshmallow_field=", "marshmallow_field=marshmallow.fields.List(") +
                         ")"
-                } else if (fieldMetadata.isNotEmpty()) {
+                } else if (innerMetadata.isNotEmpty()) {
                     headers.add("import marshmallow_dataclass")
                     attrs["metadata"] = "dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested($nestedFieldArguments), {metadata}))"
                 }
 
                 definition = "list[$definition]"
+            } else {
+                innerMetadata += outerMetadata
             }
 
             if (field.nullable) {
@@ -173,12 +177,19 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             }
 
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
-            val metaString = fieldMetadata.map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
+            val innerMetadataString = innerMetadata.map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
+            val outerMetadataString = outerMetadata.map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
             attrs.forEach { entry ->
                 if ("{metadata}" in entry.value) {
                     attrs[entry.key] =
                         entry.value
-                            .replace("{metadata}", metaString)
+                            .replace("{metadata}", innerMetadataString)
+                            .replace(", )", ")")
+                }
+                if ("{outerMetadata}" in entry.value) {
+                    attrs[entry.key] =
+                        entry.value
+                            .replace("{outerMetadata}", outerMetadataString)
                             .replace(", )", ")")
                 }
             }

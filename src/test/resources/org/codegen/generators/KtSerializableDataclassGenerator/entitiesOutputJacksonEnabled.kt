@@ -32,8 +32,6 @@ data class BasicDto(
     @JsonProperty("customName")
     @SerialName("customName")
     val documentedValue: Double,
-    @JsonProperty("list_value")
-    @SerialName("list_value")
     val listValue: List<Int>,
     @JsonProperty("optional_value")
     @SerialName("optional_value")

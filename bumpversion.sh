@@ -18,6 +18,8 @@ echo "Bump version: $CURRENT_VERSION → $NEW_VERSION"
 # push master branch and tags
 git push --all gitlab
 git push --all github
+git push --tags gitlab
+git push --tags github
 
 # create release branch, push it and trigger CI
 git branch "release_$NEW_VERSION"

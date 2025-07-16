@@ -29,7 +29,6 @@ data class BasicDto(
     // very long description lol
     @SerialName("customName")
     val documentedValue: Double,
-    @SerialName("list_value")
     val listValue: List<Int>,
     @SerialName("optional_value")
     val optionalValue: Double = 0.0,

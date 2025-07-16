@@ -25,6 +25,6 @@ def item_factory() -> dict:
         "duration": "PT10H50S",
         "enum_value": "value 1",
         "customName": 100.5,
-        "list_value": [100, 200, 300],
+        "listValue": [100, 200, 300],
         "non_existent_field": "text",
     }
