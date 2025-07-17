@@ -109,7 +109,7 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             }
 
             if (field.nullable) {
-                innerMetadata["allow_none"] = "True"
+                outerMetadata["allow_none"] = "True"
             }
 
             field.serializedName?.let {
@@ -119,7 +119,7 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             }
 
             if (field.excludeFromSerialization) {
-                innerMetadata["load_only"] = "True"
+                outerMetadata["load_only"] = "True"
             }
 
             field.enum?.let { enum ->
@@ -152,6 +152,11 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 innerMetadata["validate"] = "[marshmallow.fields.validate.OneOf($choicesName)]"
             }
 
+            if (!field.many) {
+                innerMetadata += outerMetadata
+                outerMetadata.clear()
+            }
+
             if (field.many) {
                 val metadata = attrs["metadata"]
                 if (metadata != null && "marshmallow_field" in metadata) {
@@ -167,8 +172,6 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 }
 
                 definition = "list[$definition]"
-            } else {
-                innerMetadata += outerMetadata
             }
 
             if (field.nullable) {
@@ -177,21 +180,15 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             }
 
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.
-            val innerMetadataString = innerMetadata.map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
-            val outerMetadataString = outerMetadata.map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
+            val innerMetadataString = innerMetadata.toSortedMap().map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
+            val outerMetadataString = outerMetadata.toSortedMap().map { entry -> "${entry.key.snakeCase()}=${entry.value}" }.joinToString()
             attrs.forEach { entry ->
-                if ("{metadata}" in entry.value) {
-                    attrs[entry.key] =
-                        entry.value
-                            .replace("{metadata}", innerMetadataString)
-                            .replace(", )", ")")
-                }
-                if ("{outerMetadata}" in entry.value) {
-                    attrs[entry.key] =
-                        entry.value
-                            .replace("{outerMetadata}", outerMetadataString)
-                            .replace(", )", ")")
-                }
+                attrs[entry.key] =
+                    entry.value
+                        .replace("{metadata}", innerMetadataString)
+                        .replace("{outerMetadata}", outerMetadataString)
+                        .replace(", )", ")")
+                        .replace(", ,", ",")
             }
 
             val expression =
