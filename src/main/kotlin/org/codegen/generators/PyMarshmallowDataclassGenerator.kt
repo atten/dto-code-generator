@@ -187,8 +187,8 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
                     entry.value
                         .replace("{metadata}", innerMetadataString)
                         .replace("{outerMetadata}", outerMetadataString)
-                        .replace(", )", ")")
                         .replace(", ,", ",")
+                        .replace(", )", ")")
             }
 
             val expression =

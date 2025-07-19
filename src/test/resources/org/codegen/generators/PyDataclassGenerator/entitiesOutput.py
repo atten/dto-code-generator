@@ -40,7 +40,8 @@ class ContainerDto:
     entity with containers
     """
     basic_single: BasicDto = field()
-    basic_list: t.Optional[list[BasicDto]] = field()
+    basic_list: list[BasicDto] = field()
+    basic_optional_list: t.Optional[list[BasicDto]] = field()
 
 
 __all__ = [

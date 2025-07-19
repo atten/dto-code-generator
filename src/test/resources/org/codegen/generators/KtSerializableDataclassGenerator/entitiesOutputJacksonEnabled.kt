@@ -62,7 +62,10 @@ data class ContainerDto(
     @JsonProperty("basic")
     @SerialName("basic")
     val basicSingle: BasicDto,
+    @JsonProperty("basic_list")
+    @SerialName("basic_list")
+    val basicList: List<@Contextual BasicDto>,
     @JsonProperty("basics")
     @SerialName("basics")
-    val basicList: List<@Contextual BasicDto?>,
+    val basicOptionalList: List<@Contextual BasicDto?>,
 )

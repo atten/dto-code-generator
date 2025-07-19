@@ -44,7 +44,8 @@ class ContainerDto(models.Model):
     entity with containers
     """
     basic_single = models.JSONField()
-    basic_list = models.JSONField(null=True, blank=True)
+    basic_list = models.JSONField()
+    basic_optional_list = models.JSONField(null=True, blank=True)
 
     class Meta:
         abstract = True

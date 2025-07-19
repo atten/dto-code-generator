@@ -55,6 +55,8 @@ data class ContainerDto(
     @Contextual
     @SerialName("basic")
     val basicSingle: BasicDto,
+    @SerialName("basic_list")
+    val basicList: List<@Contextual BasicDto>,
     @SerialName("basics")
-    val basicList: List<@Contextual BasicDto?>,
+    val basicOptionalList: List<@Contextual BasicDto?>,
 )

@@ -99,6 +99,11 @@
         {
           "name": "basic list",
           "dtype": "basic DTO",
+          "many": true
+        },
+        {
+          "name": "basic optional list",
+          "dtype": "basic DTO",
           "many": true,
           "nullable": true,
           "serializedName": "basics"
