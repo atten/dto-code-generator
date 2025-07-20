@@ -4,7 +4,7 @@
 [![coverage](https://gitlab.com/atten0/ez-code-generator/badges/master/coverage.svg)](http://www.jacoco.org/jacoco)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ez-code-generator?link=https%3A%2F%2Fpypi.org%2Fproject%2Fez-code-generator)](https://pypi.org/project/ez-code-generator)
 
-Console tool for generating API clients, data classes and validators. Written in Kotlin, produces Kotlin and Python code. For the input it takes OpenApi document (JSON/YAML, v2.0 ‒ v3.2.1) or custom codegen schema (JSON).
+Console tool for generating API clients, data classes and validators. Written in Kotlin, produces Kotlin and Python code. For the input it takes OpenApi document (JSON/YAML, v2.0 ‒ v3.2.2) or custom codegen schema (JSON).
 
 The main goal of this project is to reduce integration costs between teams in multi-service environments.
 
@@ -139,8 +139,8 @@ Requires: Java 11
 Download and extract archive into current dir:
 
 ```shell
-wget -qO- https://github.com/atten/ez-code-generator/releases/download/v3.2.1/ez-codegen-3.2.1.zip | busybox unzip -
-cd ez-codegen-3.2.1/bin/
+wget -qO- https://github.com/atten/ez-code-generator/releases/download/v3.2.2/ez-codegen-3.2.2.zip | busybox unzip -
+cd ez-codegen-3.2.2/bin/
 chmod +x ez-codegen
 ```
 
@@ -151,7 +151,7 @@ Other versions: [Gitlab](https://gitlab.com/atten0/ez-code-generator/-/jobs/arti
 Requires: Java 11, Python3
 
 ```shell
-pip install ez-code-generator==3.2.1
+pip install ez-code-generator==3.2.2
 ```
 
 Other versions: [PYPI](https://pypi.org/project/ez-code-generator/#history)
