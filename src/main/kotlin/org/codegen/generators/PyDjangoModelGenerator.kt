@@ -14,8 +14,6 @@ class PyDjangoModelGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCod
 ) {
     private val plainDataTypes = listOf("bool", "int", "float", "str")
 
-    override fun renderEntityName(name: String) = name.camelCase()
-
     override fun renderEntity(entity: Entity): String {
         if (entity.fields.isEmpty()) {
             return ""

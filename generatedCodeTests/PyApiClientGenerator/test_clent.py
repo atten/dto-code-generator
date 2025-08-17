@@ -18,7 +18,7 @@ def basic_dto() -> dto.BasicDto:
     return dto.BasicDto(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
-        enum_value=constants.ENUM_VALUE_VALUE_1,
+        enum_value=constants.ValuesEnum.VALUE_1,
         documented_value=2.5,
         list_value=[50, 100, 150]
     )
@@ -68,7 +68,7 @@ def test_post_request_wrong_enum_value():
     item = dto.BasicDto(
         timestamp=datetime.now(),
         duration=timedelta(minutes=5),
-        enum_value=constants.ENUM_VALUE_VALUE_1 + 'azaza',
+        enum_value=constants.ValuesEnum.VALUE_1 + 'azaza',
         documented_value=2.5,
         list_value=[50, 100, 150]
     )

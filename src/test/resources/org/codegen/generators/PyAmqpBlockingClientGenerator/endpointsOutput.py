@@ -9,6 +9,7 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 from decimal import Decimal
+from enum import Enum
 from funcy import memoize
 from kombu import Connection, Exchange, Queue, Message
 from socket import timeout as SocketTimeout
@@ -67,7 +68,7 @@ class Generated:
             use_request_payload_validation=use_request_payload_validation
         )
 
-    def some_action(self, enum: str):
+    def some_action(self, enum: 'ValuesEnum'):
         self._client.mk_request(f'api/v1/action/{enum}', 'some_action').get()
 
     def get_basic_dto_list(self) -> list['BasicDto']:
@@ -164,17 +165,33 @@ def timedelta_to_java_duration(delta: timedelta) -> str:
     return 'PT{}S'.format(int(seconds))
 
 
-ENUM_VALUE_VALUE_1 = "value 1"
-ENUM_VALUE_VALUE_2 = "value 2"
-ENUM_VALUE_VALUE_3 = "value 3"
-ENUM_VALUES = [ENUM_VALUE_VALUE_1, ENUM_VALUE_VALUE_2, ENUM_VALUE_VALUE_3]
+class StrEnum(str, Enum):
+    """
+    Enum where members are also (and must be) strings
+    """
+
+    def __new__(cls, *values):
+        "values must already be of type `str`"
+        value = str(*values)
+        member = str.__new__(cls, value)
+        member._value_ = value
+        return member
+
+    def __str__(self):
+        return self._value_
+
+
+class ValuesEnum(StrEnum):
+    VALUE_1 = "value 1"
+    VALUE_2 = "value 2"
+    VALUE_3 = "value 3"
 
 
 @dataclass
 class BasicDto:
     timestamp: datetime = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime()))
     duration: timedelta = field(metadata=dict(marshmallow_field=JavaDurationField()))
-    enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
+    enum_value: ValuesEnum = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(list(map(str, ValuesEnum)))])))
     # short description
     # very long description lol
     documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="customName")))
@@ -679,10 +696,7 @@ def failsafe_call(
 
 
 class AllConstantsCollection:
-    ENUM_VALUES = ENUM_VALUES
-    ENUM_VALUE_VALUE_1 = ENUM_VALUE_VALUE_1
-    ENUM_VALUE_VALUE_2 = ENUM_VALUE_VALUE_2
-    ENUM_VALUE_VALUE_3 = ENUM_VALUE_VALUE_3
+    ValuesEnum = ValuesEnum
 
 
 class AllDataclassesCollection:

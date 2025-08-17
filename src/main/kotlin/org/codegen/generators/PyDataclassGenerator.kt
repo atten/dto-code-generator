@@ -18,7 +18,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
     proxy,
 ) {
     // list of __all__ items
-    protected val definedNames = mutableSetOf<String>()
+    private val definedNames = mutableSetOf<String>()
 
     override fun addCodePart(
         body: String,
@@ -30,8 +30,6 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
             .filter { it.isNotEmpty() }
             .forEach { definedNames.add(it) }
     }
-
-    override fun renderEntityName(name: String) = name.camelCase()
 
     override fun renderEntity(entity: Entity): String {
         val preLines = mutableListOf<String>()

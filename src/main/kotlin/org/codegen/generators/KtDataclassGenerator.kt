@@ -45,8 +45,6 @@ open class KtDataclassGenerator(includedEntityType: AllGeneratorsEnum, parent: A
         return "$definitionKeyword $fieldName: $typeName $assignmentExpression".trim()
     }
 
-    override fun renderEntityName(name: String) = name.camelCase()
-
     override fun renderEntity(entity: Entity) = buildEntity(entity, setOf())
 
     open fun buildEntity(

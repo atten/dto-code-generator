@@ -54,8 +54,6 @@ class KtInterfaceGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeG
         return lines.joinToString(separator = "\n")
     }
 
-    override fun renderEntityName(name: String) = name.camelCase()
-
     override fun renderEntity(entity: Entity): String {
         // either build an interface or regular DTO
         if (entity.fields.isEmpty()) {

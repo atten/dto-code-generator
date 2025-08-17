@@ -1,9 +1,7 @@
 package org.codegen.format
 
-import org.codegen.utils.camelCase
+import org.codegen.utils.*
 import org.codegen.utils.normalize
-import org.codegen.utils.pluralize
-import org.codegen.utils.snakeCase
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -72,5 +70,11 @@ class StringKtTest {
         assertEquals("currencies", "currency".pluralize())
         assertEquals("CURRENCIES", "CURRENCY".pluralize())
         assertEquals("status DTOS", "status DTO".pluralize())
+    }
+
+    @Test
+    fun testCommonPart() {
+        assertEquals("value", "VALUE_1".findCommonPart("VALUE_2"))
+        assertEquals("", "foo".findCommonPart("bar"))
     }
 }

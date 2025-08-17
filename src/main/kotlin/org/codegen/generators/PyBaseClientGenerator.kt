@@ -7,7 +7,6 @@ import org.codegen.schema.Entity
 import org.codegen.schema.MethodArgument
 import org.codegen.utils.CodeFormatRules
 import org.codegen.utils.Reader
-import org.codegen.utils.camelCase
 import org.codegen.utils.snakeCase
 
 abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : AbstractCodeGenerator(
@@ -45,7 +44,7 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
     ) {
         if (body.startsWith("@dataclass")) {
             definedDataclasses.addAll(names)
-        } else if (body.first().isUpperCase()) {
+        } else if (body.contains("Enum):")) {
             definedConstants.addAll(names)
         } else {
             definedNames.addAll(names)
@@ -114,7 +113,15 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
             val argTypeName =
                 dtypeProps.definition
                     .let {
-                        if (!dtypeProps.isNative) {
+                        if (argument.isEnum) {
+                            headers.add("from enum import Enum")
+                            renderEnumName(argument.toField()).also { name -> assignEnumName(argument.toField(), name) }
+                        } else {
+                            it
+                        }
+                    }
+                    .let {
+                        if (!dtypeProps.isNative || argument.isEnum) {
                             // wrap into quotes if definition is listed below
                             "'$it'"
                         } else {
@@ -178,8 +185,6 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
             renderEndpointBody(endpoint)
                 .prependIndent("    ")
                 .let { if (it.isNotEmpty()) "\n$it" else it }
-
-    override fun renderEntityName(name: String) = name.camelCase()
 
     override fun renderEntity(entity: Entity): String {
         if (entity.fields.isNotEmpty()) {

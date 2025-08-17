@@ -7,6 +7,7 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 from decimal import Decimal
+from enum import Enum
 from time import sleep
 from typeguard import typechecked
 from urllib.parse import urljoin, urlencode
@@ -85,11 +86,7 @@ class SomeRestApi:
         gen = self._deserializer.deserialize(raw_data, dict)
         return next(gen)
 
-    def post_action_by_enum(
-        self,
-        # variant1 | variant2 | variant3
-        enum: str,
-    ):
+    def post_action_by_enum(self, enum: 'VariantsEnum'):
         """
         description
         """
@@ -255,10 +252,26 @@ def timedelta_to_java_duration(delta: timedelta) -> str:
     return 'PT{}S'.format(int(seconds))
 
 
-SOME_ENUM_ROCK = "ROCK"
-SOME_ENUM_SCISSORS = "SCISSORS"
-SOME_ENUM_PAPER = "PAPER"
-SOME_ENUMS = [SOME_ENUM_ROCK, SOME_ENUM_SCISSORS, SOME_ENUM_PAPER]
+class StrEnum(str, Enum):
+    """
+    Enum where members are also (and must be) strings
+    """
+
+    def __new__(cls, *values):
+        "values must already be of type `str`"
+        value = str(*values)
+        member = str.__new__(cls, value)
+        member._value_ = value
+        return member
+
+    def __str__(self):
+        return self._value_
+
+
+class SomeEnum(StrEnum):
+    ROCK = "ROCK"
+    SCISSORS = "SCISSORS"
+    PAPER = "PAPER"
 
 
 @dataclass
@@ -267,13 +280,13 @@ class AdvancedDto:
     json_underscoded: dict | None = None
     java_duration: timedelta | None = field(metadata=dict(marshmallow_field=JavaDurationField(allow_none=True, data_key="javaDuration")), default=None)
     # Enum field with the same name as of different entity
-    some_enum: str | None = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(SOME_ENUMS)])), default="PAPER")
+    some_enum: SomeEnum | None = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(list(map(str, SomeEnum)))])), default="PAPER")
 
 
-SOME_ENUM_VARIANT_1 = "variant1"
-SOME_ENUM_VARIANT_2 = "variant2"
-SOME_ENUM_VARIANT_3 = "variant3"
-BASIC_DTO_SOME_ENUMS = [SOME_ENUM_VARIANT_1, SOME_ENUM_VARIANT_2, SOME_ENUM_VARIANT_3]
+class VariantsEnum(StrEnum):
+    VARIANT_1 = "variant1"
+    VARIANT_2 = "variant2"
+    VARIANT_3 = "variant3"
 
 
 @dataclass
@@ -288,7 +301,7 @@ class BasicDto:
     list_or_number: int | None = field(metadata=dict(marshmallow_field=marshmallow.fields.Integer(allow_none=True)), default=None)
     mixed_enums: str | None = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True)), default=None)
     nested_object: AdvancedDto | None = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(AdvancedDto, base_schema=BaseSchema), allow_none=True)), default=None)
-    some_enum: str | None = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(BASIC_DTO_SOME_ENUMS)])), default=None)
+    some_enum: VariantsEnum | None = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(list(map(str, VariantsEnum)))])), default=None)
     some_string: str | None = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True)), default=None)
     timestamp: datetime | None = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime(allow_none=True)), default=None)
 
@@ -645,14 +658,8 @@ def build_curl_command(url: str, method: str, headers: dict[str, str], body: str
 
 
 class AllConstantsCollection:
-    BASIC_DTO_SOME_ENUMS = BASIC_DTO_SOME_ENUMS
-    SOME_ENUMS = SOME_ENUMS
-    SOME_ENUM_PAPER = SOME_ENUM_PAPER
-    SOME_ENUM_ROCK = SOME_ENUM_ROCK
-    SOME_ENUM_SCISSORS = SOME_ENUM_SCISSORS
-    SOME_ENUM_VARIANT_1 = SOME_ENUM_VARIANT_1
-    SOME_ENUM_VARIANT_2 = SOME_ENUM_VARIANT_2
-    SOME_ENUM_VARIANT_3 = SOME_ENUM_VARIANT_3
+    SomeEnum = SomeEnum
+    VariantsEnum = VariantsEnum
 
 
 class AllDataclassesCollection:

@@ -1,9 +1,13 @@
 package org.codegen.generators
 
+import okhttp3.internal.toImmutableMap
 import org.codegen.schema.DataType
 import org.codegen.schema.Entity
+import org.codegen.schema.Field
 import org.codegen.utils.CodeFormatRules
 import org.codegen.utils.EnvironmentUtils.Companion.substituteEnvVariables
+import org.codegen.utils.findCommonPart
+import org.codegen.utils.pluralize
 import java.util.StringJoiner
 import kotlin.reflect.full.primaryConstructor
 
@@ -24,6 +28,9 @@ abstract class AbstractCodeGenerator(
     // built classes/enums (included entities)
     private val codeParts = mutableListOf<String>()
         get() = parent?.codeParts ?: field
+
+    private val enumNames = mutableMapOf<Map<String, String>, String>()
+        get() = parent?.enumNames ?: field
 
     /**
      * Pick primary corresponding enum value and it's aliases.
@@ -138,7 +145,39 @@ abstract class AbstractCodeGenerator(
 
     private fun containsCodePartFragment(name: String): Boolean = codeParts.find { it.contains(name) } != null
 
-    abstract fun renderEntityName(name: String): String
+    protected fun renderEnumName(
+        enumField: Field,
+        vararg nameAliases: String,
+    ): String {
+        val enum = enumField.enum!!.toImmutableMap()
+        return enumNames.getOrElse(enum) {
+            listOf(
+                enumField.name,
+                *nameAliases,
+                enum.keys.reduce { result, part -> result.findCommonPart(part) }.pluralize() + " enum",
+                listOf(enumField.enumPrefix ?: "", enumField.name).joinToString(separator = " "),
+            )
+                .map { renderEntityName(it) }
+                .filter { !clashesWithBuiltinNames(it) }
+                .first { !enumNames.values.contains(it) }
+        }
+    }
+
+    protected fun assignEnumName(
+        enumField: Field,
+        enumName: String,
+    ) {
+        enumNames[enumField.enum!!.toImmutableMap()] = enumName
+    }
+
+    protected fun renderEntityName(name: String) = codeFormatRules.entityName(name)
+
+    private fun clashesWithBuiltinNames(name: String): Boolean {
+        return headers
+            .map { it.split(" ").map { word -> word.trim(',') } }
+            .flatten()
+            .count { name == it } > 0
+    }
 
     abstract fun renderEntity(entity: Entity): String
 

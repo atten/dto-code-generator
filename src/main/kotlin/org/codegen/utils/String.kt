@@ -66,6 +66,7 @@ fun String.lowercaseFirst() = this.replaceFirstChar { it.lowercase() }
 
 fun String.pluralize() =
     when {
+        this.isEmpty() -> this
         this.endsWith("ES") -> this
         this.endsWith("es") -> this
         this.endsWith("S") -> "${this}ES"
@@ -77,3 +78,19 @@ fun String.pluralize() =
         this.last().isUpperCase() -> "${this}S"
         else -> "${this}s"
     }
+
+fun String.findCommonPart(other: String): String {
+    if (this.isEmpty() || other.isEmpty()) {
+        return ""
+    }
+    return this
+        .normalize()
+        .split(" ")
+        .intersect(
+            other
+                .normalize()
+                .split(" ")
+                .toSortedSet(),
+        )
+        .joinToString(separator = " ")
+}

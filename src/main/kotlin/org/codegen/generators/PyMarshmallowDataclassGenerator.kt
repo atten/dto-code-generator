@@ -4,12 +4,9 @@ import org.codegen.schema.Constants.Companion.EMPTY
 import org.codegen.schema.Constants.Companion.UNSET
 import org.codegen.schema.DataType
 import org.codegen.schema.Entity
-import org.codegen.schema.Field
 import org.codegen.schema.Validator
+import org.codegen.utils.*
 import org.codegen.utils.EnvironmentUtils.Companion.getEnvVariable
-import org.codegen.utils.Reader
-import org.codegen.utils.pluralize
-import org.codegen.utils.snakeCase
 import kotlin.jvm.optionals.getOrNull
 
 class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : PyDataclassGenerator(
@@ -122,34 +119,20 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
                 outerMetadata["load_only"] = "True"
             }
 
-            field.enum?.let { enum ->
-                val choices = enum.keys.associate { key -> buildChoiceVariableName(field, key) to dtypeProps.toGeneratedValue(key) }
-                val choicesPrefix = (field.enumPrefix ?: fieldName).snakeCase().uppercase()
-                val choicesDefinition = choices.map { entry -> "${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
-                val choicesNamePlaceholder = "<CHOICES_NAME>"
-                val bodyWithPlaceholder = "$choicesDefinition\n$choicesNamePlaceholder = [${choices.keys.joinToString()}]"
-                var choicesName = ""
-                var body = ""
-
-                // pick another name if previous one is occupied by different definition
-                for (choicesNameVariant in listOf(
-                    choicesPrefix.pluralize(),
-                    entity.name.snakeCase().uppercase() + "_" + choicesPrefix.pluralize(),
-                )) {
-                    choicesName = choicesNameVariant
-                    body = bodyWithPlaceholder.replace(choicesNamePlaceholder, choicesNameVariant)
-                    if (definedNames.contains(choicesName) == containsCodePartExact(body)) {
-                        break
-                    }
-                }
-
-                addCodePart(
-                    body,
-                    choicesName,
-                    *choices.keys.toTypedArray(),
-                )
-
-                innerMetadata["validate"] = "[marshmallow.fields.validate.OneOf($choicesName)]"
+            if (field.isEnum) {
+                headers.add("from enum import Enum")
+                val choices = field.enum!!.keys.associate { key -> buildEnumFieldName(key) to dtypeProps.toGeneratedValue(key) }
+                val choicesDefinition = choices.map { entry -> "    ${entry.key} = ${entry.value}" }.joinToString(separator = "\n")
+                val enumName = renderEnumName(field, "${entity.name} ${field.name}")
+                val body = "class $enumName(StrEnum):\n$choicesDefinition"
+                // build-in since python 3.11:
+                // headers.add("from enum import StrEnum")
+                // innerMetadata["validate"] = "[marshmallow.fields.validate.OneOf($enumName)]"
+                assignEnumName(field, enumName)
+                addCodePart(Reader.readFileOrResourceOrUrl("resource:/templates/python/strEnum.py"))
+                addCodePart(body, enumName)
+                innerMetadata["validate"] = "[marshmallow.fields.validate.OneOf(list(map(str, $enumName)))]"
+                definition = enumName
             }
 
             if (!field.many) {
@@ -235,14 +218,6 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             .joinToString("\n  ") { "if not($it):\n    raise marshmallow.ValidationError('${validator.message.replace("'", "\\'")}')" }
     }
 
-    private fun buildChoiceVariableName(
-        field: Field,
-        key: String,
-    ): String {
-        val choicesPrefix = (field.enumPrefix ?: field.name).snakeCase().uppercase()
-        return choicesPrefix + "_" + key.snakeCase().uppercase()
-    }
-
     override fun buildPrimitive(
         key: String,
         entity: Entity,
@@ -256,7 +231,7 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
             // detect field|enum_val and convert appropriately
             if (field?.enum?.contains(attribute) == true) {
                 // add right indent
-                return buildChoiceVariableName(field, attribute) + ' '
+                return buildEnumFieldName(attribute) + ' '
             } else if (field != null && attribute == "COUNT") {
                 // array length detected
                 val name = field.name.snakeCase()
@@ -273,4 +248,6 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
         }
         return super.buildPrimitive(key, entity, dataType)
     }
+
+    private fun buildEnumFieldName(key: String) = key.snakeCase().uppercase()
 }

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
 from datetime import timedelta
+from enum import Enum
 import marshmallow
 import marshmallow_dataclass
 import re
@@ -72,17 +73,33 @@ def timedelta_to_java_duration(delta: timedelta) -> str:
     return 'PT{}S'.format(int(seconds))
 
 
-ENUM_VALUE_VALUE_1 = "value 1"
-ENUM_VALUE_VALUE_2 = "value 2"
-ENUM_VALUE_VALUE_3 = "value 3"
-ENUM_VALUES = [ENUM_VALUE_VALUE_1, ENUM_VALUE_VALUE_2, ENUM_VALUE_VALUE_3]
+class StrEnum(str, Enum):
+    """
+    Enum where members are also (and must be) strings
+    """
+
+    def __new__(cls, *values):
+        "values must already be of type `str`"
+        value = str(*values)
+        member = str.__new__(cls, value)
+        member._value_ = value
+        return member
+
+    def __str__(self):
+        return self._value_
+
+
+class EnumValue(StrEnum):
+    VALUE_1 = "value 1"
+    VALUE_2 = "value 2"
+    VALUE_3 = "value 3"
 
 
 @dataclass
 class BasicDto:
     timestamp: datetime = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime()))
     duration: timedelta = field(metadata=dict(marshmallow_field=JavaDurationField()))
-    enum_value: str = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(ENUM_VALUES)])))
+    enum_value: EnumValue = field(metadata=dict(marshmallow_field=marshmallow.fields.String(validate=[marshmallow.fields.validate.OneOf(list(map(str, EnumValue)))])))
     # short description
     # very long description lol
     documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="customName")))
@@ -125,8 +142,5 @@ __all__ = [
     "AdvancedDto",
     "BasicDto",
     "ContainerDto",
-    "ENUM_VALUES",
-    "ENUM_VALUE_VALUE_1",
-    "ENUM_VALUE_VALUE_2",
-    "ENUM_VALUE_VALUE_3",
+    "EnumValue",
 ]

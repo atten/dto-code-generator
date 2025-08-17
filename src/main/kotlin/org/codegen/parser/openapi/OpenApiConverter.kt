@@ -161,7 +161,6 @@ internal class OpenApiConverter(
     private fun convertGenericParameter(parameter: Parameter): MethodArgument {
         val description = StringJoiner("\n")
         parameter.description?.let { description.add(it) }
-        parameter.schema?.enum?.let { description.add(it.joinToString(separator = " | ")) }
 
         return MethodArgument(
             name = parameter.name,
@@ -170,6 +169,7 @@ internal class OpenApiConverter(
             nullable = !parameter.required,
             default = if (parameter.required) UNSET else null,
             many = parameter.type == "array" || parameter.schema?.type == "array",
+            enum = parameter.schema?.enum?.associate { Pair(it, it) },
         )
     }
 
