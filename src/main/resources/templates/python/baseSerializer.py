@@ -3,7 +3,7 @@ class BaseSerializer:
         self._use_request_payload_validation = use_request_payload_validation
         self._deserializer = deserializer
 
-    def serialize(self, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
+    def serialize(self, value: t.Any, is_payload=False) -> JSON_PAYLOAD | None:
         # auto-detect collections
         many = False
         _type = type(value)

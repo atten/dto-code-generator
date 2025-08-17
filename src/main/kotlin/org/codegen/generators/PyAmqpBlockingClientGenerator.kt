@@ -7,7 +7,7 @@ import org.codegen.utils.snakeCase
 open class PyAmqpBlockingClientGenerator(proxy: AbstractCodeGenerator? = null) : PyBaseClientGenerator(proxy) {
     override fun renderEndpointHeader(endpoint: Endpoint): String {
         // amqp client does not support streaming yet
-        return super.renderEndpointHeader(endpoint).replace("Iterator", "List")
+        return super.renderEndpointHeader(endpoint).replace("t.Iterator", "list")
     }
 
     override fun renderEndpointBody(endpoint: Endpoint): String {

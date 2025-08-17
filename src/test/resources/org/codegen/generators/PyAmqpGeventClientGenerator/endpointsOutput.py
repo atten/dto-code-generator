@@ -73,7 +73,7 @@ class Generated:
     def some_action(self, enum: str):
         self._client.mk_request(f'api/v1/action/{enum}', 'some_action').get()
 
-    def get_basic_dto_list(self) -> t.List['BasicDto']:
+    def get_basic_dto_list(self) -> list['BasicDto']:
         """
         Endpoint description
 
@@ -89,7 +89,7 @@ class Generated:
         gen = self._deserializer.deserialize(raw_data, BasicDto)
         return next(gen)
 
-    def create_basic_dto_bulk(self, items: t.Sequence['BasicDto']) -> t.List['BasicDto']:
+    def create_basic_dto_bulk(self, items: t.Sequence['BasicDto']) -> list['BasicDto']:
         items = self._serializer.serialize(items, is_payload=True)
         args = (items,)
         raw_data = self._client.mk_request(f'api/v1/basic/bulk', 'create_basic_dto_bulk', *args).get()
@@ -119,7 +119,7 @@ class JavaDurationField(marshmallow.fields.Field):
         except ValueError as error:
             raise marshmallow.ValidationError(str(error)) from error
 
-    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
+    def _serialize(self, value: timedelta | None, attr: str, obj, **kwargs):
         if value is None:
             return None
         return timedelta_to_java_duration(value) if value else "PT0S"
@@ -183,7 +183,7 @@ class BasicDto:
     documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="customName")))
     list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer(), data_key="listValue")))
     optional_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()), default=0)
-    nullable_value: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
+    nullable_value: bool | None = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
     optional_list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())), default_factory=list)
 
 
@@ -369,7 +369,7 @@ class AmqpRequest:
 class AmqpResponse:
     id: str
     result: JSON_PAYLOAD
-    error: t.Optional[str]
+    error: str | None
 
 
 class FailedAmqpRequestError(Exception):
@@ -525,7 +525,7 @@ class BaseSerializer:
         self._use_request_payload_validation = use_request_payload_validation
         self._deserializer = deserializer
 
-    def serialize(self, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
+    def serialize(self, value: t.Any, is_payload=False) -> JSON_PAYLOAD | None:
         # auto-detect collections
         many = False
         _type = type(value)
@@ -592,7 +592,7 @@ class BaseDeserializer:
     def __init__(self, use_response_streaming: bool):
         self._use_response_streaming = use_response_streaming
 
-    def deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Optional[t.Type] = None, many: bool = False) -> t.Iterator[t.Any]:
+    def deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Type | None = None, many: bool = False) -> t.Iterator[t.Any]:
         if hasattr(raw_data, 'read'):
             # read singular JSON objects at once and multiple objects in stream to reduce memory footprint
             if many and self._use_response_streaming:

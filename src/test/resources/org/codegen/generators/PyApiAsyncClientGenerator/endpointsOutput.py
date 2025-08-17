@@ -24,16 +24,16 @@ class Generated:
     def __init__(
         self,
         base_url: str = '',
-        headers: t.Optional[t.Dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
         logger: t.Union[logging.Logger, t.Callable[[str], None], None] = None,
         max_retries: int = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5)),
         retry_timeout: float = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3)),
-        user_agent: t.Optional[str] = os.environ.get('API_CLIENT_USER_AGENT'),
+        user_agent: str | None = os.environ.get('API_CLIENT_USER_AGENT'),
         use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1))),
         use_request_payload_validation: bool = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1))),
         use_debug_curl: bool = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0))),
-        request_kwargs: t.Optional[t.Dict[str, t.Any]] = None,
-        connection_pool_kwargs: t.Optional[t.Dict[str, t.Any]] = None,
+        request_kwargs: dict[str, t.Any] | None = None,
+        connection_pool_kwargs: dict[str, t.Any] | None = None,
         exception_class: t.Type[Exception] = RuntimeError,
     ):
         """
@@ -141,7 +141,7 @@ class JavaDurationField(marshmallow.fields.Field):
         except ValueError as error:
             raise marshmallow.ValidationError(str(error)) from error
 
-    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
+    def _serialize(self, value: timedelta | None, attr: str, obj, **kwargs):
         if value is None:
             return None
         return timedelta_to_java_duration(value) if value else "PT0S"
@@ -205,7 +205,7 @@ class BasicDto:
     documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="customName")))
     list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer(), data_key="listValue")))
     optional_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()), default=0)
-    nullable_value: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
+    nullable_value: bool | None = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
     optional_list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())), default_factory=list)
 
 
@@ -220,8 +220,8 @@ class BaseJsonHttpAsyncClient:
         logger: t.Union[logging.Logger, t.Callable[[str], None], None],
         max_retries: int,
         retry_timeout: float,
-        user_agent: t.Optional[str],
-        headers: t.Optional[t.Dict[str, str]],
+        user_agent: str | None,
+        headers: dict[str, str] | None,
         use_response_streaming: bool,
         use_debug_curl: bool,
         request_kwargs: dict,
@@ -242,9 +242,9 @@ class BaseJsonHttpAsyncClient:
         self,
         url: str,
         method: str = 'get',
-        query_params: t.Optional[dict] = None,
-        json_body: t.Optional[JSON_PAYLOAD] = None,
-        form_fields: t.Optional[t.Dict[str, str]] = None,
+        query_params: dict | None = None,
+        json_body: JSON_PAYLOAD | None = None,
+        form_fields: dict[str, str] | None = None,
     ) -> RESPONSE_BODY:
         """
         Retrieve JSON response from remote API request.
@@ -297,7 +297,7 @@ class BaseJsonHttpAsyncClient:
             raise self._exception_class(f'Failed to {method} {full_url}: {e}') from e
 
     @classmethod
-    async def _mk_request(cls, full_url: str, method: str, body: t.Optional[JSON_PAYLOAD], headers: t.Optional[dict]) -> RESPONSE_BODY:
+    async def _mk_request(cls, full_url: str, method: str, body: JSON_PAYLOAD | None, headers: dict | None) -> RESPONSE_BODY:
         async with aiohttp.request(
             url=full_url,
             method=method,
@@ -311,7 +311,7 @@ class BaseJsonHttpAsyncClient:
 
             return await response.text()
 
-    def _get_full_url(self, url: str, query_params: t.Optional[dict] = None) -> str:
+    def _get_full_url(self, url: str, query_params: dict | None = None) -> str:
         if self._base_url:
             url = urljoin(self._base_url, url)
 
@@ -337,7 +337,7 @@ class BaseSerializer:
         self._use_request_payload_validation = use_request_payload_validation
         self._deserializer = deserializer
 
-    def serialize(self, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
+    def serialize(self, value: t.Any, is_payload=False) -> JSON_PAYLOAD | None:
         # auto-detect collections
         many = False
         _type = type(value)
@@ -404,7 +404,7 @@ class BaseDeserializer:
     def __init__(self, use_response_streaming: bool):
         self._use_response_streaming = use_response_streaming
 
-    def deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Optional[t.Type] = None, many: bool = False) -> t.Iterator[t.Any]:
+    def deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Type | None = None, many: bool = False) -> t.Iterator[t.Any]:
         if hasattr(raw_data, 'read'):
             # read singular JSON objects at once and multiple objects in stream to reduce memory footprint
             if many and self._use_response_streaming:
@@ -517,7 +517,7 @@ async def failsafe_call_async(
         )
 
 
-def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: str) -> str:
+def build_curl_command(url: str, method: str, headers: dict[str, str], body: str) -> str:
     """
     >>> build_curl_command('https://example.com', 'get', {}, '')
     'curl "https://example.com"'

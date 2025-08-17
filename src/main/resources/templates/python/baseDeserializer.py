@@ -2,7 +2,7 @@ class BaseDeserializer:
     def __init__(self, use_response_streaming: bool):
         self._use_response_streaming = use_response_streaming
 
-    def deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Optional[t.Type] = None, many: bool = False) -> t.Iterator[t.Any]:
+    def deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Type | None = None, many: bool = False) -> t.Iterator[t.Any]:
         if hasattr(raw_data, 'read'):
             # read singular JSON objects at once and multiple objects in stream to reduce memory footprint
             if many and self._use_response_streaming:

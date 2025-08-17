@@ -1,4 +1,4 @@
-def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: str) -> str:
+def build_curl_command(url: str, method: str, headers: dict[str, str], body: str) -> str:
     """
     >>> build_curl_command('https://example.com', 'get', {}, '')
     'curl "https://example.com"'

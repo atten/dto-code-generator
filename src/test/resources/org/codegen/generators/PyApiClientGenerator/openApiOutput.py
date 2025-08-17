@@ -27,16 +27,16 @@ class SomeRestApi:
     def __init__(
         self,
         base_url: str = '',
-        headers: t.Optional[t.Dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
         logger: t.Union[logging.Logger, t.Callable[[str], None], None] = None,
         max_retries: int = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5)),
         retry_timeout: float = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3)),
-        user_agent: t.Optional[str] = os.environ.get('API_CLIENT_USER_AGENT'),
+        user_agent: str | None = os.environ.get('API_CLIENT_USER_AGENT'),
         use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1))),
         use_request_payload_validation: bool = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1))),
         use_debug_curl: bool = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0))),
-        request_kwargs: t.Optional[t.Dict[str, t.Any]] = None,
-        connection_pool_kwargs: t.Optional[t.Dict[str, t.Any]] = None,
+        request_kwargs: dict[str, t.Any] | None = None,
+        connection_pool_kwargs: dict[str, t.Any] | None = None,
         exception_class: t.Type[Exception] = RuntimeError,
     ):
         """
@@ -101,9 +101,9 @@ class SomeRestApi:
     def get_basic(
         self,
         # A page number within the paginated result set.
-        page: t.Optional[int] = None,
+        page: int | None = None,
         # Number of results to return per page.
-        page_size: t.Optional[int] = None,
+        page_size: int | None = None,
     ) -> t.Iterator['BasicDto']:
         """
         endpoint description
@@ -131,9 +131,9 @@ class SomeRestApi:
 
     def get_basic_bulk(
         self,
-        page: t.Optional[int] = None,
-        size: t.Optional[int] = None,
-        sort: t.Optional[t.Sequence[str]] = (),
+        page: int | None = None,
+        size: int | None = None,
+        sort: t.Sequence[str] | None = (),
     ) -> t.Iterator['BasicDto']:
         """
         Pageable DTO as query object
@@ -207,7 +207,7 @@ class JavaDurationField(marshmallow.fields.Field):
         except ValueError as error:
             raise marshmallow.ValidationError(str(error)) from error
 
-    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
+    def _serialize(self, value: timedelta | None, attr: str, obj, **kwargs):
         if value is None:
             return None
         return timedelta_to_java_duration(value) if value else "PT0S"
@@ -264,10 +264,10 @@ SOME_ENUMS = [SOME_ENUM_ROCK, SOME_ENUM_SCISSORS, SOME_ENUM_PAPER]
 @dataclass
 class AdvancedDto:
     # Example: [{"foo": "bar"}]
-    json_underscoded: t.Optional[dict] = None
-    java_duration: t.Optional[timedelta] = field(metadata=dict(marshmallow_field=JavaDurationField(allow_none=True, data_key="javaDuration")), default=None)
+    json_underscoded: dict | None = None
+    java_duration: timedelta | None = field(metadata=dict(marshmallow_field=JavaDurationField(allow_none=True, data_key="javaDuration")), default=None)
     # Enum field with the same name as of different entity
-    some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(SOME_ENUMS)])), default="PAPER")
+    some_enum: str | None = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(SOME_ENUMS)])), default="PAPER")
 
 
 SOME_ENUM_VARIANT_1 = "variant1"
@@ -283,14 +283,14 @@ class BasicDto:
     # Field description
     some_number: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()))
     boolean_with_default: bool = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(data_key="booleanWithDefault")), default=True)
-    list_of_mixed_types: t.Optional[list[str]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.String(), allow_none=True)), default=None)
-    list_of_objects: t.Optional[list[dict]] = None
-    list_or_number: t.Optional[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.Integer(allow_none=True)), default=None)
-    mixed_enums: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True)), default=None)
-    nested_object: t.Optional[AdvancedDto] = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(AdvancedDto, base_schema=BaseSchema), allow_none=True)), default=None)
-    some_enum: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(BASIC_DTO_SOME_ENUMS)])), default=None)
-    some_string: t.Optional[str] = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True)), default=None)
-    timestamp: t.Optional[datetime] = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime(allow_none=True)), default=None)
+    list_of_mixed_types: list[str] | None = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.String(), allow_none=True)), default=None)
+    list_of_objects: list[dict] | None = None
+    list_or_number: int | None = field(metadata=dict(marshmallow_field=marshmallow.fields.Integer(allow_none=True)), default=None)
+    mixed_enums: str | None = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True)), default=None)
+    nested_object: AdvancedDto | None = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(AdvancedDto, base_schema=BaseSchema), allow_none=True)), default=None)
+    some_enum: str | None = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True, validate=[marshmallow.fields.validate.OneOf(BASIC_DTO_SOME_ENUMS)])), default=None)
+    some_string: str | None = field(metadata=dict(marshmallow_field=marshmallow.fields.String(allow_none=True)), default=None)
+    timestamp: datetime | None = field(metadata=dict(marshmallow_field=marshmallow.fields.DateTime(allow_none=True)), default=None)
 
 
 @dataclass
@@ -310,8 +310,8 @@ class BaseJsonHttpClient:
         logger: t.Union[logging.Logger, t.Callable[[str], None], None],
         max_retries: int,
         retry_timeout: float,
-        user_agent: t.Optional[str],
-        headers: t.Optional[t.Dict[str, str]],
+        user_agent: str | None,
+        headers: dict[str, str] | None,
         use_response_streaming: bool,
         use_debug_curl: bool,
         request_kwargs: dict,
@@ -336,9 +336,9 @@ class BaseJsonHttpClient:
         self,
         url: str,
         method: str = 'get',
-        query_params: t.Optional[dict] = None,
-        json_body: t.Optional[JSON_PAYLOAD] = None,
-        form_fields: t.Optional[t.Dict[str, str]] = None,
+        query_params: dict | None = None,
+        json_body: JSON_PAYLOAD | None = None,
+        form_fields: dict[str, str] | None = None,
     ) -> RESPONSE_BODY:
         """
         Retrieve JSON response from remote API request.
@@ -412,7 +412,7 @@ class BaseJsonHttpClient:
         # decode whole non-json response into string
         return response.data.decode()
 
-    def _get_full_url(self, url: str, query_params: t.Optional[dict] = None) -> str:
+    def _get_full_url(self, url: str, query_params: dict | None = None) -> str:
         if self._base_url:
             url = urljoin(self._base_url, url)
 
@@ -438,7 +438,7 @@ class BaseSerializer:
         self._use_request_payload_validation = use_request_payload_validation
         self._deserializer = deserializer
 
-    def serialize(self, value: t.Any, is_payload=False) -> t.Optional[JSON_PAYLOAD]:
+    def serialize(self, value: t.Any, is_payload=False) -> JSON_PAYLOAD | None:
         # auto-detect collections
         many = False
         _type = type(value)
@@ -505,7 +505,7 @@ class BaseDeserializer:
     def __init__(self, use_response_streaming: bool):
         self._use_response_streaming = use_response_streaming
 
-    def deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Optional[t.Type] = None, many: bool = False) -> t.Iterator[t.Any]:
+    def deserialize(self, raw_data: RESPONSE_BODY, data_class: t.Type | None = None, many: bool = False) -> t.Iterator[t.Any]:
         if hasattr(raw_data, 'read'):
             # read singular JSON objects at once and multiple objects in stream to reduce memory footprint
             if many and self._use_response_streaming:
@@ -618,7 +618,7 @@ def failsafe_call(
         )
 
 
-def build_curl_command(url: str, method: str, headers: t.Dict[str, str], body: str) -> str:
+def build_curl_command(url: str, method: str, headers: dict[str, str], body: str) -> str:
     """
     >>> build_curl_command('https://example.com', 'get', {}, '')
     'curl "https://example.com"'

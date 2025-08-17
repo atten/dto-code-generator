@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
 from datetime import timedelta
-import typing as t
 
 
 @dataclass(frozen=True)
@@ -17,7 +16,7 @@ class BasicDto:
     documented_value: float = field()
     list_value: list[int] = field()
     optional_value: float = 0
-    nullable_value: t.Optional[bool] = None
+    nullable_value: bool | None = None
     optional_list_value: list[int] = field(default_factory=list)
 
 
@@ -41,7 +40,7 @@ class ContainerDto:
     """
     basic_single: BasicDto = field()
     basic_list: list[BasicDto] = field()
-    basic_optional_list: t.Optional[list[BasicDto]] = field()
+    basic_optional_list: list[BasicDto] | None = field()
 
 
 __all__ = [

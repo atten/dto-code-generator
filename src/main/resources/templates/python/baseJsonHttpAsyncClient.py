@@ -9,8 +9,8 @@ class BaseJsonHttpAsyncClient:
         logger: t.Union[logging.Logger, t.Callable[[str], None], None],
         max_retries: int,
         retry_timeout: float,
-        user_agent: t.Optional[str],
-        headers: t.Optional[t.Dict[str, str]],
+        user_agent: str | None,
+        headers: dict[str, str] | None,
         use_response_streaming: bool,
         use_debug_curl: bool,
         request_kwargs: dict,
@@ -31,9 +31,9 @@ class BaseJsonHttpAsyncClient:
         self,
         url: str,
         method: str = 'get',
-        query_params: t.Optional[dict] = None,
-        json_body: t.Optional[JSON_PAYLOAD] = None,
-        form_fields: t.Optional[t.Dict[str, str]] = None,
+        query_params: dict | None = None,
+        json_body: JSON_PAYLOAD | None = None,
+        form_fields: dict[str, str] | None = None,
     ) -> RESPONSE_BODY:
         """
         Retrieve JSON response from remote API request.
@@ -86,7 +86,7 @@ class BaseJsonHttpAsyncClient:
             raise self._exception_class(f'Failed to {method} {full_url}: {e}') from e
 
     @classmethod
-    async def _mk_request(cls, full_url: str, method: str, body: t.Optional[JSON_PAYLOAD], headers: t.Optional[dict]) -> RESPONSE_BODY:
+    async def _mk_request(cls, full_url: str, method: str, body: JSON_PAYLOAD | None, headers: dict | None) -> RESPONSE_BODY:
         async with aiohttp.request(
             url=full_url,
             method=method,
@@ -100,7 +100,7 @@ class BaseJsonHttpAsyncClient:
 
             return await response.text()
 
-    def _get_full_url(self, url: str, query_params: t.Optional[dict] = None) -> str:
+    def _get_full_url(self, url: str, query_params: dict | None = None) -> str:
         if self._base_url:
             url = urljoin(self._base_url, url)
 

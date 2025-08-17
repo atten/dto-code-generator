@@ -176,7 +176,7 @@ class PyMarshmallowDataclassGenerator(proxy: AbstractCodeGenerator? = null) : Py
 
             if (field.nullable) {
                 // should go after "many" condition check: wraps both singular and array entities at the outer level
-                definition = "t.Optional[$definition]"
+                definition = "$definition | None"
             }
 
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.

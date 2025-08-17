@@ -24,7 +24,7 @@ class JavaDurationField(marshmallow.fields.Field):
         except ValueError as error:
             raise marshmallow.ValidationError(str(error)) from error
 
-    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
+    def _serialize(self, value: timedelta | None, attr: str, obj, **kwargs):
         if value is None:
             return None
         return timedelta_to_java_duration(value) if value else "PT0S"
@@ -88,7 +88,7 @@ class BasicDto:
     documented_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float(data_key="customName")))
     list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer(), data_key="listValue")))
     optional_value: float = field(metadata=dict(marshmallow_field=marshmallow.fields.Float()), default=0)
-    nullable_value: t.Optional[bool] = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
+    nullable_value: bool | None = field(metadata=dict(marshmallow_field=marshmallow.fields.Boolean(allow_none=True)), default=None)
     optional_list_value: list[int] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Integer())), default_factory=list)
 
 
@@ -118,7 +118,7 @@ class ContainerDto:
     """
     basic_single: BasicDto = field(metadata=dict(marshmallow_field=marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDto, base_schema=BaseSchema), data_key="basic")))
     basic_list: list[BasicDto] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDto, base_schema=BaseSchema)))))
-    basic_optional_list: t.Optional[list[BasicDto]] = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDto, base_schema=BaseSchema)), allow_none=True, data_key="basics")))
+    basic_optional_list: list[BasicDto] | None = field(metadata=dict(marshmallow_field=marshmallow.fields.List(marshmallow.fields.Nested(marshmallow_dataclass.class_schema(BasicDto, base_schema=BaseSchema)), allow_none=True, data_key="basics")))
 
 
 __all__ = [

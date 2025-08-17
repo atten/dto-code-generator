@@ -100,8 +100,7 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
                         headers.add("import typing as t")
                         if (endpoint.cacheable) "list[$it]" else "t.Iterator[$it]"
                     } else if (endpoint.nullable) {
-                        headers.add("import typing as t")
-                        "t.Optional[$it]"
+                        "$it | None"
                     } else {
                         it
                     }
@@ -130,7 +129,7 @@ abstract class PyBaseClientGenerator(proxy: AbstractCodeGenerator? = null) : Abs
                             it
                         }
                     }
-                    .let { if (argument.nullable) "t.Optional[$it]" else it }
+                    .let { if (argument.nullable) "$it | None" else it }
 
             val argDefaultValue =
                 buildArgumentDefaultValue(argument)

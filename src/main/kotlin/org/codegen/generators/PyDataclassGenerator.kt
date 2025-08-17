@@ -102,8 +102,7 @@ open class PyDataclassGenerator(includedEntityType: AllGeneratorsEnum = AllGener
             }
 
             if (field.nullable) {
-                headers.add("import typing as t")
-                definition = "t.Optional[$definition]"
+                definition = "$definition | None"
             }
 
             // if field contains metadata, make "arg1=..., arg2=..." notation and replace "{metadata}" placeholder with it.

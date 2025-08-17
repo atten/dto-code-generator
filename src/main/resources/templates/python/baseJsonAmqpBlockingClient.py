@@ -180,7 +180,7 @@ class AmqpRequest:
 class AmqpResponse:
     id: str
     result: JSON_PAYLOAD
-    error: t.Optional[str]
+    error: str | None
 
 
 class FailedAmqpRequestError(Exception):

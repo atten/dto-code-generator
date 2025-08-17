@@ -2,16 +2,16 @@
     def __init__(
         self,
         base_url: str = '',
-        headers: t.Optional[t.Dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
         logger: t.Union[logging.Logger, t.Callable[[str], None], None] = None,
         max_retries: int = int(os.environ.get('API_CLIENT_MAX_RETRIES', 5)),
         retry_timeout: float = float(os.environ.get('API_CLIENT_RETRY_TIMEOUT', 3)),
-        user_agent: t.Optional[str] = os.environ.get('API_CLIENT_USER_AGENT'),
+        user_agent: str | None = os.environ.get('API_CLIENT_USER_AGENT'),
         use_response_streaming = bool(int(os.environ.get('API_CLIENT_USE_STREAMING', 1))),
         use_request_payload_validation: bool = bool(int(os.environ.get('API_CLIENT_USE_REQUEST_PAYLOAD_VALIDATION', 1))),
         use_debug_curl: bool = bool(int(os.environ.get('API_CLIENT_USE_DEBUG_CURL', 0))),
-        request_kwargs: t.Optional[t.Dict[str, t.Any]] = None,
-        connection_pool_kwargs: t.Optional[t.Dict[str, t.Any]] = None,
+        request_kwargs: dict[str, t.Any] | None = None,
+        connection_pool_kwargs: dict[str, t.Any] | None = None,
         exception_class: t.Type[Exception] = RuntimeError,
     ):
         """

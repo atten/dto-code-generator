@@ -6,7 +6,7 @@ class JavaDurationField(marshmallow.fields.Field):
         except ValueError as error:
             raise marshmallow.ValidationError(str(error)) from error
 
-    def _serialize(self, value: t.Optional[timedelta], attr: str, obj, **kwargs):
+    def _serialize(self, value: timedelta | None, attr: str, obj, **kwargs):
         if value is None:
             return None
         return timedelta_to_java_duration(value) if value else "PT0S"
